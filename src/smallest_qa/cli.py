@@ -230,6 +230,28 @@ def cmd_human(args) -> int:
     return 0
 
 
+def cmd_human_eval(args) -> int:
+    import json
+
+    from .human_eval import evaluate_run
+    from .redact import scrub_paths
+
+    settings = load_settings()
+    detail, public = evaluate_run(settings.evidence_dir, args.run)
+    priv = settings.evidence_dir / "private" / args.run / "human-eval-detail.json"
+    priv.write_text(json.dumps(detail, indent=2, ensure_ascii=False, default=str) + "\n", encoding="utf-8")
+    pub = settings.evidence_dir / "offline" / f"human-eval-{args.run}.json"
+    text = scrub_paths(json.dumps(public, indent=2, ensure_ascii=False, default=str))
+    for pid, clip in detail["clips"].items():  # fail closed: unshared human text must never reach committed output
+        if not public["clips"][pid].get("transcript_shared"):
+            for t in {clip["reference"], clip["hypothesis"]}:
+                if t and t in text:
+                    raise SystemExit(f"refusing to write: {pid} text would leak into committed evidence")
+    pub.write_text(text + "\n", encoding="utf-8")
+    print(f"private detail: {priv.relative_to(REPO_ROOT)} (git-ignored)\ncommitted summary: {pub.relative_to(REPO_ROOT)}")
+    return 0
+
+
 def cmd_sse_replay(args) -> int:
     import json
 
@@ -333,13 +355,16 @@ def main(argv: list[str] | None = None) -> int:
     hp.add_argument("ids", nargs="?", help="comma-separated clip ids, e.g. H1,H3")
     hp.add_argument("--share-transcript", action="store_true",
                     help="with approve: allow the reference and Smallest's transcript in committed evidence")
+    he = sub.add_parser("human-eval", help="offline: WER/CER analysis of a Batch 3h run (no API requests)")
+    he.add_argument("--run", required=True)
     rp = sub.add_parser("sse-replay", help="offline: replay recorded live SSE wire bytes into the SDK")
     rp.add_argument("--run", required=True)
     args = parser.parse_args(argv)
     handlers = {"plan": cmd_plan, "run": cmd_run, "check-key": cmd_check_key, "make-fixtures": cmd_make_fixtures,
                 "report": cmd_report, "sdk-compat": cmd_sdk_compat, "fixtures-p2": cmd_fixtures_p2,
                 "docs-offline": cmd_docs_offline, "matrix-p2": cmd_matrix_p2,
-                "sse-replay": cmd_sse_replay, "record": cmd_record, "human": cmd_human}
+                "sse-replay": cmd_sse_replay, "record": cmd_record, "human": cmd_human,
+                "human-eval": cmd_human_eval}
     return handlers[args.cmd](args)
 
 

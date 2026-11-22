@@ -1,0 +1,2702 @@
+{
+  "run_id": "20261122T174926Z",
+  "phase": 2,
+  "batch": "3h",
+  "started": {
+    "utc": "2026-11-22T17:49:33.591+00:00",
+    "ist": "2026-11-22T23:19:33.591+05:30"
+  },
+  "finished": {
+    "utc": "2026-11-22T17:50:02.454+00:00",
+    "ist": "2026-11-22T23:20:02.454+05:30"
+  },
+  "harness_version": "0.1.0",
+  "environment": {
+    "python": "3.13.13",
+    "httpx": "0.28.1",
+    "platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
+    "base_url": "https://api.smallest.ai"
+  },
+  "api_key_configured": true,
+  "halted": null,
+  "requests_this_run": 15,
+  "ledger_used_after_run": 83,
+  "ledger_cap": 128,
+  "fixture": {
+    "path": "fixtures/audio/stt_en_16k.wav",
+    "generator": "macOS say -v Samantha --file-format=WAVE --data-format=LEI16@16000",
+    "reference_text": "The quick brown fox jumps over the lazy dog. Speech recognition quality is measured by comparing the words.",
+    "sha256": "cc3d3e75a72ca66f64fba9607342328861d6c3171eba0d8fe2dea5a7aa357f01",
+    "bytes": 205846,
+    "duration_s": 6.305,
+    "sample_rate": 16000
+  },
+  "p2_fixtures": {
+    "acc_en_in_rishi": {
+      "fixture_id": "acc_en_in_rishi",
+      "recipe": {
+        "fixture_id": "acc_en_in_rishi",
+        "category": "accent",
+        "description": "Indian English (synthetic, Rishi)",
+        "language": "en",
+        "reference": "Please send the updated invoice to the finance team before the meeting on Friday evening.",
+        "parts": [
+          [
+            "say",
+            "Rishi",
+            "Please send the updated invoice to the finance team before the meeting on Friday evening."
+          ]
+        ],
+        "post": [],
+        "source_file": null,
+        "expected_speakers": null
+      },
+      "path": "fixtures/audio/p2/acc_en_in_rishi.wav",
+      "sha256": "02a071490b40fb3fef2cc8aeeaaec087f7954b1fb1a6f1e4efa18f5f9e6314ab",
+      "bytes": 176366,
+      "duration_s": 5.51,
+      "sample_rate": 16000,
+      "segments": [
+        {
+          "kind": "say",
+          "start_s": 0.0,
+          "end_s": 5.51,
+          "voiced_start_s": 0.0,
+          "voiced_end_s": 5.29
+        }
+      ],
+      "analysis": {
+        "samples": 88161,
+        "duration_s": 5.51,
+        "rms_dbfs": -16.6,
+        "peak": 27370,
+        "clipped_fraction": 0.0,
+        "leading_silence_ms": 0,
+        "trailing_silence_ms": 220,
+        "longest_internal_silence_ms": 60,
+        "all_silent": false
+      }
+    },
+    "diarize_2spk": {
+      "fixture_id": "diarize_2spk",
+      "recipe": {
+        "fixture_id": "diarize_2spk",
+        "category": "diarization",
+        "description": "Two synthetic speakers alternating (Daniel, Samantha)",
+        "language": "en",
+        "reference": "Hello, thank you for calling customer support. Hi, I would like to check my order status.",
+        "parts": [
+          [
+            "say",
+            "Daniel",
+            "Hello, thank you for calling customer support."
+          ],
+          [
+            "silence",
+            0.6
+          ],
+          [
+            "say",
+            "Samantha",
+            "Hi, I would like to check my order status."
+          ]
+        ],
+        "post": [],
+        "source_file": null,
+        "expected_speakers": 2
+      },
+      "path": "fixtures/audio/p2/diarize_2spk.wav",
+      "sha256": "1be4631f20d0a891c69a42d81f584d623945776270e837901db7d5c141708342",
+      "bytes": 210640,
+      "duration_s": 6.581,
+      "sample_rate": 16000,
+      "segments": [
+        {
+          "kind": "say",
+          "start_s": 0.0,
+          "end_s": 3.119,
+          "voiced_start_s": 0.02,
+          "voiced_end_s": 2.899
+        },
+        {
+          "kind": "silence",
+          "start_s": 3.119,
+          "end_s": 3.719
+        },
+        {
+          "kind": "say",
+          "start_s": 3.719,
+          "end_s": 6.581,
+          "voiced_start_s": 3.739,
+          "voiced_end_s": 6.341
+        }
+      ],
+      "analysis": {
+        "samples": 105298,
+        "duration_s": 6.581,
+        "rms_dbfs": -18.6,
+        "peak": 25063,
+        "clipped_fraction": 0.0,
+        "leading_silence_ms": 20,
+        "trailing_silence_ms": 240,
+        "longest_internal_silence_ms": 840,
+        "all_silent": false
+      }
+    },
+    "gap_1500ms": {
+      "fixture_id": "gap_1500ms",
+      "recipe": {
+        "fixture_id": "gap_1500ms",
+        "category": "timestamps",
+        "description": "Two sentences separated by exactly 1.5 s inserted silence",
+        "language": "en",
+        "reference": "This is the first sentence. And this one comes after a long pause.",
+        "parts": [
+          [
+            "say",
+            "Samantha",
+            "This is the first sentence."
+          ],
+          [
+            "silence",
+            1.5
+          ],
+          [
+            "say",
+            "Samantha",
+            "And this one comes after a long pause."
+          ]
+        ],
+        "post": [],
+        "source_file": null,
+        "expected_speakers": null
+      },
+      "path": "fixtures/audio/p2/gap_1500ms.wav",
+      "sha256": "f8790c6ee64a7adaa231fc50cdaaf5c782daea1a33f021a5ca40bcdfc0d7255c",
+      "bytes": 171594,
+      "duration_s": 5.361,
+      "sample_rate": 16000,
+      "segments": [
+        {
+          "kind": "say",
+          "start_s": 0.0,
+          "end_s": 1.635,
+          "voiced_start_s": 0.0,
+          "voiced_end_s": 1.415
+        },
+        {
+          "kind": "silence",
+          "start_s": 1.635,
+          "end_s": 3.135
+        },
+        {
+          "kind": "say",
+          "start_s": 3.135,
+          "end_s": 5.361,
+          "voiced_start_s": 3.135,
+          "voiced_end_s": 5.121
+        }
+      ],
+      "analysis": {
+        "samples": 85775,
+        "duration_s": 5.361,
+        "rms_dbfs": -17.9,
+        "peak": 25705,
+        "clipped_fraction": 0.0,
+        "leading_silence_ms": 0,
+        "trailing_silence_ms": 240,
+        "longest_internal_silence_ms": 1720,
+        "all_silent": false
+      }
+    },
+    "hi_lekha": {
+      "fixture_id": "hi_lekha",
+      "recipe": {
+        "fixture_id": "hi_lekha",
+        "category": "hindi",
+        "description": "Hindi, Devanagari reference (synthetic, Lekha)",
+        "language": "hi",
+        "reference": "आज मौसम बहुत अच्छा है और हम शाम को पार्क जाएंगे।",
+        "parts": [
+          [
+            "say",
+            "Lekha",
+            "आज मौसम बहुत अच्छा है और हम शाम को पार्क जाएंगे।"
+          ]
+        ],
+        "post": [],
+        "source_file": null,
+        "expected_speakers": null
+      },
+      "path": "fixtures/audio/p2/hi_lekha.wav",
+      "sha256": "1856afce7d8c0a3801d9700738e18488293708c9bb17f222896c49d1f678edf2",
+      "bytes": 111952,
+      "duration_s": 3.497,
+      "sample_rate": 16000,
+      "segments": [
+        {
+          "kind": "say",
+          "start_s": 0.0,
+          "end_s": 3.497,
+          "voiced_start_s": 0.0,
+          "voiced_end_s": 3.297
+        }
+      ],
+      "analysis": {
+        "samples": 55954,
+        "duration_s": 3.497,
+        "rms_dbfs": -17.8,
+        "peak": 26073,
+        "clipped_fraction": 0.0,
+        "leading_silence_ms": 0,
+        "trailing_silence_ms": 200,
+        "longest_internal_silence_ms": 80,
+        "all_silent": false
+      }
+    },
+    "noise_snr0": {
+      "fixture_id": "noise_snr0",
+      "recipe": {
+        "fixture_id": "noise_snr0",
+        "category": "noise",
+        "description": "US English + white noise at 0 dB SNR (seed 7)",
+        "language": "en",
+        "reference": "Please send the updated invoice to the finance team before the meeting on Friday evening.",
+        "parts": [
+          [
+            "say",
+            "Samantha",
+            "Please send the updated invoice to the finance team before the meeting on Friday evening."
+          ]
+        ],
+        "post": [
+          [
+            "noise",
+            0.0,
+            7
+          ]
+        ],
+        "source_file": null,
+        "expected_speakers": null
+      },
+      "path": "fixtures/audio/p2/noise_snr0.wav",
+      "sha256": "01e03bad14bdbaa81a2cf1d685ce4ce22a90724c5a92f724d2fea1a748f2abc1",
+      "bytes": 148962,
+      "duration_s": 4.654,
+      "sample_rate": 16000,
+      "segments": [
+        {
+          "kind": "say",
+          "start_s": 0.0,
+          "end_s": 4.654,
+          "voiced_start_s": 0.0,
+          "voiced_end_s": 4.434
+        }
+      ],
+      "analysis": {
+        "samples": 74459,
+        "duration_s": 4.654,
+        "rms_dbfs": -12.0,
+        "peak": 32767,
+        "clipped_fraction": 0.00012,
+        "leading_silence_ms": 0,
+        "trailing_silence_ms": 0,
+        "longest_internal_silence_ms": 0,
+        "all_silent": false
+      }
+    },
+    "noise_snr10": {
+      "fixture_id": "noise_snr10",
+      "recipe": {
+        "fixture_id": "noise_snr10",
+        "category": "noise",
+        "description": "US English + white noise at 10 dB SNR (seed 7)",
+        "language": "en",
+        "reference": "Please send the updated invoice to the finance team before the meeting on Friday evening.",
+        "parts": [
+          [
+            "say",
+            "Samantha",
+            "Please send the updated invoice to the finance team before the meeting on Friday evening."
+          ]
+        ],
+        "post": [
+          [
+            "noise",
+            10.0,
+            7
+          ]
+        ],
+        "source_file": null,
+        "expected_speakers": null
+      },
+      "path": "fixtures/audio/p2/noise_snr10.wav",
+      "sha256": "7a9811d305dc95c6dd4f057e9466fcfe87997839f9a60c583a2207b28e665c7c",
+      "bytes": 148962,
+      "duration_s": 4.654,
+      "sample_rate": 16000,
+      "segments": [
+        {
+          "kind": "say",
+          "start_s": 0.0,
+          "end_s": 4.654,
+          "voiced_start_s": 0.0,
+          "voiced_end_s": 4.434
+        }
+      ],
+      "analysis": {
+        "samples": 74459,
+        "duration_s": 4.654,
+        "rms_dbfs": -14.6,
+        "peak": 26965,
+        "clipped_fraction": 0.0,
+        "leading_silence_ms": 0,
+        "trailing_silence_ms": 0,
+        "longest_internal_silence_ms": 0,
+        "all_silent": false
+      }
+    },
+    "short_yes": {
+      "fixture_id": "short_yes",
+      "recipe": {
+        "fixture_id": "short_yes",
+        "category": "short",
+        "description": "Single word 'Yes.'",
+        "language": "en",
+        "reference": "Yes.",
+        "parts": [
+          [
+            "say",
+            "Samantha",
+            "Yes."
+          ]
+        ],
+        "post": [],
+        "source_file": null,
+        "expected_speakers": null
+      },
+      "path": "fixtures/audio/p2/short_yes.wav",
+      "sha256": "2838d6a76242d52d668944e21532a0669de742fc160c604a2913052c3dcc0eec",
+      "bytes": 20996,
+      "duration_s": 0.655,
+      "sample_rate": 16000,
+      "segments": [
+        {
+          "kind": "say",
+          "start_s": 0.0,
+          "end_s": 0.655,
+          "voiced_start_s": 0.0,
+          "voiced_end_s": 0.435
+        }
+      ],
+      "analysis": {
+        "samples": 10476,
+        "duration_s": 0.655,
+        "rms_dbfs": -18.2,
+        "peak": 21769,
+        "clipped_fraction": 0.0,
+        "leading_silence_ms": 0,
+        "trailing_silence_ms": 220,
+        "longest_internal_silence_ms": 0,
+        "all_silent": false
+      }
+    },
+    "silence_digital": {
+      "fixture_id": "silence_digital",
+      "recipe": {
+        "fixture_id": "silence_digital",
+        "category": "silence",
+        "description": "3 s digital silence",
+        "language": "en",
+        "reference": "",
+        "parts": [
+          [
+            "silence",
+            3.0
+          ]
+        ],
+        "post": [],
+        "source_file": null,
+        "expected_speakers": null
+      },
+      "path": "fixtures/audio/p2/silence_digital.wav",
+      "sha256": "d303811b8c84619667cd0501342f84ec6cbe69f7aa3856dcf52fabda374c92b8",
+      "bytes": 96044,
+      "duration_s": 3.0,
+      "sample_rate": 16000,
+      "segments": [
+        {
+          "kind": "silence",
+          "start_s": 0.0,
+          "end_s": 3.0
+        }
+      ],
+      "analysis": {
+        "samples": 48000,
+        "duration_s": 3.0,
+        "rms_dbfs": null,
+        "peak": 0,
+        "clipped_fraction": 0.0,
+        "leading_silence_ms": null,
+        "trailing_silence_ms": null,
+        "longest_internal_silence_ms": 0,
+        "all_silent": true
+      }
+    },
+    "silence_noise_floor": {
+      "fixture_id": "silence_noise_floor",
+      "recipe": {
+        "fixture_id": "silence_noise_floor",
+        "category": "silence",
+        "description": "3 s white noise at -45 dBFS, no speech (seed 11)",
+        "language": "en",
+        "reference": "",
+        "parts": [
+          [
+            "noise_only",
+            3.0,
+            -45.0,
+            11
+          ]
+        ],
+        "post": [],
+        "source_file": null,
+        "expected_speakers": null
+      },
+      "path": "fixtures/audio/p2/silence_noise_floor.wav",
+      "sha256": "1af854e56cee199c3d5c81a4920b4c2875ce00259dd31e1bcf7f591495f1e1dc",
+      "bytes": 96044,
+      "duration_s": 3.0,
+      "sample_rate": 16000,
+      "segments": [
+        {
+          "kind": "noise_only",
+          "start_s": 0.0,
+          "end_s": 3.0
+        }
+      ],
+      "analysis": {
+        "samples": 48000,
+        "duration_s": 3.0,
+        "rms_dbfs": -45.0,
+        "peak": 814,
+        "clipped_fraction": 0.0,
+        "leading_silence_ms": 0,
+        "trailing_silence_ms": 0,
+        "longest_internal_silence_ms": 80,
+        "all_silent": false
+      }
+    },
+    "tel_8k": {
+      "fixture_id": "tel_8k",
+      "recipe": {
+        "fixture_id": "tel_8k",
+        "category": "telephony",
+        "description": "US English resampled to 8 kHz (telephony band)",
+        "language": "en",
+        "reference": "Please send the updated invoice to the finance team before the meeting on Friday evening.",
+        "parts": [
+          [
+            "say",
+            "Samantha",
+            "Please send the updated invoice to the finance team before the meeting on Friday evening."
+          ]
+        ],
+        "post": [
+          [
+            "resample",
+            8000
+          ]
+        ],
+        "source_file": null,
+        "expected_speakers": null
+      },
+      "path": "fixtures/audio/p2/tel_8k.wav",
+      "sha256": "fa2f1f6f6b6a6568cac42403879e63289ecd9877f5afb210654349616bcf736f",
+      "bytes": 74502,
+      "duration_s": 4.654,
+      "sample_rate": 8000,
+      "segments": [
+        {
+          "kind": "say",
+          "start_s": 0.0,
+          "end_s": 4.654,
+          "voiced_start_s": 0.0,
+          "voiced_end_s": 4.434
+        }
+      ],
+      "analysis": {
+        "samples": 37229,
+        "duration_s": 4.654,
+        "rms_dbfs": -15.0,
+        "peak": 25455,
+        "clipped_fraction": 0.0,
+        "leading_silence_ms": 0,
+        "trailing_silence_ms": 220,
+        "longest_internal_silence_ms": 60,
+        "all_silent": false
+      }
+    }
+  },
+  "phase_est_usd_after_run": 0.4066,
+  "listening_queue": [],
+  "cases": [
+    {
+      "case_id": "P2-STT-01",
+      "title": "Indian English synthetic voice (Rishi), pulse",
+      "area": "STT accuracy",
+      "expected_behavior": "WER <= 0.25",
+      "doc_refs": [
+        "https://docs.smallest.ai/model-cards/speech-to-text/pulse"
+      ],
+      "classification": "Passed",
+      "checks": [
+        {
+          "name": "HTTP 200",
+          "passed": true,
+          "expected": "200",
+          "actual": "200",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/api-reference/models/speech-to-text/transcribe"
+        },
+        {
+          "name": "WER <= 0.25 on clean synthetic speech",
+          "passed": true,
+          "expected": "<= 0.25",
+          "actual": "0.0",
+          "requirement": "quality",
+          "doc_ref": null
+        }
+      ],
+      "metrics": {
+        "fixture": {
+          "fixture_id": "acc_en_in_rishi",
+          "recipe": {
+            "fixture_id": "acc_en_in_rishi",
+            "category": "accent",
+            "description": "Indian English (synthetic, Rishi)",
+            "language": "en",
+            "reference": "Please send the updated invoice to the finance team before the meeting on Friday evening.",
+            "parts": [
+              [
+                "say",
+                "Rishi",
+                "Please send the updated invoice to the finance team before the meeting on Friday evening."
+              ]
+            ],
+            "post": [],
+            "source_file": null,
+            "expected_speakers": null
+          },
+          "path": "fixtures/audio/p2/acc_en_in_rishi.wav",
+          "sha256": "02a071490b40fb3fef2cc8aeeaaec087f7954b1fb1a6f1e4efa18f5f9e6314ab",
+          "bytes": 176366,
+          "duration_s": 5.51,
+          "sample_rate": 16000,
+          "segments": [
+            {
+              "kind": "say",
+              "start_s": 0.0,
+              "end_s": 5.51,
+              "voiced_start_s": 0.0,
+              "voiced_end_s": 5.29
+            }
+          ],
+          "analysis": {
+            "samples": 88161,
+            "duration_s": 5.51,
+            "rms_dbfs": -16.6,
+            "peak": 27370,
+            "clipped_fraction": 0.0,
+            "leading_silence_ms": 0,
+            "trailing_silence_ms": 220,
+            "longest_internal_silence_ms": 60,
+            "all_silent": false
+          }
+        },
+        "transcription": "Please send the updated invoice to the finance team before the meeting on Friday evening.",
+        "reference": "Please send the updated invoice to the finance team before the meeting on Friday evening.",
+        "wer": 0.0,
+        "cer": 0.0,
+        "audio_s": 5.51,
+        "latency_ms": 969
+      },
+      "notes": [],
+      "requests": [
+        {
+          "case_id": "P2-STT-01",
+          "ledger_seq": 69,
+          "timestamp_utc": "2026-11-22T17:49:33.617+00:00",
+          "timestamp_ist": "2026-11-22T23:19:33.617+05:30",
+          "method": "POST",
+          "endpoint": "/waves/v1/stt/",
+          "query_params": {
+            "model": "pulse",
+            "language": "en"
+          },
+          "request": {
+            "binary_body": {
+              "bytes": 176366,
+              "sha256": "02a071490b40fb3fef2cc8aeeaaec087f7954b1fb1a6f1e4efa18f5f9e6314ab"
+            },
+            "headers": {
+              "Content-Type": "application/octet-stream",
+              "Authorization": "[REDACTED]"
+            }
+          },
+          "auth_mode": "valid",
+          "status": 200,
+          "content_type": "application/json; charset=utf-8",
+          "response_bytes": 202,
+          "response_truncated_at_cap": false,
+          "response_sha256": "991226f42b24c5a2d9b075d673700627b9f9a3b4900ac96963dea95f71c45ba4",
+          "time_to_headers_ms": 969.0,
+          "ttfb_ms": 969.2,
+          "duration_ms": 969.4,
+          "extra_timings_ms": {},
+          "request_ids": {
+            "x-request-id": "99b646c3-e35c-485e-82d6-0e1c21edb104"
+          },
+          "response_headers": {
+            "date": "Sun, 22 Nov 2026 17:49:34 GMT",
+            "content-type": "application/json; charset=utf-8",
+            "content-length": "202",
+            "connection": "keep-alive",
+            "set-cookie": "[REDACTED]",
+            "x-request-id": "99b646c3-e35c-485e-82d6-0e1c21edb104",
+            "cache-control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+            "pragma": "no-cache",
+            "expires": "0",
+            "strict-transport-security": "max-age=31536000; includeSubDomains",
+            "content-security-policy": "default-src 'self';script-src 'self';style-src 'self' 'unsafe-inline';img-src 'self' data: https://d1o0umtiv0iuvd.cloudfront.net https://d4a5s42qh2351.cloudfront.net https://waves-history.s3.ap-south-1.amazonaws.com https://waves-history-dev.s3.ap-south-1.amazonaws.com https://db2izkvf1oocn.cloudfront.net https://media.plivo.com https://dlw9ti8dmuxc7.cloudfront.net;connect-src 'self';frame-ancestors 'none';upgrade-insecure-requests;base-uri 'self';font-src 'self' https: data:;form-action 'self';object-src 'none';script-src-attr 'none'",
+            "cross-origin-opener-policy": "same-origin",
+            "cross-origin-resource-policy": "same-origin",
+            "origin-agent-cluster": "?1",
+            "referrer-policy": "no-referrer",
+            "x-content-type-options": "nosniff",
+            "x-dns-prefetch-control": "off",
+            "x-download-options": "noopen",
+            "x-frame-options": "SAMEORIGIN",
+            "x-permitted-cross-domain-policies": "none",
+            "x-xss-protection": "0",
+            "vary": "Origin",
+            "access-control-allow-credentials": "true",
+            "access-control-expose-headers": "Set-Cookie,X-Smallest-Prompt-Guard,X-Request-Id,Content-Disposition",
+            "etag": "W/\"ca-AUI0PSnNZ4zs35AzlWv8ULcDsko\""
+          },
+          "body_excerpt": "{\"status\":\"success\",\"transcription\":\"Please send the updated invoice to the finance team before the meeting on Friday evening.\",\"words\":[],\"utterances\":[],\"metadata\":{\"duration\":5.51,\"fileSize\":176366}}",
+          "transport_error": null,
+          "cancelled_by_client": false,
+          "fresh_connection": false,
+          "body_chunks": 1
+        }
+      ]
+    },
+    {
+      "case_id": "P2-STT-05",
+      "title": "White noise, 10 dB SNR",
+      "area": "STT accuracy",
+      "expected_behavior": "WER reported (no threshold)",
+      "doc_refs": [
+        "https://docs.smallest.ai/model-cards/speech-to-text/pulse"
+      ],
+      "classification": "Passed",
+      "checks": [
+        {
+          "name": "HTTP 200",
+          "passed": true,
+          "expected": "200",
+          "actual": "200",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/api-reference/models/speech-to-text/transcribe"
+        }
+      ],
+      "metrics": {
+        "fixture": {
+          "fixture_id": "noise_snr10",
+          "recipe": {
+            "fixture_id": "noise_snr10",
+            "category": "noise",
+            "description": "US English + white noise at 10 dB SNR (seed 7)",
+            "language": "en",
+            "reference": "Please send the updated invoice to the finance team before the meeting on Friday evening.",
+            "parts": [
+              [
+                "say",
+                "Samantha",
+                "Please send the updated invoice to the finance team before the meeting on Friday evening."
+              ]
+            ],
+            "post": [
+              [
+                "noise",
+                10.0,
+                7
+              ]
+            ],
+            "source_file": null,
+            "expected_speakers": null
+          },
+          "path": "fixtures/audio/p2/noise_snr10.wav",
+          "sha256": "7a9811d305dc95c6dd4f057e9466fcfe87997839f9a60c583a2207b28e665c7c",
+          "bytes": 148962,
+          "duration_s": 4.654,
+          "sample_rate": 16000,
+          "segments": [
+            {
+              "kind": "say",
+              "start_s": 0.0,
+              "end_s": 4.654,
+              "voiced_start_s": 0.0,
+              "voiced_end_s": 4.434
+            }
+          ],
+          "analysis": {
+            "samples": 74459,
+            "duration_s": 4.654,
+            "rms_dbfs": -14.6,
+            "peak": 26965,
+            "clipped_fraction": 0.0,
+            "leading_silence_ms": 0,
+            "trailing_silence_ms": 0,
+            "longest_internal_silence_ms": 0,
+            "all_silent": false
+          }
+        },
+        "transcription": "Please send the updated invoice to the finance team before the meeting on Friday evening.",
+        "reference": "Please send the updated invoice to the finance team before the meeting on Friday evening.",
+        "wer": 0.0,
+        "cer": 0.0,
+        "audio_s": 4.65,
+        "latency_ms": 396
+      },
+      "notes": [],
+      "requests": [
+        {
+          "case_id": "P2-STT-05",
+          "ledger_seq": 70,
+          "timestamp_utc": "2026-11-22T17:49:36.091+00:00",
+          "timestamp_ist": "2026-11-22T23:19:36.091+05:30",
+          "method": "POST",
+          "endpoint": "/waves/v1/stt/",
+          "query_params": {
+            "model": "pulse",
+            "language": "en"
+          },
+          "request": {
+            "binary_body": {
+              "bytes": 148962,
+              "sha256": "7a9811d305dc95c6dd4f057e9466fcfe87997839f9a60c583a2207b28e665c7c"
+            },
+            "headers": {
+              "Content-Type": "application/octet-stream",
+              "Authorization": "[REDACTED]"
+            }
+          },
+          "auth_mode": "valid",
+          "status": 200,
+          "content_type": "application/json; charset=utf-8",
+          "response_bytes": 203,
+          "response_truncated_at_cap": false,
+          "response_sha256": "cc331e485663cda77c6d86e0727d4d2d7f8cf12db825e8bc5f8b902ea186f2b5",
+          "time_to_headers_ms": 395.4,
+          "ttfb_ms": 395.7,
+          "duration_ms": 396.0,
+          "extra_timings_ms": {},
+          "request_ids": {
+            "x-request-id": "2cdfe944-d9e9-4b1c-a78f-65cc64fd9cc0"
+          },
+          "response_headers": {
+            "date": "Sun, 22 Nov 2026 17:49:36 GMT",
+            "content-type": "application/json; charset=utf-8",
+            "content-length": "203",
+            "connection": "keep-alive",
+            "set-cookie": "[REDACTED]",
+            "x-request-id": "2cdfe944-d9e9-4b1c-a78f-65cc64fd9cc0",
+            "cache-control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+            "pragma": "no-cache",
+            "expires": "0",
+            "strict-transport-security": "max-age=31536000; includeSubDomains",
+            "content-security-policy": "default-src 'self';script-src 'self';style-src 'self' 'unsafe-inline';img-src 'self' data: https://d1o0umtiv0iuvd.cloudfront.net https://d4a5s42qh2351.cloudfront.net https://waves-history.s3.ap-south-1.amazonaws.com https://waves-history-dev.s3.ap-south-1.amazonaws.com https://db2izkvf1oocn.cloudfront.net https://media.plivo.com https://dlw9ti8dmuxc7.cloudfront.net;connect-src 'self';frame-ancestors 'none';upgrade-insecure-requests;base-uri 'self';font-src 'self' https: data:;form-action 'self';object-src 'none';script-src-attr 'none'",
+            "cross-origin-opener-policy": "same-origin",
+            "cross-origin-resource-policy": "same-origin",
+            "origin-agent-cluster": "?1",
+            "referrer-policy": "no-referrer",
+            "x-content-type-options": "nosniff",
+            "x-dns-prefetch-control": "off",
+            "x-download-options": "noopen",
+            "x-frame-options": "SAMEORIGIN",
+            "x-permitted-cross-domain-policies": "none",
+            "x-xss-protection": "0",
+            "vary": "Origin",
+            "access-control-allow-credentials": "true",
+            "access-control-expose-headers": "Set-Cookie,X-Smallest-Prompt-Guard,X-Request-Id,Content-Disposition",
+            "etag": "W/\"cb-rxj6CFOivatAeM+rH1RxBERlpa0\""
+          },
+          "body_excerpt": "{\"status\":\"success\",\"transcription\":\"Please send the updated invoice to the finance team before the meeting on Friday evening.\",\"words\":[],\"utterances\":[],\"metadata\":{\"duration\":4.654,\"fileSize\":148962}}",
+          "transport_error": null,
+          "cancelled_by_client": false,
+          "fresh_connection": false,
+          "body_chunks": 1
+        }
+      ]
+    },
+    {
+      "case_id": "P2-STT-06",
+      "title": "White noise, 0 dB SNR",
+      "area": "STT accuracy",
+      "expected_behavior": "WER reported (no threshold)",
+      "doc_refs": [
+        "https://docs.smallest.ai/model-cards/speech-to-text/pulse"
+      ],
+      "classification": "Passed",
+      "checks": [
+        {
+          "name": "HTTP 200",
+          "passed": true,
+          "expected": "200",
+          "actual": "200",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/api-reference/models/speech-to-text/transcribe"
+        }
+      ],
+      "metrics": {
+        "fixture": {
+          "fixture_id": "noise_snr0",
+          "recipe": {
+            "fixture_id": "noise_snr0",
+            "category": "noise",
+            "description": "US English + white noise at 0 dB SNR (seed 7)",
+            "language": "en",
+            "reference": "Please send the updated invoice to the finance team before the meeting on Friday evening.",
+            "parts": [
+              [
+                "say",
+                "Samantha",
+                "Please send the updated invoice to the finance team before the meeting on Friday evening."
+              ]
+            ],
+            "post": [
+              [
+                "noise",
+                0.0,
+                7
+              ]
+            ],
+            "source_file": null,
+            "expected_speakers": null
+          },
+          "path": "fixtures/audio/p2/noise_snr0.wav",
+          "sha256": "01e03bad14bdbaa81a2cf1d685ce4ce22a90724c5a92f724d2fea1a748f2abc1",
+          "bytes": 148962,
+          "duration_s": 4.654,
+          "sample_rate": 16000,
+          "segments": [
+            {
+              "kind": "say",
+              "start_s": 0.0,
+              "end_s": 4.654,
+              "voiced_start_s": 0.0,
+              "voiced_end_s": 4.434
+            }
+          ],
+          "analysis": {
+            "samples": 74459,
+            "duration_s": 4.654,
+            "rms_dbfs": -12.0,
+            "peak": 32767,
+            "clipped_fraction": 0.00012,
+            "leading_silence_ms": 0,
+            "trailing_silence_ms": 0,
+            "longest_internal_silence_ms": 0,
+            "all_silent": false
+          }
+        },
+        "transcription": "Please send the updated invoice to the finance team before the meeting on Friday evening.",
+        "reference": "Please send the updated invoice to the finance team before the meeting on Friday evening.",
+        "wer": 0.0,
+        "cer": 0.0,
+        "audio_s": 4.65,
+        "latency_ms": 397
+      },
+      "notes": [],
+      "requests": [
+        {
+          "case_id": "P2-STT-06",
+          "ledger_seq": 71,
+          "timestamp_utc": "2026-11-22T17:49:37.993+00:00",
+          "timestamp_ist": "2026-11-22T23:19:37.993+05:30",
+          "method": "POST",
+          "endpoint": "/waves/v1/stt/",
+          "query_params": {
+            "model": "pulse",
+            "language": "en"
+          },
+          "request": {
+            "binary_body": {
+              "bytes": 148962,
+              "sha256": "01e03bad14bdbaa81a2cf1d685ce4ce22a90724c5a92f724d2fea1a748f2abc1"
+            },
+            "headers": {
+              "Content-Type": "application/octet-stream",
+              "Authorization": "[REDACTED]"
+            }
+          },
+          "auth_mode": "valid",
+          "status": 200,
+          "content_type": "application/json; charset=utf-8",
+          "response_bytes": 203,
+          "response_truncated_at_cap": false,
+          "response_sha256": "cc331e485663cda77c6d86e0727d4d2d7f8cf12db825e8bc5f8b902ea186f2b5",
+          "time_to_headers_ms": 396.3,
+          "ttfb_ms": 396.6,
+          "duration_ms": 396.7,
+          "extra_timings_ms": {},
+          "request_ids": {
+            "x-request-id": "5a162e70-6295-4dbc-9790-bb658d7f603a"
+          },
+          "response_headers": {
+            "date": "Sun, 22 Nov 2026 17:49:38 GMT",
+            "content-type": "application/json; charset=utf-8",
+            "content-length": "203",
+            "connection": "keep-alive",
+            "set-cookie": "[REDACTED]",
+            "x-request-id": "5a162e70-6295-4dbc-9790-bb658d7f603a",
+            "cache-control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+            "pragma": "no-cache",
+            "expires": "0",
+            "strict-transport-security": "max-age=31536000; includeSubDomains",
+            "content-security-policy": "default-src 'self';script-src 'self';style-src 'self' 'unsafe-inline';img-src 'self' data: https://d1o0umtiv0iuvd.cloudfront.net https://d4a5s42qh2351.cloudfront.net https://waves-history.s3.ap-south-1.amazonaws.com https://waves-history-dev.s3.ap-south-1.amazonaws.com https://db2izkvf1oocn.cloudfront.net https://media.plivo.com https://dlw9ti8dmuxc7.cloudfront.net;connect-src 'self';frame-ancestors 'none';upgrade-insecure-requests;base-uri 'self';font-src 'self' https: data:;form-action 'self';object-src 'none';script-src-attr 'none'",
+            "cross-origin-opener-policy": "same-origin",
+            "cross-origin-resource-policy": "same-origin",
+            "origin-agent-cluster": "?1",
+            "referrer-policy": "no-referrer",
+            "x-content-type-options": "nosniff",
+            "x-dns-prefetch-control": "off",
+            "x-download-options": "noopen",
+            "x-frame-options": "SAMEORIGIN",
+            "x-permitted-cross-domain-policies": "none",
+            "x-xss-protection": "0",
+            "vary": "Origin",
+            "access-control-allow-credentials": "true",
+            "access-control-expose-headers": "Set-Cookie,X-Smallest-Prompt-Guard,X-Request-Id,Content-Disposition",
+            "etag": "W/\"cb-rxj6CFOivatAeM+rH1RxBERlpa0\""
+          },
+          "body_excerpt": "{\"status\":\"success\",\"transcription\":\"Please send the updated invoice to the finance team before the meeting on Friday evening.\",\"words\":[],\"utterances\":[],\"metadata\":{\"duration\":4.654,\"fileSize\":148962}}",
+          "transport_error": null,
+          "cancelled_by_client": false,
+          "fresh_connection": false,
+          "body_chunks": 1
+        }
+      ]
+    },
+    {
+      "case_id": "P2-STT-07",
+      "title": "Single-word utterance 'Yes.'",
+      "area": "STT accuracy",
+      "expected_behavior": "exact match",
+      "doc_refs": [
+        "https://docs.smallest.ai/api-reference/models/speech-to-text/transcribe"
+      ],
+      "classification": "Passed",
+      "checks": [
+        {
+          "name": "HTTP 200",
+          "passed": true,
+          "expected": "200",
+          "actual": "200",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/api-reference/models/speech-to-text/transcribe"
+        },
+        {
+          "name": "WER <= 0.0 on clean synthetic speech",
+          "passed": true,
+          "expected": "<= 0.0",
+          "actual": "0.0",
+          "requirement": "quality",
+          "doc_ref": null
+        }
+      ],
+      "metrics": {
+        "fixture": {
+          "fixture_id": "short_yes",
+          "recipe": {
+            "fixture_id": "short_yes",
+            "category": "short",
+            "description": "Single word 'Yes.'",
+            "language": "en",
+            "reference": "Yes.",
+            "parts": [
+              [
+                "say",
+                "Samantha",
+                "Yes."
+              ]
+            ],
+            "post": [],
+            "source_file": null,
+            "expected_speakers": null
+          },
+          "path": "fixtures/audio/p2/short_yes.wav",
+          "sha256": "2838d6a76242d52d668944e21532a0669de742fc160c604a2913052c3dcc0eec",
+          "bytes": 20996,
+          "duration_s": 0.655,
+          "sample_rate": 16000,
+          "segments": [
+            {
+              "kind": "say",
+              "start_s": 0.0,
+              "end_s": 0.655,
+              "voiced_start_s": 0.0,
+              "voiced_end_s": 0.435
+            }
+          ],
+          "analysis": {
+            "samples": 10476,
+            "duration_s": 0.655,
+            "rms_dbfs": -18.2,
+            "peak": 21769,
+            "clipped_fraction": 0.0,
+            "leading_silence_ms": 0,
+            "trailing_silence_ms": 220,
+            "longest_internal_silence_ms": 0,
+            "all_silent": false
+          }
+        },
+        "transcription": "Yes.",
+        "reference": "Yes.",
+        "wer": 0.0,
+        "cer": 0.0,
+        "audio_s": 0.65,
+        "latency_ms": 328
+      },
+      "notes": [],
+      "requests": [
+        {
+          "case_id": "P2-STT-07",
+          "ledger_seq": 72,
+          "timestamp_utc": "2026-11-22T17:49:39.895+00:00",
+          "timestamp_ist": "2026-11-22T23:19:39.895+05:30",
+          "method": "POST",
+          "endpoint": "/waves/v1/stt/",
+          "query_params": {
+            "model": "pulse",
+            "language": "en"
+          },
+          "request": {
+            "binary_body": {
+              "bytes": 20996,
+              "sha256": "2838d6a76242d52d668944e21532a0669de742fc160c604a2913052c3dcc0eec"
+            },
+            "headers": {
+              "Content-Type": "application/octet-stream",
+              "Authorization": "[REDACTED]"
+            }
+          },
+          "auth_mode": "valid",
+          "status": 200,
+          "content_type": "application/json; charset=utf-8",
+          "response_bytes": 117,
+          "response_truncated_at_cap": false,
+          "response_sha256": "a60fbca5309c8701dcb6e7349d3f4889c2820256301ba15ddeb8f99e8bc272c4",
+          "time_to_headers_ms": 327.2,
+          "ttfb_ms": 327.5,
+          "duration_ms": 327.6,
+          "extra_timings_ms": {},
+          "request_ids": {
+            "x-request-id": "20923008-5cd1-4121-a173-7e4be231caf9"
+          },
+          "response_headers": {
+            "date": "Sun, 22 Nov 2026 17:49:40 GMT",
+            "content-type": "application/json; charset=utf-8",
+            "content-length": "117",
+            "connection": "keep-alive",
+            "set-cookie": "[REDACTED]",
+            "x-request-id": "20923008-5cd1-4121-a173-7e4be231caf9",
+            "cache-control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+            "pragma": "no-cache",
+            "expires": "0",
+            "strict-transport-security": "max-age=31536000; includeSubDomains",
+            "content-security-policy": "default-src 'self';script-src 'self';style-src 'self' 'unsafe-inline';img-src 'self' data: https://d1o0umtiv0iuvd.cloudfront.net https://d4a5s42qh2351.cloudfront.net https://waves-history.s3.ap-south-1.amazonaws.com https://waves-history-dev.s3.ap-south-1.amazonaws.com https://db2izkvf1oocn.cloudfront.net https://media.plivo.com https://dlw9ti8dmuxc7.cloudfront.net;connect-src 'self';frame-ancestors 'none';upgrade-insecure-requests;base-uri 'self';font-src 'self' https: data:;form-action 'self';object-src 'none';script-src-attr 'none'",
+            "cross-origin-opener-policy": "same-origin",
+            "cross-origin-resource-policy": "same-origin",
+            "origin-agent-cluster": "?1",
+            "referrer-policy": "no-referrer",
+            "x-content-type-options": "nosniff",
+            "x-dns-prefetch-control": "off",
+            "x-download-options": "noopen",
+            "x-frame-options": "SAMEORIGIN",
+            "x-permitted-cross-domain-policies": "none",
+            "x-xss-protection": "0",
+            "vary": "Origin",
+            "access-control-allow-credentials": "true",
+            "access-control-expose-headers": "Set-Cookie,X-Smallest-Prompt-Guard,X-Request-Id,Content-Disposition",
+            "etag": "W/\"75-C/TnJjSDs/BdokJPLnDF2b6dT5A\""
+          },
+          "body_excerpt": "{\"status\":\"success\",\"transcription\":\"Yes.\",\"words\":[],\"utterances\":[],\"metadata\":{\"duration\":0.655,\"fileSize\":20996}}",
+          "transport_error": null,
+          "cancelled_by_client": false,
+          "fresh_connection": false,
+          "body_chunks": 1
+        }
+      ]
+    },
+    {
+      "case_id": "P2-STT-09",
+      "title": "3 s digital silence",
+      "area": "STT accuracy",
+      "expected_behavior": "no 5xx; no hallucinated words (undocumented behaviour)",
+      "doc_refs": [
+        "https://docs.smallest.ai/api-reference/models/speech-to-text/transcribe"
+      ],
+      "classification": "Passed",
+      "checks": [
+        {
+          "name": "silence handled without a 5xx",
+          "passed": true,
+          "expected": "< 500",
+          "actual": "200",
+          "requirement": "quality",
+          "doc_ref": null
+        },
+        {
+          "name": "no hallucinated words on non-speech input",
+          "passed": true,
+          "expected": "empty transcription",
+          "actual": "''",
+          "requirement": "quality",
+          "doc_ref": null
+        }
+      ],
+      "metrics": {
+        "fixture": {
+          "fixture_id": "silence_digital",
+          "recipe": {
+            "fixture_id": "silence_digital",
+            "category": "silence",
+            "description": "3 s digital silence",
+            "language": "en",
+            "reference": "",
+            "parts": [
+              [
+                "silence",
+                3.0
+              ]
+            ],
+            "post": [],
+            "source_file": null,
+            "expected_speakers": null
+          },
+          "path": "fixtures/audio/p2/silence_digital.wav",
+          "sha256": "d303811b8c84619667cd0501342f84ec6cbe69f7aa3856dcf52fabda374c92b8",
+          "bytes": 96044,
+          "duration_s": 3.0,
+          "sample_rate": 16000,
+          "segments": [
+            {
+              "kind": "silence",
+              "start_s": 0.0,
+              "end_s": 3.0
+            }
+          ],
+          "analysis": {
+            "samples": 48000,
+            "duration_s": 3.0,
+            "rms_dbfs": null,
+            "peak": 0,
+            "clipped_fraction": 0.0,
+            "leading_silence_ms": null,
+            "trailing_silence_ms": null,
+            "longest_internal_silence_ms": 0,
+            "all_silent": true
+          }
+        },
+        "status": 200,
+        "transcription": "",
+        "signature": "{metadata:object{duration,fileSize},status:string,transcription:string,words:list[empty]}"
+      },
+      "notes": [],
+      "requests": [
+        {
+          "case_id": "P2-STT-09",
+          "ledger_seq": 73,
+          "timestamp_utc": "2026-11-22T17:49:41.728+00:00",
+          "timestamp_ist": "2026-11-22T23:19:41.728+05:30",
+          "method": "POST",
+          "endpoint": "/waves/v1/stt/",
+          "query_params": {
+            "model": "pulse",
+            "language": "en"
+          },
+          "request": {
+            "binary_body": {
+              "bytes": 96044,
+              "sha256": "d303811b8c84619667cd0501342f84ec6cbe69f7aa3856dcf52fabda374c92b8"
+            },
+            "headers": {
+              "Content-Type": "application/octet-stream",
+              "Authorization": "[REDACTED]"
+            }
+          },
+          "auth_mode": "valid",
+          "status": 200,
+          "content_type": "application/json; charset=utf-8",
+          "response_bytes": 93,
+          "response_truncated_at_cap": false,
+          "response_sha256": "c985d37d608b606bbcea34eadd45371e545dbb57d54a1055b431e97a955918f9",
+          "time_to_headers_ms": 437.0,
+          "ttfb_ms": 437.3,
+          "duration_ms": 437.5,
+          "extra_timings_ms": {},
+          "request_ids": {
+            "x-request-id": "fe36b8b7-c21e-4dee-beef-cbbe7e367c77"
+          },
+          "response_headers": {
+            "date": "Sun, 22 Nov 2026 17:49:42 GMT",
+            "content-type": "application/json; charset=utf-8",
+            "content-length": "93",
+            "connection": "keep-alive",
+            "set-cookie": "[REDACTED]",
+            "x-request-id": "fe36b8b7-c21e-4dee-beef-cbbe7e367c77",
+            "cache-control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+            "pragma": "no-cache",
+            "expires": "0",
+            "strict-transport-security": "max-age=31536000; includeSubDomains",
+            "content-security-policy": "default-src 'self';script-src 'self';style-src 'self' 'unsafe-inline';img-src 'self' data: https://d1o0umtiv0iuvd.cloudfront.net https://d4a5s42qh2351.cloudfront.net https://waves-history.s3.ap-south-1.amazonaws.com https://waves-history-dev.s3.ap-south-1.amazonaws.com https://db2izkvf1oocn.cloudfront.net https://media.plivo.com https://dlw9ti8dmuxc7.cloudfront.net;connect-src 'self';frame-ancestors 'none';upgrade-insecure-requests;base-uri 'self';font-src 'self' https: data:;form-action 'self';object-src 'none';script-src-attr 'none'",
+            "cross-origin-opener-policy": "same-origin",
+            "cross-origin-resource-policy": "same-origin",
+            "origin-agent-cluster": "?1",
+            "referrer-policy": "no-referrer",
+            "x-content-type-options": "nosniff",
+            "x-dns-prefetch-control": "off",
+            "x-download-options": "noopen",
+            "x-frame-options": "SAMEORIGIN",
+            "x-permitted-cross-domain-policies": "none",
+            "x-xss-protection": "0",
+            "vary": "Origin",
+            "access-control-allow-credentials": "true",
+            "access-control-expose-headers": "Set-Cookie,X-Smallest-Prompt-Guard,X-Request-Id,Content-Disposition",
+            "etag": "W/\"5d-COLW0HVj0H5sv6Z6WiSHdhec6oI\""
+          },
+          "body_excerpt": "{\"status\":\"success\",\"transcription\":\"\",\"words\":[],\"metadata\":{\"duration\":3,\"fileSize\":96044}}",
+          "transport_error": null,
+          "cancelled_by_client": false,
+          "fresh_connection": false,
+          "body_chunks": 1
+        }
+      ]
+    },
+    {
+      "case_id": "P2-STT-10",
+      "title": "3 s low-level noise, no speech",
+      "area": "STT accuracy",
+      "expected_behavior": "no hallucinated words",
+      "doc_refs": [
+        "https://docs.smallest.ai/api-reference/models/speech-to-text/transcribe"
+      ],
+      "classification": "Passed",
+      "checks": [
+        {
+          "name": "silence handled without a 5xx",
+          "passed": true,
+          "expected": "< 500",
+          "actual": "200",
+          "requirement": "quality",
+          "doc_ref": null
+        },
+        {
+          "name": "no hallucinated words on non-speech input",
+          "passed": true,
+          "expected": "empty transcription",
+          "actual": "''",
+          "requirement": "quality",
+          "doc_ref": null
+        }
+      ],
+      "metrics": {
+        "fixture": {
+          "fixture_id": "silence_noise_floor",
+          "recipe": {
+            "fixture_id": "silence_noise_floor",
+            "category": "silence",
+            "description": "3 s white noise at -45 dBFS, no speech (seed 11)",
+            "language": "en",
+            "reference": "",
+            "parts": [
+              [
+                "noise_only",
+                3.0,
+                -45.0,
+                11
+              ]
+            ],
+            "post": [],
+            "source_file": null,
+            "expected_speakers": null
+          },
+          "path": "fixtures/audio/p2/silence_noise_floor.wav",
+          "sha256": "1af854e56cee199c3d5c81a4920b4c2875ce00259dd31e1bcf7f591495f1e1dc",
+          "bytes": 96044,
+          "duration_s": 3.0,
+          "sample_rate": 16000,
+          "segments": [
+            {
+              "kind": "noise_only",
+              "start_s": 0.0,
+              "end_s": 3.0
+            }
+          ],
+          "analysis": {
+            "samples": 48000,
+            "duration_s": 3.0,
+            "rms_dbfs": -45.0,
+            "peak": 814,
+            "clipped_fraction": 0.0,
+            "leading_silence_ms": 0,
+            "trailing_silence_ms": 0,
+            "longest_internal_silence_ms": 80,
+            "all_silent": false
+          }
+        },
+        "status": 200,
+        "transcription": "",
+        "signature": "{metadata:object{duration,fileSize},status:string,transcription:string,words:list[empty]}"
+      },
+      "notes": [],
+      "requests": [
+        {
+          "case_id": "P2-STT-10",
+          "ledger_seq": 74,
+          "timestamp_utc": "2026-11-22T17:49:43.668+00:00",
+          "timestamp_ist": "2026-11-22T23:19:43.668+05:30",
+          "method": "POST",
+          "endpoint": "/waves/v1/stt/",
+          "query_params": {
+            "model": "pulse",
+            "language": "en"
+          },
+          "request": {
+            "binary_body": {
+              "bytes": 96044,
+              "sha256": "1af854e56cee199c3d5c81a4920b4c2875ce00259dd31e1bcf7f591495f1e1dc"
+            },
+            "headers": {
+              "Content-Type": "application/octet-stream",
+              "Authorization": "[REDACTED]"
+            }
+          },
+          "auth_mode": "valid",
+          "status": 200,
+          "content_type": "application/json; charset=utf-8",
+          "response_bytes": 93,
+          "response_truncated_at_cap": false,
+          "response_sha256": "c985d37d608b606bbcea34eadd45371e545dbb57d54a1055b431e97a955918f9",
+          "time_to_headers_ms": 425.7,
+          "ttfb_ms": 425.8,
+          "duration_ms": 426.0,
+          "extra_timings_ms": {},
+          "request_ids": {
+            "x-request-id": "650d20c9-62f0-4ebb-bfee-05932ca2a3d6"
+          },
+          "response_headers": {
+            "date": "Sun, 22 Nov 2026 17:49:44 GMT",
+            "content-type": "application/json; charset=utf-8",
+            "content-length": "93",
+            "connection": "keep-alive",
+            "set-cookie": "[REDACTED]",
+            "x-request-id": "650d20c9-62f0-4ebb-bfee-05932ca2a3d6",
+            "cache-control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+            "pragma": "no-cache",
+            "expires": "0",
+            "strict-transport-security": "max-age=31536000; includeSubDomains",
+            "content-security-policy": "default-src 'self';script-src 'self';style-src 'self' 'unsafe-inline';img-src 'self' data: https://d1o0umtiv0iuvd.cloudfront.net https://d4a5s42qh2351.cloudfront.net https://waves-history.s3.ap-south-1.amazonaws.com https://waves-history-dev.s3.ap-south-1.amazonaws.com https://db2izkvf1oocn.cloudfront.net https://media.plivo.com https://dlw9ti8dmuxc7.cloudfront.net;connect-src 'self';frame-ancestors 'none';upgrade-insecure-requests;base-uri 'self';font-src 'self' https: data:;form-action 'self';object-src 'none';script-src-attr 'none'",
+            "cross-origin-opener-policy": "same-origin",
+            "cross-origin-resource-policy": "same-origin",
+            "origin-agent-cluster": "?1",
+            "referrer-policy": "no-referrer",
+            "x-content-type-options": "nosniff",
+            "x-dns-prefetch-control": "off",
+            "x-download-options": "noopen",
+            "x-frame-options": "SAMEORIGIN",
+            "x-permitted-cross-domain-policies": "none",
+            "x-xss-protection": "0",
+            "vary": "Origin",
+            "access-control-allow-credentials": "true",
+            "access-control-expose-headers": "Set-Cookie,X-Smallest-Prompt-Guard,X-Request-Id,Content-Disposition",
+            "etag": "W/\"5d-COLW0HVj0H5sv6Z6WiSHdhec6oI\""
+          },
+          "body_excerpt": "{\"status\":\"success\",\"transcription\":\"\",\"words\":[],\"metadata\":{\"duration\":3,\"fileSize\":96044}}",
+          "transport_error": null,
+          "cancelled_by_client": false,
+          "fresh_connection": false,
+          "body_chunks": 1
+        }
+      ]
+    },
+    {
+      "case_id": "P2-STT-11",
+      "title": "Hindi (Devanagari) synthetic voice, language=hi",
+      "area": "STT accuracy",
+      "expected_behavior": "CER <= 0.25",
+      "doc_refs": [
+        "https://docs.smallest.ai/model-cards/speech-to-text/pulse"
+      ],
+      "classification": "Passed",
+      "checks": [
+        {
+          "name": "HTTP 200",
+          "passed": true,
+          "expected": "200",
+          "actual": "200",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/api-reference/models/speech-to-text/transcribe"
+        },
+        {
+          "name": "CER <= 0.25 on clean synthetic speech",
+          "passed": true,
+          "expected": "<= 0.25",
+          "actual": "0.0",
+          "requirement": "quality",
+          "doc_ref": null
+        }
+      ],
+      "metrics": {
+        "fixture": {
+          "fixture_id": "hi_lekha",
+          "recipe": {
+            "fixture_id": "hi_lekha",
+            "category": "hindi",
+            "description": "Hindi, Devanagari reference (synthetic, Lekha)",
+            "language": "hi",
+            "reference": "आज मौसम बहुत अच्छा है और हम शाम को पार्क जाएंगे।",
+            "parts": [
+              [
+                "say",
+                "Lekha",
+                "आज मौसम बहुत अच्छा है और हम शाम को पार्क जाएंगे।"
+              ]
+            ],
+            "post": [],
+            "source_file": null,
+            "expected_speakers": null
+          },
+          "path": "fixtures/audio/p2/hi_lekha.wav",
+          "sha256": "1856afce7d8c0a3801d9700738e18488293708c9bb17f222896c49d1f678edf2",
+          "bytes": 111952,
+          "duration_s": 3.497,
+          "sample_rate": 16000,
+          "segments": [
+            {
+              "kind": "say",
+              "start_s": 0.0,
+              "end_s": 3.497,
+              "voiced_start_s": 0.0,
+              "voiced_end_s": 3.297
+            }
+          ],
+          "analysis": {
+            "samples": 55954,
+            "duration_s": 3.497,
+            "rms_dbfs": -17.8,
+            "peak": 26073,
+            "clipped_fraction": 0.0,
+            "leading_silence_ms": 0,
+            "trailing_silence_ms": 200,
+            "longest_internal_silence_ms": 80,
+            "all_silent": false
+          }
+        },
+        "transcription": "आज मौसम बहुत अच्छा है और हम शाम को पार्क जाएंगे.",
+        "reference": "आज मौसम बहुत अच्छा है और हम शाम को पार्क जाएंगे।",
+        "wer": 0.0,
+        "cer": 0.0,
+        "audio_s": 3.5,
+        "latency_ms": 455
+      },
+      "notes": [],
+      "requests": [
+        {
+          "case_id": "P2-STT-11",
+          "ledger_seq": 75,
+          "timestamp_utc": "2026-11-22T17:49:45.600+00:00",
+          "timestamp_ist": "2026-11-22T23:19:45.600+05:30",
+          "method": "POST",
+          "endpoint": "/waves/v1/stt/",
+          "query_params": {
+            "model": "pulse",
+            "language": "hi"
+          },
+          "request": {
+            "binary_body": {
+              "bytes": 111952,
+              "sha256": "1856afce7d8c0a3801d9700738e18488293708c9bb17f222896c49d1f678edf2"
+            },
+            "headers": {
+              "Content-Type": "application/octet-stream",
+              "Authorization": "[REDACTED]"
+            }
+          },
+          "auth_mode": "valid",
+          "status": 200,
+          "content_type": "application/json; charset=utf-8",
+          "response_bytes": 236,
+          "response_truncated_at_cap": false,
+          "response_sha256": "7c772711572f8c4f93b822d69a8a47f21427f59aca62015fa81be3d200862c1d",
+          "time_to_headers_ms": 455.0,
+          "ttfb_ms": 455.1,
+          "duration_ms": 455.2,
+          "extra_timings_ms": {},
+          "request_ids": {
+            "x-request-id": "47c1b4a9-f736-4421-9eef-82d95b980112"
+          },
+          "response_headers": {
+            "date": "Sun, 22 Nov 2026 17:49:45 GMT",
+            "content-type": "application/json; charset=utf-8",
+            "content-length": "236",
+            "connection": "keep-alive",
+            "set-cookie": "[REDACTED]",
+            "x-request-id": "47c1b4a9-f736-4421-9eef-82d95b980112",
+            "cache-control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+            "pragma": "no-cache",
+            "expires": "0",
+            "strict-transport-security": "max-age=31536000; includeSubDomains",
+            "content-security-policy": "default-src 'self';script-src 'self';style-src 'self' 'unsafe-inline';img-src 'self' data: https://d1o0umtiv0iuvd.cloudfront.net https://d4a5s42qh2351.cloudfront.net https://waves-history.s3.ap-south-1.amazonaws.com https://waves-history-dev.s3.ap-south-1.amazonaws.com https://db2izkvf1oocn.cloudfront.net https://media.plivo.com https://dlw9ti8dmuxc7.cloudfront.net;connect-src 'self';frame-ancestors 'none';upgrade-insecure-requests;base-uri 'self';font-src 'self' https: data:;form-action 'self';object-src 'none';script-src-attr 'none'",
+            "cross-origin-opener-policy": "same-origin",
+            "cross-origin-resource-policy": "same-origin",
+            "origin-agent-cluster": "?1",
+            "referrer-policy": "no-referrer",
+            "x-content-type-options": "nosniff",
+            "x-dns-prefetch-control": "off",
+            "x-download-options": "noopen",
+            "x-frame-options": "SAMEORIGIN",
+            "x-permitted-cross-domain-policies": "none",
+            "x-xss-protection": "0",
+            "vary": "Origin",
+            "access-control-allow-credentials": "true",
+            "access-control-expose-headers": "Set-Cookie,X-Smallest-Prompt-Guard,X-Request-Id,Content-Disposition",
+            "etag": "W/\"ec-+hlsq2adJc0KCyX2PeoOQ78hAVg\""
+          },
+          "body_excerpt": "{\"status\":\"success\",\"transcription\":\"आज मौसम बहुत अच्छा है और हम शाम को पार्क जाएंगे.\",\"words\":[],\"utterances\":[],\"metadata\":{\"duration\":3.497,\"fileSize\":111952}}",
+          "transport_error": null,
+          "cancelled_by_client": false,
+          "fresh_connection": false,
+          "body_chunks": 1
+        }
+      ]
+    },
+    {
+      "case_id": "P2-STT-13",
+      "title": "8 kHz telephony-band audio (16 kHz recommended)",
+      "area": "STT accuracy",
+      "expected_behavior": "WER reported",
+      "doc_refs": [
+        "https://docs.smallest.ai/model-cards/speech-to-text/pulse"
+      ],
+      "classification": "Passed",
+      "checks": [
+        {
+          "name": "HTTP 200",
+          "passed": true,
+          "expected": "200",
+          "actual": "200",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/api-reference/models/speech-to-text/transcribe"
+        }
+      ],
+      "metrics": {
+        "fixture": {
+          "fixture_id": "tel_8k",
+          "recipe": {
+            "fixture_id": "tel_8k",
+            "category": "telephony",
+            "description": "US English resampled to 8 kHz (telephony band)",
+            "language": "en",
+            "reference": "Please send the updated invoice to the finance team before the meeting on Friday evening.",
+            "parts": [
+              [
+                "say",
+                "Samantha",
+                "Please send the updated invoice to the finance team before the meeting on Friday evening."
+              ]
+            ],
+            "post": [
+              [
+                "resample",
+                8000
+              ]
+            ],
+            "source_file": null,
+            "expected_speakers": null
+          },
+          "path": "fixtures/audio/p2/tel_8k.wav",
+          "sha256": "fa2f1f6f6b6a6568cac42403879e63289ecd9877f5afb210654349616bcf736f",
+          "bytes": 74502,
+          "duration_s": 4.654,
+          "sample_rate": 8000,
+          "segments": [
+            {
+              "kind": "say",
+              "start_s": 0.0,
+              "end_s": 4.654,
+              "voiced_start_s": 0.0,
+              "voiced_end_s": 4.434
+            }
+          ],
+          "analysis": {
+            "samples": 37229,
+            "duration_s": 4.654,
+            "rms_dbfs": -15.0,
+            "peak": 25455,
+            "clipped_fraction": 0.0,
+            "leading_silence_ms": 0,
+            "trailing_silence_ms": 220,
+            "longest_internal_silence_ms": 60,
+            "all_silent": false
+          }
+        },
+        "transcription": "Please send the updated invoice to the finance team before the meeting on Friday evening.",
+        "reference": "Please send the updated invoice to the finance team before the meeting on Friday evening.",
+        "wer": 0.0,
+        "cer": 0.0,
+        "audio_s": 4.65,
+        "latency_ms": 443
+      },
+      "notes": [],
+      "requests": [
+        {
+          "case_id": "P2-STT-13",
+          "ledger_seq": 76,
+          "timestamp_utc": "2026-11-22T17:49:47.557+00:00",
+          "timestamp_ist": "2026-11-22T23:19:47.557+05:30",
+          "method": "POST",
+          "endpoint": "/waves/v1/stt/",
+          "query_params": {
+            "model": "pulse",
+            "language": "en"
+          },
+          "request": {
+            "binary_body": {
+              "bytes": 74502,
+              "sha256": "fa2f1f6f6b6a6568cac42403879e63289ecd9877f5afb210654349616bcf736f"
+            },
+            "headers": {
+              "Content-Type": "application/octet-stream",
+              "Authorization": "[REDACTED]"
+            }
+          },
+          "auth_mode": "valid",
+          "status": 200,
+          "content_type": "application/json; charset=utf-8",
+          "response_bytes": 202,
+          "response_truncated_at_cap": false,
+          "response_sha256": "13f2c6e26adceb5cf35e450fabba264cc0e54b06a1718c565af7ec2701651af3",
+          "time_to_headers_ms": 443.0,
+          "ttfb_ms": 443.2,
+          "duration_ms": 443.3,
+          "extra_timings_ms": {},
+          "request_ids": {
+            "x-request-id": "8fe8d2dd-f4ac-4778-a236-99d8155654d3"
+          },
+          "response_headers": {
+            "date": "Sun, 22 Nov 2026 17:49:47 GMT",
+            "content-type": "application/json; charset=utf-8",
+            "content-length": "202",
+            "connection": "keep-alive",
+            "set-cookie": "[REDACTED]",
+            "x-request-id": "8fe8d2dd-f4ac-4778-a236-99d8155654d3",
+            "cache-control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+            "pragma": "no-cache",
+            "expires": "0",
+            "strict-transport-security": "max-age=31536000; includeSubDomains",
+            "content-security-policy": "default-src 'self';script-src 'self';style-src 'self' 'unsafe-inline';img-src 'self' data: https://d1o0umtiv0iuvd.cloudfront.net https://d4a5s42qh2351.cloudfront.net https://waves-history.s3.ap-south-1.amazonaws.com https://waves-history-dev.s3.ap-south-1.amazonaws.com https://db2izkvf1oocn.cloudfront.net https://media.plivo.com https://dlw9ti8dmuxc7.cloudfront.net;connect-src 'self';frame-ancestors 'none';upgrade-insecure-requests;base-uri 'self';font-src 'self' https: data:;form-action 'self';object-src 'none';script-src-attr 'none'",
+            "cross-origin-opener-policy": "same-origin",
+            "cross-origin-resource-policy": "same-origin",
+            "origin-agent-cluster": "?1",
+            "referrer-policy": "no-referrer",
+            "x-content-type-options": "nosniff",
+            "x-dns-prefetch-control": "off",
+            "x-download-options": "noopen",
+            "x-frame-options": "SAMEORIGIN",
+            "x-permitted-cross-domain-policies": "none",
+            "x-xss-protection": "0",
+            "vary": "Origin",
+            "access-control-allow-credentials": "true",
+            "access-control-expose-headers": "Set-Cookie,X-Smallest-Prompt-Guard,X-Request-Id,Content-Disposition",
+            "etag": "W/\"ca-5FHqiUXkqVP7m/Xhg4v1Svhz5dI\""
+          },
+          "body_excerpt": "{\"status\":\"success\",\"transcription\":\"Please send the updated invoice to the finance team before the meeting on Friday evening.\",\"words\":[],\"utterances\":[],\"metadata\":{\"duration\":4.654,\"fileSize\":74502}}",
+          "transport_error": null,
+          "cancelled_by_client": false,
+          "fresh_connection": false,
+          "body_chunks": 1
+        }
+      ]
+    },
+    {
+      "case_id": "P2-STT-14",
+      "title": "Two speakers with diarize=true",
+      "area": "STT accuracy",
+      "expected_behavior": "speaker on every word; 2 speakers",
+      "doc_refs": [
+        "https://docs.smallest.ai/api-reference/models/speech-to-text/transcribe"
+      ],
+      "classification": "Passed",
+      "checks": [
+        {
+          "name": "HTTP 200",
+          "passed": true,
+          "expected": "200",
+          "actual": "200",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/api-reference/models/speech-to-text/transcribe"
+        },
+        {
+          "name": "diarize=true: every word carries `speaker`",
+          "passed": true,
+          "expected": "speaker on all words",
+          "actual": "16/16",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/api-reference/models/speech-to-text/transcribe"
+        },
+        {
+          "name": "two synthetic speakers separated",
+          "passed": true,
+          "expected": 2,
+          "actual": "2",
+          "requirement": "exploratory",
+          "doc_ref": null
+        }
+      ],
+      "metrics": {
+        "fixture": {
+          "fixture_id": "diarize_2spk",
+          "recipe": {
+            "fixture_id": "diarize_2spk",
+            "category": "diarization",
+            "description": "Two synthetic speakers alternating (Daniel, Samantha)",
+            "language": "en",
+            "reference": "Hello, thank you for calling customer support. Hi, I would like to check my order status.",
+            "parts": [
+              [
+                "say",
+                "Daniel",
+                "Hello, thank you for calling customer support."
+              ],
+              [
+                "silence",
+                0.6
+              ],
+              [
+                "say",
+                "Samantha",
+                "Hi, I would like to check my order status."
+              ]
+            ],
+            "post": [],
+            "source_file": null,
+            "expected_speakers": 2
+          },
+          "path": "fixtures/audio/p2/diarize_2spk.wav",
+          "sha256": "1be4631f20d0a891c69a42d81f584d623945776270e837901db7d5c141708342",
+          "bytes": 210640,
+          "duration_s": 6.581,
+          "sample_rate": 16000,
+          "segments": [
+            {
+              "kind": "say",
+              "start_s": 0.0,
+              "end_s": 3.119,
+              "voiced_start_s": 0.02,
+              "voiced_end_s": 2.899
+            },
+            {
+              "kind": "silence",
+              "start_s": 3.119,
+              "end_s": 3.719
+            },
+            {
+              "kind": "say",
+              "start_s": 3.719,
+              "end_s": 6.581,
+              "voiced_start_s": 3.739,
+              "voiced_end_s": 6.341
+            }
+          ],
+          "analysis": {
+            "samples": 105298,
+            "duration_s": 6.581,
+            "rms_dbfs": -18.6,
+            "peak": 25063,
+            "clipped_fraction": 0.0,
+            "leading_silence_ms": 20,
+            "trailing_silence_ms": 240,
+            "longest_internal_silence_ms": 840,
+            "all_silent": false
+          }
+        },
+        "transcription": "Hello, thank you for calling customer support. Hi, I would like to check my order status.",
+        "reference": "Hello, thank you for calling customer support. Hi, I would like to check my order status.",
+        "wer": 0.0,
+        "cer": 0.0,
+        "audio_s": 6.58,
+        "latency_ms": 689,
+        "speakers": [
+          0,
+          1
+        ]
+      },
+      "notes": [],
+      "requests": [
+        {
+          "case_id": "P2-STT-14",
+          "ledger_seq": 77,
+          "timestamp_utc": "2026-11-22T17:49:49.503+00:00",
+          "timestamp_ist": "2026-11-22T23:19:49.503+05:30",
+          "method": "POST",
+          "endpoint": "/waves/v1/stt/",
+          "query_params": {
+            "model": "pulse",
+            "language": "en",
+            "diarize": "true",
+            "word_timestamps": "true"
+          },
+          "request": {
+            "binary_body": {
+              "bytes": 210640,
+              "sha256": "1be4631f20d0a891c69a42d81f584d623945776270e837901db7d5c141708342"
+            },
+            "headers": {
+              "Content-Type": "application/octet-stream",
+              "Authorization": "[REDACTED]"
+            }
+          },
+          "auth_mode": "valid",
+          "status": 200,
+          "content_type": "application/json; charset=utf-8",
+          "response_bytes": 1974,
+          "response_truncated_at_cap": false,
+          "response_sha256": "dc5cd7491a4895da2086227f5b1cef9da65b5e794dbae4eda3898927367b35fa",
+          "time_to_headers_ms": 689.1,
+          "ttfb_ms": 689.2,
+          "duration_ms": 689.4,
+          "extra_timings_ms": {},
+          "request_ids": {
+            "x-request-id": "bc3f63f4-4948-4bb3-974f-13f85edd637d"
+          },
+          "response_headers": {
+            "date": "Sun, 22 Nov 2026 17:49:50 GMT",
+            "content-type": "application/json; charset=utf-8",
+            "content-length": "1974",
+            "connection": "keep-alive",
+            "set-cookie": "[REDACTED]",
+            "x-request-id": "bc3f63f4-4948-4bb3-974f-13f85edd637d",
+            "cache-control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+            "pragma": "no-cache",
+            "expires": "0",
+            "strict-transport-security": "max-age=31536000; includeSubDomains",
+            "content-security-policy": "default-src 'self';script-src 'self';style-src 'self' 'unsafe-inline';img-src 'self' data: https://d1o0umtiv0iuvd.cloudfront.net https://d4a5s42qh2351.cloudfront.net https://waves-history.s3.ap-south-1.amazonaws.com https://waves-history-dev.s3.ap-south-1.amazonaws.com https://db2izkvf1oocn.cloudfront.net https://media.plivo.com https://dlw9ti8dmuxc7.cloudfront.net;connect-src 'self';frame-ancestors 'none';upgrade-insecure-requests;base-uri 'self';font-src 'self' https: data:;form-action 'self';object-src 'none';script-src-attr 'none'",
+            "cross-origin-opener-policy": "same-origin",
+            "cross-origin-resource-policy": "same-origin",
+            "origin-agent-cluster": "?1",
+            "referrer-policy": "no-referrer",
+            "x-content-type-options": "nosniff",
+            "x-dns-prefetch-control": "off",
+            "x-download-options": "noopen",
+            "x-frame-options": "SAMEORIGIN",
+            "x-permitted-cross-domain-policies": "none",
+            "x-xss-protection": "0",
+            "vary": "Origin",
+            "access-control-allow-credentials": "true",
+            "access-control-expose-headers": "Set-Cookie,X-Smallest-Prompt-Guard,X-Request-Id,Content-Disposition",
+            "etag": "W/\"7b6-UKRA27CpRhP5C/YPPP9K4jyT+Y0\""
+          },
+          "body_excerpt": "{\"status\":\"success\",\"transcription\":\"Hello, thank you for calling customer support. Hi, I would like to check my order status.\",\"words\":[{\"start\":0,\"end\":0.8,\"speaker\":0,\"speaker_confidence\":1,\"word\":\"Hello,\",\"confidence\":0.8209},{\"start\":0.8,\"end\":1.04,\"speaker\":0,\"speaker_confidence\":1,\"word\":\"thank\",\"confidence\":0.9952},{\"start\":1.04,\"end\":1.2,\"speaker\":0,\"speaker_confidence\":1,\"word\":\"you\",\"confidence\":0.9998},{\"start\":1.2,\"end\":1.44,\"speaker\":0,\"speaker_confidence\":1,\"word\":\"for\",\"confidence\":1},{\"start\":1.44,\"end\":1.84,\"speaker\":0,\"speaker_confidence\":1,\"word\":\"calling\",\"confidence\":1},{...[truncated]",
+          "transport_error": null,
+          "cancelled_by_client": false,
+          "fresh_connection": false,
+          "body_chunks": 1
+        }
+      ]
+    },
+    {
+      "case_id": "P2-STT-15",
+      "title": "Word timestamps vs a known 1.5 s inserted pause",
+      "area": "STT accuracy",
+      "expected_behavior": "gap edges within 0.3 s",
+      "doc_refs": [
+        "https://docs.smallest.ai/api-reference/models/speech-to-text/transcribe"
+      ],
+      "classification": "Candidate finding requiring reproduction",
+      "checks": [
+        {
+          "name": "HTTP 200",
+          "passed": true,
+          "expected": "200",
+          "actual": "200",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/api-reference/models/speech-to-text/transcribe"
+        },
+        {
+          "name": "words[] present with word_timestamps=true",
+          "passed": true,
+          "expected": "non-empty",
+          "actual": "13",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/api-reference/models/speech-to-text/transcribe"
+        },
+        {
+          "name": "largest word gap aligns with the inserted silence (+/-0.3 s)",
+          "passed": false,
+          "expected": "both edges within 0.3 s",
+          "actual": "{'observed_gap_s': [2.88, 3.04], 'true_speech_gap_s': [1.415, 3.135]}",
+          "requirement": "quality",
+          "doc_ref": null
+        }
+      ],
+      "metrics": {
+        "fixture": {
+          "fixture_id": "gap_1500ms",
+          "recipe": {
+            "fixture_id": "gap_1500ms",
+            "category": "timestamps",
+            "description": "Two sentences separated by exactly 1.5 s inserted silence",
+            "language": "en",
+            "reference": "This is the first sentence. And this one comes after a long pause.",
+            "parts": [
+              [
+                "say",
+                "Samantha",
+                "This is the first sentence."
+              ],
+              [
+                "silence",
+                1.5
+              ],
+              [
+                "say",
+                "Samantha",
+                "And this one comes after a long pause."
+              ]
+            ],
+            "post": [],
+            "source_file": null,
+            "expected_speakers": null
+          },
+          "path": "fixtures/audio/p2/gap_1500ms.wav",
+          "sha256": "f8790c6ee64a7adaa231fc50cdaaf5c782daea1a33f021a5ca40bcdfc0d7255c",
+          "bytes": 171594,
+          "duration_s": 5.361,
+          "sample_rate": 16000,
+          "segments": [
+            {
+              "kind": "say",
+              "start_s": 0.0,
+              "end_s": 1.635,
+              "voiced_start_s": 0.0,
+              "voiced_end_s": 1.415
+            },
+            {
+              "kind": "silence",
+              "start_s": 1.635,
+              "end_s": 3.135
+            },
+            {
+              "kind": "say",
+              "start_s": 3.135,
+              "end_s": 5.361,
+              "voiced_start_s": 3.135,
+              "voiced_end_s": 5.121
+            }
+          ],
+          "analysis": {
+            "samples": 85775,
+            "duration_s": 5.361,
+            "rms_dbfs": -17.9,
+            "peak": 25705,
+            "clipped_fraction": 0.0,
+            "leading_silence_ms": 0,
+            "trailing_silence_ms": 240,
+            "longest_internal_silence_ms": 1720,
+            "all_silent": false
+          }
+        },
+        "transcription": "This is the first sentence, and this one comes after a long pause.",
+        "reference": "This is the first sentence. And this one comes after a long pause.",
+        "wer": 0.0,
+        "cer": 0.0,
+        "audio_s": 5.36,
+        "latency_ms": 406,
+        "timestamp_gap": {
+          "observed_gap_s": [
+            2.88,
+            3.04
+          ],
+          "true_speech_gap_s": [
+            1.415,
+            3.135
+          ]
+        }
+      },
+      "notes": [],
+      "requests": [
+        {
+          "case_id": "P2-STT-15",
+          "ledger_seq": 78,
+          "timestamp_utc": "2026-11-22T17:49:51.698+00:00",
+          "timestamp_ist": "2026-11-22T23:19:51.698+05:30",
+          "method": "POST",
+          "endpoint": "/waves/v1/stt/",
+          "query_params": {
+            "model": "pulse",
+            "language": "en",
+            "word_timestamps": "true"
+          },
+          "request": {
+            "binary_body": {
+              "bytes": 171594,
+              "sha256": "f8790c6ee64a7adaa231fc50cdaaf5c782daea1a33f021a5ca40bcdfc0d7255c"
+            },
+            "headers": {
+              "Content-Type": "application/octet-stream",
+              "Authorization": "[REDACTED]"
+            }
+          },
+          "auth_mode": "valid",
+          "status": 200,
+          "content_type": "application/json; charset=utf-8",
+          "response_bytes": 1037,
+          "response_truncated_at_cap": false,
+          "response_sha256": "5fba3b9483ff6eceb2043767b02dc452e380dfd7e655d4fd0d1ca30a912f53f8",
+          "time_to_headers_ms": 405.6,
+          "ttfb_ms": 405.8,
+          "duration_ms": 406.0,
+          "extra_timings_ms": {},
+          "request_ids": {
+            "x-request-id": "7ab5184a-d2be-44f4-99c2-2ea7a177a4ee"
+          },
+          "response_headers": {
+            "date": "Sun, 22 Nov 2026 17:49:52 GMT",
+            "content-type": "application/json; charset=utf-8",
+            "content-length": "1037",
+            "connection": "keep-alive",
+            "set-cookie": "[REDACTED]",
+            "x-request-id": "7ab5184a-d2be-44f4-99c2-2ea7a177a4ee",
+            "cache-control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+            "pragma": "no-cache",
+            "expires": "0",
+            "strict-transport-security": "max-age=31536000; includeSubDomains",
+            "content-security-policy": "default-src 'self';script-src 'self';style-src 'self' 'unsafe-inline';img-src 'self' data: https://d1o0umtiv0iuvd.cloudfront.net https://d4a5s42qh2351.cloudfront.net https://waves-history.s3.ap-south-1.amazonaws.com https://waves-history-dev.s3.ap-south-1.amazonaws.com https://db2izkvf1oocn.cloudfront.net https://media.plivo.com https://dlw9ti8dmuxc7.cloudfront.net;connect-src 'self';frame-ancestors 'none';upgrade-insecure-requests;base-uri 'self';font-src 'self' https: data:;form-action 'self';object-src 'none';script-src-attr 'none'",
+            "cross-origin-opener-policy": "same-origin",
+            "cross-origin-resource-policy": "same-origin",
+            "origin-agent-cluster": "?1",
+            "referrer-policy": "no-referrer",
+            "x-content-type-options": "nosniff",
+            "x-dns-prefetch-control": "off",
+            "x-download-options": "noopen",
+            "x-frame-options": "SAMEORIGIN",
+            "x-permitted-cross-domain-policies": "none",
+            "x-xss-protection": "0",
+            "vary": "Origin",
+            "access-control-allow-credentials": "true",
+            "access-control-expose-headers": "Set-Cookie,X-Smallest-Prompt-Guard,X-Request-Id,Content-Disposition",
+            "etag": "W/\"40d-nSTz1AVbxzqUUscxlpQD+hpuXpg\""
+          },
+          "body_excerpt": "{\"status\":\"success\",\"transcription\":\"This is the first sentence, and this one comes after a long pause.\",\"words\":[{\"start\":0,\"end\":0.32,\"word\":\"This\",\"confidence\":0.9693},{\"start\":0.32,\"end\":0.48,\"word\":\"is\",\"confidence\":0.999},{\"start\":0.48,\"end\":0.64,\"word\":\"the\",\"confidence\":0.9997},{\"start\":0.64,\"end\":0.88,\"word\":\"first\",\"confidence\":1},{\"start\":0.88,\"end\":2.88,\"word\":\"sentence,\",\"confidence\":0.8607},{\"start\":3.04,\"end\":3.28,\"word\":\"and\",\"confidence\":0.9921},{\"start\":3.28,\"end\":3.52,\"word\":\"this\",\"confidence\":0.9931},{\"start\":3.52,\"end\":3.76,\"word\":\"one\",\"confidence\":0.4241},{\"start\":3.76,...[truncated]",
+          "transport_error": null,
+          "cancelled_by_client": false,
+          "fresh_connection": false,
+          "body_chunks": 1
+        }
+      ]
+    },
+    {
+      "case_id": "P2-HUM-01",
+      "title": "Human: natural English (replaces synthetic P2-STT-02, pulse-pro)",
+      "area": "STT accuracy (human)",
+      "expected_behavior": "200; WER/CER vs speaker-confirmed reference; key terms recognised (no documented accuracy threshold)",
+      "doc_refs": [
+        "https://docs.smallest.ai/api-reference/models/speech-to-text/transcribe",
+        "https://docs.smallest.ai/model-cards/speech-to-text/pulse"
+      ],
+      "classification": "Passed",
+      "checks": [
+        {
+          "name": "HTTP 200",
+          "passed": true,
+          "expected": "200",
+          "actual": "200",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/api-reference/models/speech-to-text/transcribe"
+        },
+        {
+          "name": "WER <= 0.25 on natural read speech",
+          "passed": true,
+          "expected": "<= 0.25",
+          "actual": "0.111",
+          "requirement": "quality",
+          "doc_ref": null
+        }
+      ],
+      "metrics": {
+        "clip": {
+          "clip_id": "H1",
+          "category": "natural English",
+          "duration_s": 8.782,
+          "sample_rate": 16000,
+          "sha256": "7fc91b469d7c8c3bc2302b844962c97990d0c535cc3a78dce17f960a27c5a401",
+          "reference_edited": false,
+          "language": "en",
+          "model": "pulse-pro"
+        },
+        "transcripts_shared_in_evidence": false,
+        "wer": 0.111,
+        "cer": 0.0
+      },
+      "notes": [],
+      "requests": [
+        {
+          "case_id": "P2-HUM-01",
+          "ledger_seq": 79,
+          "timestamp_utc": "2026-11-22T17:49:53.609+00:00",
+          "timestamp_ist": "2026-11-22T23:19:53.609+05:30",
+          "method": "POST",
+          "endpoint": "/waves/v1/stt/",
+          "query_params": {
+            "model": "pulse-pro",
+            "language": "en"
+          },
+          "request": {
+            "binary_body": {
+              "bytes": 281054,
+              "sha256": "7fc91b469d7c8c3bc2302b844962c97990d0c535cc3a78dce17f960a27c5a401"
+            },
+            "headers": {
+              "Content-Type": "application/octet-stream",
+              "Authorization": "[REDACTED]"
+            }
+          },
+          "auth_mode": "valid",
+          "status": 200,
+          "content_type": "application/json; charset=utf-8",
+          "response_bytes": 88,
+          "response_truncated_at_cap": false,
+          "response_sha256": "8973deb8f20cf2accb8da199a776fd3de7bcae9b1f41c406c9bc974610396450",
+          "time_to_headers_ms": 627.7,
+          "ttfb_ms": 627.9,
+          "duration_ms": 629.2,
+          "extra_timings_ms": {},
+          "request_ids": {
+            "x-request-id": "feeef7b0-3b9b-4388-a9b0-97ac6cde3b9f"
+          },
+          "response_headers": {
+            "date": "Sun, 22 Nov 2026 17:49:54 GMT",
+            "content-type": "application/json; charset=utf-8",
+            "content-length": "341",
+            "connection": "keep-alive",
+            "set-cookie": "[REDACTED]",
+            "x-request-id": "feeef7b0-3b9b-4388-a9b0-97ac6cde3b9f",
+            "cache-control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+            "pragma": "no-cache",
+            "expires": "0",
+            "strict-transport-security": "max-age=31536000; includeSubDomains",
+            "content-security-policy": "default-src 'self';script-src 'self';style-src 'self' 'unsafe-inline';img-src 'self' data: https://d1o0umtiv0iuvd.cloudfront.net https://d4a5s42qh2351.cloudfront.net https://waves-history.s3.ap-south-1.amazonaws.com https://waves-history-dev.s3.ap-south-1.amazonaws.com https://db2izkvf1oocn.cloudfront.net https://media.plivo.com https://dlw9ti8dmuxc7.cloudfront.net;connect-src 'self';frame-ancestors 'none';upgrade-insecure-requests;base-uri 'self';font-src 'self' https: data:;form-action 'self';object-src 'none';script-src-attr 'none'",
+            "cross-origin-opener-policy": "same-origin",
+            "cross-origin-resource-policy": "same-origin",
+            "origin-agent-cluster": "?1",
+            "referrer-policy": "no-referrer",
+            "x-content-type-options": "nosniff",
+            "x-dns-prefetch-control": "off",
+            "x-download-options": "noopen",
+            "x-frame-options": "SAMEORIGIN",
+            "x-permitted-cross-domain-policies": "none",
+            "x-xss-protection": "0",
+            "vary": "Origin",
+            "access-control-allow-credentials": "true",
+            "access-control-expose-headers": "Set-Cookie,X-Smallest-Prompt-Guard,X-Request-Id,Content-Disposition",
+            "etag": "W/\"155-iKHHcVBkQMwl9Ai3df0AEnMmW74\""
+          },
+          "body_excerpt": "{\"withheld\": \"human transcript not shared (no --share-transcript)\", \"status\": \"success\"}",
+          "transport_error": null,
+          "cancelled_by_client": false,
+          "fresh_connection": false,
+          "body_chunks": 1
+        }
+      ]
+    },
+    {
+      "case_id": "P2-HUM-02",
+      "title": "Human: technical terminology (replaces synthetic P2-STT-03)",
+      "area": "STT accuracy (human)",
+      "expected_behavior": "200; WER/CER vs speaker-confirmed reference; key terms recognised (no documented accuracy threshold)",
+      "doc_refs": [
+        "https://docs.smallest.ai/api-reference/models/speech-to-text/transcribe",
+        "https://docs.smallest.ai/model-cards/speech-to-text/pulse"
+      ],
+      "classification": "Candidate finding requiring reproduction",
+      "checks": [
+        {
+          "name": "HTTP 200",
+          "passed": true,
+          "expected": "200",
+          "actual": "200",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/api-reference/models/speech-to-text/transcribe"
+        },
+        {
+          "name": "expected key terms recognised",
+          "passed": false,
+          "expected": 5,
+          "actual": "4 found; missing ['postgresql']",
+          "requirement": "exploratory",
+          "doc_ref": null
+        }
+      ],
+      "metrics": {
+        "clip": {
+          "clip_id": "H2",
+          "category": "technical terminology",
+          "duration_s": 11.583,
+          "sample_rate": 16000,
+          "sha256": "e9fb8f69daa27b65ddcd0ddf8a8dfb20f3788a60b4166167715703eadeca024e",
+          "reference_edited": false,
+          "language": "en",
+          "model": "pulse"
+        },
+        "transcripts_shared_in_evidence": false,
+        "wer": 0.238,
+        "cer": 0.15,
+        "key_tokens": {
+          "hit": 4,
+          "total": 5,
+          "missing": [
+            "postgresql"
+          ]
+        }
+      },
+      "notes": [],
+      "requests": [
+        {
+          "case_id": "P2-HUM-02",
+          "ledger_seq": 80,
+          "timestamp_utc": "2026-11-22T17:49:55.744+00:00",
+          "timestamp_ist": "2026-11-22T23:19:55.744+05:30",
+          "method": "POST",
+          "endpoint": "/waves/v1/stt/",
+          "query_params": {
+            "model": "pulse",
+            "language": "en"
+          },
+          "request": {
+            "binary_body": {
+              "bytes": 370694,
+              "sha256": "e9fb8f69daa27b65ddcd0ddf8a8dfb20f3788a60b4166167715703eadeca024e"
+            },
+            "headers": {
+              "Content-Type": "application/octet-stream",
+              "Authorization": "[REDACTED]"
+            }
+          },
+          "auth_mode": "valid",
+          "status": 200,
+          "content_type": "application/json; charset=utf-8",
+          "response_bytes": 88,
+          "response_truncated_at_cap": false,
+          "response_sha256": "8973deb8f20cf2accb8da199a776fd3de7bcae9b1f41c406c9bc974610396450",
+          "time_to_headers_ms": 550.6,
+          "ttfb_ms": 550.8,
+          "duration_ms": 550.9,
+          "extra_timings_ms": {},
+          "request_ids": {
+            "x-request-id": "3515204a-3ddd-4ea8-a06d-7a6a29fb69b6"
+          },
+          "response_headers": {
+            "date": "Sun, 22 Nov 2026 17:49:56 GMT",
+            "content-type": "application/json; charset=utf-8",
+            "content-length": "234",
+            "connection": "keep-alive",
+            "set-cookie": "[REDACTED]",
+            "x-request-id": "3515204a-3ddd-4ea8-a06d-7a6a29fb69b6",
+            "cache-control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+            "pragma": "no-cache",
+            "expires": "0",
+            "strict-transport-security": "max-age=31536000; includeSubDomains",
+            "content-security-policy": "default-src 'self';script-src 'self';style-src 'self' 'unsafe-inline';img-src 'self' data: https://d1o0umtiv0iuvd.cloudfront.net https://d4a5s42qh2351.cloudfront.net https://waves-history.s3.ap-south-1.amazonaws.com https://waves-history-dev.s3.ap-south-1.amazonaws.com https://db2izkvf1oocn.cloudfront.net https://media.plivo.com https://dlw9ti8dmuxc7.cloudfront.net;connect-src 'self';frame-ancestors 'none';upgrade-insecure-requests;base-uri 'self';font-src 'self' https: data:;form-action 'self';object-src 'none';script-src-attr 'none'",
+            "cross-origin-opener-policy": "same-origin",
+            "cross-origin-resource-policy": "same-origin",
+            "origin-agent-cluster": "?1",
+            "referrer-policy": "no-referrer",
+            "x-content-type-options": "nosniff",
+            "x-dns-prefetch-control": "off",
+            "x-download-options": "noopen",
+            "x-frame-options": "SAMEORIGIN",
+            "x-permitted-cross-domain-policies": "none",
+            "x-xss-protection": "0",
+            "vary": "Origin",
+            "access-control-allow-credentials": "true",
+            "access-control-expose-headers": "Set-Cookie,X-Smallest-Prompt-Guard,X-Request-Id,Content-Disposition",
+            "etag": "W/\"ea-S+MU1ybJHJbUPNypQlKTe8vZT1E\""
+          },
+          "body_excerpt": "{\"withheld\": \"human transcript not shared (no --share-transcript)\", \"status\": \"success\"}",
+          "transport_error": null,
+          "cancelled_by_client": false,
+          "fresh_connection": false,
+          "body_chunks": 1
+        }
+      ]
+    },
+    {
+      "case_id": "P2-HUM-03",
+      "title": "Human: numbers, currency, dates (replaces synthetic P2-STT-04)",
+      "area": "STT accuracy (human)",
+      "expected_behavior": "200; WER/CER vs speaker-confirmed reference; key terms recognised (no documented accuracy threshold)",
+      "doc_refs": [
+        "https://docs.smallest.ai/api-reference/models/speech-to-text/transcribe",
+        "https://docs.smallest.ai/model-cards/speech-to-text/pulse"
+      ],
+      "classification": "Passed",
+      "checks": [
+        {
+          "name": "HTTP 200",
+          "passed": true,
+          "expected": "200",
+          "actual": "200",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/api-reference/models/speech-to-text/transcribe"
+        },
+        {
+          "name": "expected key terms recognised",
+          "passed": true,
+          "expected": 7,
+          "actual": "7 found; missing []",
+          "requirement": "exploratory",
+          "doc_ref": null
+        }
+      ],
+      "metrics": {
+        "clip": {
+          "clip_id": "H3",
+          "category": "numbers, currency and dates",
+          "duration_s": 13.582,
+          "sample_rate": 16000,
+          "sha256": "6135c378624e01e730f3ccbca843d861175e9322687faac6ebf9cd63a3ab901a",
+          "reference_edited": false,
+          "language": "en",
+          "model": "pulse"
+        },
+        "transcripts_shared_in_evidence": false,
+        "wer": 0.536,
+        "cer": 0.742,
+        "key_tokens": {
+          "hit": 7,
+          "total": 7,
+          "missing": []
+        }
+      },
+      "notes": [],
+      "requests": [
+        {
+          "case_id": "P2-HUM-03",
+          "ledger_seq": 81,
+          "timestamp_utc": "2026-11-22T17:49:57.801+00:00",
+          "timestamp_ist": "2026-11-22T23:19:57.801+05:30",
+          "method": "POST",
+          "endpoint": "/waves/v1/stt/",
+          "query_params": {
+            "model": "pulse",
+            "language": "en"
+          },
+          "request": {
+            "binary_body": {
+              "bytes": 434684,
+              "sha256": "6135c378624e01e730f3ccbca843d861175e9322687faac6ebf9cd63a3ab901a"
+            },
+            "headers": {
+              "Content-Type": "application/octet-stream",
+              "Authorization": "[REDACTED]"
+            }
+          },
+          "auth_mode": "valid",
+          "status": 200,
+          "content_type": "application/json; charset=utf-8",
+          "response_bytes": 88,
+          "response_truncated_at_cap": false,
+          "response_sha256": "8973deb8f20cf2accb8da199a776fd3de7bcae9b1f41c406c9bc974610396450",
+          "time_to_headers_ms": 472.2,
+          "ttfb_ms": 472.3,
+          "duration_ms": 472.4,
+          "extra_timings_ms": {},
+          "request_ids": {
+            "x-request-id": "b424f234-f6b6-4699-a48c-e7c9550566cb"
+          },
+          "response_headers": {
+            "date": "Sun, 22 Nov 2026 17:49:58 GMT",
+            "content-type": "application/json; charset=utf-8",
+            "content-length": "290",
+            "connection": "keep-alive",
+            "set-cookie": "[REDACTED]",
+            "x-request-id": "b424f234-f6b6-4699-a48c-e7c9550566cb",
+            "cache-control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+            "pragma": "no-cache",
+            "expires": "0",
+            "strict-transport-security": "max-age=31536000; includeSubDomains",
+            "content-security-policy": "default-src 'self';script-src 'self';style-src 'self' 'unsafe-inline';img-src 'self' data: https://d1o0umtiv0iuvd.cloudfront.net https://d4a5s42qh2351.cloudfront.net https://waves-history.s3.ap-south-1.amazonaws.com https://waves-history-dev.s3.ap-south-1.amazonaws.com https://db2izkvf1oocn.cloudfront.net https://media.plivo.com https://dlw9ti8dmuxc7.cloudfront.net;connect-src 'self';frame-ancestors 'none';upgrade-insecure-requests;base-uri 'self';font-src 'self' https: data:;form-action 'self';object-src 'none';script-src-attr 'none'",
+            "cross-origin-opener-policy": "same-origin",
+            "cross-origin-resource-policy": "same-origin",
+            "origin-agent-cluster": "?1",
+            "referrer-policy": "no-referrer",
+            "x-content-type-options": "nosniff",
+            "x-dns-prefetch-control": "off",
+            "x-download-options": "noopen",
+            "x-frame-options": "SAMEORIGIN",
+            "x-permitted-cross-domain-policies": "none",
+            "x-xss-protection": "0",
+            "vary": "Origin",
+            "access-control-allow-credentials": "true",
+            "access-control-expose-headers": "Set-Cookie,X-Smallest-Prompt-Guard,X-Request-Id,Content-Disposition",
+            "etag": "W/\"122-v5zffgyvq+YrcO6BXbu73VQAGuk\""
+          },
+          "body_excerpt": "{\"withheld\": \"human transcript not shared (no --share-transcript)\", \"status\": \"success\"}",
+          "transport_error": null,
+          "cancelled_by_client": false,
+          "fresh_connection": false,
+          "body_chunks": 1
+        }
+      ]
+    },
+    {
+      "case_id": "P2-HUM-04",
+      "title": "Human: Hinglish, language=hi (replaces TTS-generated P2-STT-12)",
+      "area": "STT accuracy (human)",
+      "expected_behavior": "200; WER/CER vs speaker-confirmed reference; key terms recognised (no documented accuracy threshold)",
+      "doc_refs": [
+        "https://docs.smallest.ai/api-reference/models/speech-to-text/transcribe",
+        "https://docs.smallest.ai/model-cards/speech-to-text/pulse"
+      ],
+      "classification": "Candidate finding requiring reproduction",
+      "checks": [
+        {
+          "name": "HTTP 200",
+          "passed": true,
+          "expected": "200",
+          "actual": "200",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/api-reference/models/speech-to-text/transcribe"
+        },
+        {
+          "name": "expected key terms recognised",
+          "passed": false,
+          "expected": 8,
+          "actual": "0 found; missing ['meeting', 'cancel', 'please', 'client', 'email', 'new', 'time', 'confirm']",
+          "requirement": "exploratory",
+          "doc_ref": null
+        }
+      ],
+      "metrics": {
+        "clip": {
+          "clip_id": "H4",
+          "category": "Hinglish (Hindi-English code-switching)",
+          "duration_s": 8.623,
+          "sample_rate": 16000,
+          "sha256": "5bbc49f5997563ae8fd7ec45d2daaf44bfbef33a3713fcc636fa41ecdb587e8b",
+          "reference_edited": false,
+          "language": "hi",
+          "model": "pulse"
+        },
+        "transcripts_shared_in_evidence": false,
+        "wer": 1.0,
+        "cer": 1.0,
+        "key_tokens": {
+          "hit": 0,
+          "total": 8,
+          "missing": [
+            "meeting",
+            "cancel",
+            "please",
+            "client",
+            "email",
+            "new",
+            "time",
+            "confirm"
+          ]
+        }
+      },
+      "notes": [],
+      "requests": [
+        {
+          "case_id": "P2-HUM-04",
+          "ledger_seq": 82,
+          "timestamp_utc": "2026-11-22T17:49:59.778+00:00",
+          "timestamp_ist": "2026-11-22T23:19:59.778+05:30",
+          "method": "POST",
+          "endpoint": "/waves/v1/stt/",
+          "query_params": {
+            "model": "pulse",
+            "language": "hi"
+          },
+          "request": {
+            "binary_body": {
+              "bytes": 275984,
+              "sha256": "5bbc49f5997563ae8fd7ec45d2daaf44bfbef33a3713fcc636fa41ecdb587e8b"
+            },
+            "headers": {
+              "Content-Type": "application/octet-stream",
+              "Authorization": "[REDACTED]"
+            }
+          },
+          "auth_mode": "valid",
+          "status": 200,
+          "content_type": "application/json; charset=utf-8",
+          "response_bytes": 88,
+          "response_truncated_at_cap": false,
+          "response_sha256": "8973deb8f20cf2accb8da199a776fd3de7bcae9b1f41c406c9bc974610396450",
+          "time_to_headers_ms": 510.5,
+          "ttfb_ms": 510.7,
+          "duration_ms": 510.8,
+          "extra_timings_ms": {},
+          "request_ids": {
+            "x-request-id": "95bacd5b-f4ff-4d65-ae87-10ce877d950d"
+          },
+          "response_headers": {
+            "date": "Sun, 22 Nov 2026 17:50:00 GMT",
+            "content-type": "application/json; charset=utf-8",
+            "content-length": "358",
+            "connection": "keep-alive",
+            "set-cookie": "[REDACTED]",
+            "x-request-id": "95bacd5b-f4ff-4d65-ae87-10ce877d950d",
+            "cache-control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+            "pragma": "no-cache",
+            "expires": "0",
+            "strict-transport-security": "max-age=31536000; includeSubDomains",
+            "content-security-policy": "default-src 'self';script-src 'self';style-src 'self' 'unsafe-inline';img-src 'self' data: https://d1o0umtiv0iuvd.cloudfront.net https://d4a5s42qh2351.cloudfront.net https://waves-history.s3.ap-south-1.amazonaws.com https://waves-history-dev.s3.ap-south-1.amazonaws.com https://db2izkvf1oocn.cloudfront.net https://media.plivo.com https://dlw9ti8dmuxc7.cloudfront.net;connect-src 'self';frame-ancestors 'none';upgrade-insecure-requests;base-uri 'self';font-src 'self' https: data:;form-action 'self';object-src 'none';script-src-attr 'none'",
+            "cross-origin-opener-policy": "same-origin",
+            "cross-origin-resource-policy": "same-origin",
+            "origin-agent-cluster": "?1",
+            "referrer-policy": "no-referrer",
+            "x-content-type-options": "nosniff",
+            "x-dns-prefetch-control": "off",
+            "x-download-options": "noopen",
+            "x-frame-options": "SAMEORIGIN",
+            "x-permitted-cross-domain-policies": "none",
+            "x-xss-protection": "0",
+            "vary": "Origin",
+            "access-control-allow-credentials": "true",
+            "access-control-expose-headers": "Set-Cookie,X-Smallest-Prompt-Guard,X-Request-Id,Content-Disposition",
+            "etag": "W/\"166-XRBSUiNLzQIMLvrqmcijbvAdOMs\""
+          },
+          "body_excerpt": "{\"withheld\": \"human transcript not shared (no --share-transcript)\", \"status\": \"success\"}",
+          "transport_error": null,
+          "cancelled_by_client": false,
+          "fresh_connection": false,
+          "body_chunks": 1
+        }
+      ]
+    },
+    {
+      "case_id": "P2-HUM-05",
+      "title": "Human: spontaneous speech (replaces synthetic P2-STT-08)",
+      "area": "STT accuracy (human)",
+      "expected_behavior": "200; WER/CER vs speaker-confirmed reference; key terms recognised (no documented accuracy threshold)",
+      "doc_refs": [
+        "https://docs.smallest.ai/api-reference/models/speech-to-text/transcribe",
+        "https://docs.smallest.ai/model-cards/speech-to-text/pulse"
+      ],
+      "classification": "Passed",
+      "checks": [
+        {
+          "name": "HTTP 200",
+          "passed": true,
+          "expected": "200",
+          "actual": "200",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/api-reference/models/speech-to-text/transcribe"
+        }
+      ],
+      "metrics": {
+        "clip": {
+          "clip_id": "H5",
+          "category": "spontaneous speech",
+          "duration_s": 25.641,
+          "sample_rate": 16000,
+          "sha256": "2947d544d3a0b9b739455464389b89a951452ac9ab44b14a5bc7c5eb69d61ecd",
+          "reference_edited": true,
+          "language": "en",
+          "model": "pulse"
+        },
+        "transcripts_shared_in_evidence": false,
+        "wer": 0.308,
+        "cer": 0.282
+      },
+      "notes": [],
+      "requests": [
+        {
+          "case_id": "P2-HUM-05",
+          "ledger_seq": 83,
+          "timestamp_utc": "2026-11-22T17:50:01.795+00:00",
+          "timestamp_ist": "2026-11-22T23:20:01.795+05:30",
+          "method": "POST",
+          "endpoint": "/waves/v1/stt/",
+          "query_params": {
+            "model": "pulse",
+            "language": "en"
+          },
+          "request": {
+            "binary_body": {
+              "bytes": 820544,
+              "sha256": "2947d544d3a0b9b739455464389b89a951452ac9ab44b14a5bc7c5eb69d61ecd"
+            },
+            "headers": {
+              "Content-Type": "application/octet-stream",
+              "Authorization": "[REDACTED]"
+            }
+          },
+          "auth_mode": "valid",
+          "status": 200,
+          "content_type": "application/json; charset=utf-8",
+          "response_bytes": 88,
+          "response_truncated_at_cap": false,
+          "response_sha256": "8973deb8f20cf2accb8da199a776fd3de7bcae9b1f41c406c9bc974610396450",
+          "time_to_headers_ms": 644.3,
+          "ttfb_ms": 644.5,
+          "duration_ms": 644.7,
+          "extra_timings_ms": {},
+          "request_ids": {
+            "x-request-id": "f21a02c7-7938-4ea4-91d9-502890327d86"
+          },
+          "response_headers": {
+            "date": "Sun, 22 Nov 2026 17:50:02 GMT",
+            "content-type": "application/json; charset=utf-8",
+            "content-length": "448",
+            "connection": "keep-alive",
+            "set-cookie": "[REDACTED]",
+            "x-request-id": "f21a02c7-7938-4ea4-91d9-502890327d86",
+            "cache-control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+            "pragma": "no-cache",
+            "expires": "0",
+            "strict-transport-security": "max-age=31536000; includeSubDomains",
+            "content-security-policy": "default-src 'self';script-src 'self';style-src 'self' 'unsafe-inline';img-src 'self' data: https://d1o0umtiv0iuvd.cloudfront.net https://d4a5s42qh2351.cloudfront.net https://waves-history.s3.ap-south-1.amazonaws.com https://waves-history-dev.s3.ap-south-1.amazonaws.com https://db2izkvf1oocn.cloudfront.net https://media.plivo.com https://dlw9ti8dmuxc7.cloudfront.net;connect-src 'self';frame-ancestors 'none';upgrade-insecure-requests;base-uri 'self';font-src 'self' https: data:;form-action 'self';object-src 'none';script-src-attr 'none'",
+            "cross-origin-opener-policy": "same-origin",
+            "cross-origin-resource-policy": "same-origin",
+            "origin-agent-cluster": "?1",
+            "referrer-policy": "no-referrer",
+            "x-content-type-options": "nosniff",
+            "x-dns-prefetch-control": "off",
+            "x-download-options": "noopen",
+            "x-frame-options": "SAMEORIGIN",
+            "x-permitted-cross-domain-policies": "none",
+            "x-xss-protection": "0",
+            "vary": "Origin",
+            "access-control-allow-credentials": "true",
+            "access-control-expose-headers": "Set-Cookie,X-Smallest-Prompt-Guard,X-Request-Id,Content-Disposition",
+            "etag": "W/\"1c0-+n/O59Iu7VJpQ/uBWCWMpb7D3xE\""
+          },
+          "body_excerpt": "{\"withheld\": \"human transcript not shared (no --share-transcript)\", \"status\": \"success\"}",
+          "transport_error": null,
+          "cancelled_by_client": false,
+          "fresh_connection": false,
+          "body_chunks": 1
+        }
+      ]
+    }
+  ],
+  "post_processing": "metrics.transcription_sha256 removed from P2-HUM-* cases (a hash of a short transcript of a public prompt could confirm a guessed transcript); no other fields changed"
+}

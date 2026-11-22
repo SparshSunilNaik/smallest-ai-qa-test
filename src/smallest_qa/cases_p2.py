@@ -1071,14 +1071,16 @@ def _human_case(prompt_id: str) -> Callable[[Context, CaseResult], None]:
         res.metrics["transcripts_shared_in_evidence"] = share
         ex, body = _transcribe(ctx, res.case_id, wav, p.language, p.model)
         res.exchanges.append(ex)
+        # Full response kept ONLY in git-ignored evidence/private/<run>/ for offline WER analysis.
+        ctx.save_private(f"{prompt_id}-stt-response.json", ex.body)
         res.check("HTTP 200", ex.status == 200, "200", ex.status, DOCUMENTED, D.STT_TRANSCRIBE)
         tx = (body or {}).get("transcription") if body else None
         if not isinstance(tx, str):
             return
         ref = meta["reference_transcript"]
         wer, cer = word_error_rate(ref, tx), char_error_rate(ref, tx)
-        res.metrics.update({"wer": round(wer, 3), "cer": round(cer, 3),
-                            "transcription_sha256": __import__("hashlib").sha256(tx.encode()).hexdigest()})
+        # No transcript hash: prompts are public, so a hash would let anyone confirm a guessed transcript.
+        res.metrics.update({"wer": round(wer, 3), "cer": round(cer, 3)})
         if share:
             res.metrics.update({"transcription": tx, "reference": ref})
         if p.key_tokens:

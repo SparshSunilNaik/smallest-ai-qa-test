@@ -1,13 +1,13 @@
 # Results summary (auto-generated from evidence/runs)
 
-- Runs: 7; cumulative API requests (ledger): 68/128
+- Runs: 8; cumulative API requests (ledger): 83/128
 - Counts are per test case. Several cases can share one root cause; consolidated findings, severity and interpretation are in `reports/qa-report-draft.md`.
 
 ## Classification counts
 
-- Passed: 34
+- Passed: 46
 - Confirmed defect: 6
-- Candidate finding requiring reproduction: 14
+- Candidate finding requiring reproduction: 17
 - Expected behavior: 0
 - Documentation ambiguity: 1
 - Inconclusive: 0
@@ -45,6 +45,11 @@
 | P2-F2-04 | Same v3.1-only voice on lightning_v3.1_pro (true mismatch) | Candidate finding requiring reproduction | 1 | 20261122T171937Z | 400 |
 | P2-F2-05 | Same v3.1-only voice with model omitted | Passed | 1 | 20261122T171937Z | 200 |
 | P2-F2-06 | Pro-only voice on lightning_v3.1 (reverse mismatch) | Candidate finding requiring reproduction | 1 | 20261122T171937Z | 400 |
+| P2-HUM-01 | Human: natural English (replaces synthetic P2-STT-02, pulse-pro) | Passed | 1 | 20261122T174926Z | 200 |
+| P2-HUM-02 | Human: technical terminology (replaces synthetic P2-STT-03) | Candidate finding requiring reproduction | 1 | 20261122T174926Z | 200 |
+| P2-HUM-03 | Human: numbers, currency, dates (replaces synthetic P2-STT-04) | Passed | 1 | 20261122T174926Z | 200 |
+| P2-HUM-04 | Human: Hinglish, language=hi (replaces TTS-generated P2-STT-12) | Candidate finding requiring reproduction | 1 | 20261122T174926Z | 200 |
+| P2-HUM-05 | Human: spontaneous speech (replaces synthetic P2-STT-08) | Passed | 1 | 20261122T174926Z | 200 |
 | P2-SDK-01 | smallestai 5.14.0 synthesize_tts (quickstart parameters) | Passed | 1 | 20261122T171937Z | 200 |
 | P2-SDK-02 | smallestai 5.14.0 synthesize_sse_tts yields audio | Confirmed defect | 2 | 20261122T172115Z | 200 |
 | P2-SDK-03 | smallestai 5.14.0 speech_to_text.transcribe | Passed | 1 | 20261122T171937Z | 200 |
@@ -54,6 +59,16 @@
 | P2-STR-04 | Sync vs SSE duration parity (same 250-char text) | Passed | 1 | 20261122T172801Z | 200 |
 | P2-STR-05 | Client cancellation then immediate follow-up request | Passed | 1 | 20261122T172801Z | 200, 200 |
 | P2-STR-08 | SSE 1000-char stream completes | Passed | 1 | 20261122T172801Z | 200 |
+| P2-STT-01 | Indian English synthetic voice (Rishi), pulse | Passed | 1 | 20261122T174926Z | 200 |
+| P2-STT-05 | White noise, 10 dB SNR | Passed | 1 | 20261122T174926Z | 200 |
+| P2-STT-06 | White noise, 0 dB SNR | Passed | 1 | 20261122T174926Z | 200 |
+| P2-STT-07 | Single-word utterance 'Yes.' | Passed | 1 | 20261122T174926Z | 200 |
+| P2-STT-09 | 3 s digital silence | Passed | 1 | 20261122T174926Z | 200 |
+| P2-STT-10 | 3 s low-level noise, no speech | Passed | 1 | 20261122T174926Z | 200 |
+| P2-STT-11 | Hindi (Devanagari) synthetic voice, language=hi | Passed | 1 | 20261122T174926Z | 200 |
+| P2-STT-13 | 8 kHz telephony-band audio (16 kHz recommended) | Passed | 1 | 20261122T174926Z | 200 |
+| P2-STT-14 | Two speakers with diarize=true | Passed | 1 | 20261122T174926Z | 200 |
+| P2-STT-15 | Word timestamps vs a known 1.5 s inserted pause | Candidate finding requiring reproduction | 1 | 20261122T174926Z | 200 |
 | P2-WS-01 | WebSocket TTS with word_timestamps (meher) | Passed | 2 | 20261122T173129Z | 101 |
 | P2-WS-02 | WebSocket unknown voice | Candidate finding requiring reproduction | 1 | 20261122T172801Z | 101 |
 | STR-01 | SSE streaming success, framing, completion, TTFB (pcm) | Passed | 1 | 20261122T163926Z | 200 |

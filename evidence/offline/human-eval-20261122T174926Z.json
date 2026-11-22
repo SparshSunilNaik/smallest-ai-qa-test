@@ -1,0 +1,434 @@
+{
+  "run_id": "20261122T174926Z",
+  "clips": {
+    "H1": {
+      "case_id": "P2-HUM-01",
+      "category": "natural English",
+      "model": "pulse-pro",
+      "language": "en",
+      "duration_s": 8.782,
+      "reference_edited": false,
+      "request_id": "feeef7b0-3b9b-4388-a9b0-97ac6cde3b9f",
+      "transcript_shared": false,
+      "strict": {
+        "ref_tokens": 18,
+        "hits": 17,
+        "substitutions": 1,
+        "deletions": 0,
+        "insertions": 1,
+        "wer": 0.1111,
+        "cer": 0.0085
+      },
+      "normalized": {
+        "ref_tokens": 18,
+        "hits": 17,
+        "substitutions": 1,
+        "deletions": 0,
+        "insertions": 1,
+        "wer": 0.1111,
+        "cer": 0.0088,
+        "cer_space_insensitive": 0.0
+      },
+      "region_summary": {
+        "segmentation": {
+          "regions": 1,
+          "error_ops": 2
+        }
+      },
+      "recognition_only_wer": 0.0,
+      "script": {
+        "hyp_tokens": 19,
+        "devanagari_tokens": 0,
+        "latin_tokens": 17
+      }
+    },
+    "H2": {
+      "case_id": "P2-HUM-02",
+      "category": "technical terminology",
+      "model": "pulse",
+      "language": "en",
+      "duration_s": 11.583,
+      "reference_edited": false,
+      "request_id": "3515204a-3ddd-4ea8-a06d-7a6a29fb69b6",
+      "transcript_shared": false,
+      "strict": {
+        "ref_tokens": 21,
+        "hits": 17,
+        "substitutions": 2,
+        "deletions": 2,
+        "insertions": 1,
+        "wer": 0.2381,
+        "cer": 0.1462
+      },
+      "normalized": {
+        "ref_tokens": 21,
+        "hits": 17,
+        "substitutions": 2,
+        "deletions": 2,
+        "insertions": 1,
+        "wer": 0.2381,
+        "cer": 0.1496,
+        "cer_space_insensitive": 0.1495
+      },
+      "region_summary": {
+        "word_recognition": {
+          "regions": 1,
+          "error_ops": 2
+        },
+        "numeric_formatting": {
+          "regions": 1,
+          "error_ops": 3
+        }
+      },
+      "recognition_only_wer": 0.0952,
+      "script": {
+        "hyp_tokens": 20,
+        "devanagari_tokens": 0,
+        "latin_tokens": 19
+      }
+    },
+    "H3": {
+      "case_id": "P2-HUM-03",
+      "category": "numbers, currency and dates",
+      "model": "pulse",
+      "language": "en",
+      "duration_s": 13.582,
+      "reference_edited": false,
+      "request_id": "b424f234-f6b6-4699-a48c-e7c9550566cb",
+      "transcript_shared": false,
+      "strict": {
+        "ref_tokens": 27,
+        "hits": 17,
+        "substitutions": 10,
+        "deletions": 0,
+        "insertions": 5,
+        "wer": 0.5556,
+        "cer": 0.6303
+      },
+      "normalized": {
+        "ref_tokens": 27,
+        "hits": 18,
+        "substitutions": 9,
+        "deletions": 0,
+        "insertions": 6,
+        "wer": 0.5556,
+        "cer": 0.6261,
+        "cer_space_insensitive": 0.7416
+      },
+      "region_summary": {
+        "numeric_formatting": {
+          "regions": 4,
+          "error_ops": 15
+        }
+      },
+      "recognition_only_wer": 0.0,
+      "script": {
+        "hyp_tokens": 33,
+        "devanagari_tokens": 0,
+        "latin_tokens": 33
+      }
+    },
+    "H4": {
+      "case_id": "P2-HUM-04",
+      "category": "Hinglish (Hindi-English code-switching)",
+      "model": "pulse",
+      "language": "hi",
+      "duration_s": 8.623,
+      "reference_edited": false,
+      "request_id": "95bacd5b-f4ff-4d65-ae87-10ce877d950d",
+      "transcript_shared": false,
+      "strict": {
+        "ref_tokens": 20,
+        "hits": 0,
+        "substitutions": 20,
+        "deletions": 0,
+        "insertions": 0,
+        "wer": 1.0,
+        "cer": 0.8462
+      },
+      "normalized": {
+        "ref_tokens": 20,
+        "hits": 0,
+        "substitutions": 20,
+        "deletions": 0,
+        "insertions": 0,
+        "wer": 1.0,
+        "cer": 0.8431,
+        "cer_space_insensitive": 1.0
+      },
+      "region_summary": {
+        "word_recognition": {
+          "regions": 1,
+          "error_ops": 20
+        }
+      },
+      "recognition_only_wer": 1.0,
+      "script": {
+        "hyp_tokens": 20,
+        "devanagari_tokens": 20,
+        "latin_tokens": 0
+      },
+      "transliteration_aware": {
+        "ref_tokens": 20,
+        "hits": 20,
+        "substitutions": 0,
+        "deletions": 0,
+        "insertions": 0,
+        "wer": 0.0,
+        "method": "Devanagari->Latin approximate transliteration + loose phonetic key (translit.py); analysis aid only; the original transcript is unchanged"
+      }
+    },
+    "H5": {
+      "case_id": "P2-HUM-05",
+      "category": "spontaneous speech",
+      "model": "pulse",
+      "language": "en",
+      "duration_s": 25.641,
+      "reference_edited": true,
+      "request_id": "f21a02c7-7938-4ea4-91d9-502890327d86",
+      "transcript_shared": false,
+      "strict": {
+        "ref_tokens": 65,
+        "hits": 40,
+        "substitutions": 21,
+        "deletions": 4,
+        "insertions": 5,
+        "wer": 0.4615,
+        "cer": 0.2876
+      },
+      "normalized": {
+        "ref_tokens": 65,
+        "hits": 50,
+        "substitutions": 11,
+        "deletions": 4,
+        "insertions": 5,
+        "wer": 0.3077,
+        "cer": 0.2583,
+        "cer_space_insensitive": 0.2815
+      },
+      "region_summary": {
+        "word_recognition": {
+          "regions": 8,
+          "error_ops": 13
+        },
+        "numeric_formatting": {
+          "regions": 2,
+          "error_ops": 4
+        },
+        "disfluency_omitted": {
+          "regions": 1,
+          "error_ops": 1
+        },
+        "numeric_recognition": {
+          "regions": 1,
+          "error_ops": 2
+        }
+      },
+      "recognition_only_wer": 0.2308,
+      "script": {
+        "hyp_tokens": 66,
+        "devanagari_tokens": 0,
+        "latin_tokens": 65
+      }
+    }
+  },
+  "synthetic_baseline": {
+    "P2-STT-01": {
+      "fixture": "acc_en_in_rishi",
+      "strict": {
+        "ref_tokens": 15,
+        "hits": 15,
+        "substitutions": 0,
+        "deletions": 0,
+        "insertions": 0,
+        "wer": 0.0,
+        "cer": 0.0
+      },
+      "normalized": {
+        "ref_tokens": 15,
+        "hits": 15,
+        "substitutions": 0,
+        "deletions": 0,
+        "insertions": 0,
+        "wer": 0.0,
+        "cer": 0.0,
+        "cer_space_insensitive": 0.0
+      },
+      "recognition_only_wer": 0.0,
+      "region_summary": {}
+    },
+    "P2-STT-05": {
+      "fixture": "noise_snr10",
+      "strict": {
+        "ref_tokens": 15,
+        "hits": 15,
+        "substitutions": 0,
+        "deletions": 0,
+        "insertions": 0,
+        "wer": 0.0,
+        "cer": 0.0
+      },
+      "normalized": {
+        "ref_tokens": 15,
+        "hits": 15,
+        "substitutions": 0,
+        "deletions": 0,
+        "insertions": 0,
+        "wer": 0.0,
+        "cer": 0.0,
+        "cer_space_insensitive": 0.0
+      },
+      "recognition_only_wer": 0.0,
+      "region_summary": {}
+    },
+    "P2-STT-06": {
+      "fixture": "noise_snr0",
+      "strict": {
+        "ref_tokens": 15,
+        "hits": 15,
+        "substitutions": 0,
+        "deletions": 0,
+        "insertions": 0,
+        "wer": 0.0,
+        "cer": 0.0
+      },
+      "normalized": {
+        "ref_tokens": 15,
+        "hits": 15,
+        "substitutions": 0,
+        "deletions": 0,
+        "insertions": 0,
+        "wer": 0.0,
+        "cer": 0.0,
+        "cer_space_insensitive": 0.0
+      },
+      "recognition_only_wer": 0.0,
+      "region_summary": {}
+    },
+    "P2-STT-07": {
+      "fixture": "short_yes",
+      "strict": {
+        "ref_tokens": 1,
+        "hits": 1,
+        "substitutions": 0,
+        "deletions": 0,
+        "insertions": 0,
+        "wer": 0.0,
+        "cer": 0.0
+      },
+      "normalized": {
+        "ref_tokens": 1,
+        "hits": 1,
+        "substitutions": 0,
+        "deletions": 0,
+        "insertions": 0,
+        "wer": 0.0,
+        "cer": 0.0,
+        "cer_space_insensitive": 0.0
+      },
+      "recognition_only_wer": 0.0,
+      "region_summary": {}
+    },
+    "P2-STT-11": {
+      "fixture": "hi_lekha",
+      "strict": {
+        "ref_tokens": 11,
+        "hits": 10,
+        "substitutions": 1,
+        "deletions": 0,
+        "insertions": 0,
+        "wer": 0.0909,
+        "cer": 0.0208
+      },
+      "normalized": {
+        "ref_tokens": 11,
+        "hits": 11,
+        "substitutions": 0,
+        "deletions": 0,
+        "insertions": 0,
+        "wer": 0.0,
+        "cer": 0.0,
+        "cer_space_insensitive": 0.0
+      },
+      "recognition_only_wer": 0.0,
+      "region_summary": {}
+    },
+    "P2-STT-13": {
+      "fixture": "tel_8k",
+      "strict": {
+        "ref_tokens": 15,
+        "hits": 15,
+        "substitutions": 0,
+        "deletions": 0,
+        "insertions": 0,
+        "wer": 0.0,
+        "cer": 0.0
+      },
+      "normalized": {
+        "ref_tokens": 15,
+        "hits": 15,
+        "substitutions": 0,
+        "deletions": 0,
+        "insertions": 0,
+        "wer": 0.0,
+        "cer": 0.0,
+        "cer_space_insensitive": 0.0
+      },
+      "recognition_only_wer": 0.0,
+      "region_summary": {}
+    },
+    "P2-STT-14": {
+      "fixture": "diarize_2spk",
+      "strict": {
+        "ref_tokens": 16,
+        "hits": 16,
+        "substitutions": 0,
+        "deletions": 0,
+        "insertions": 0,
+        "wer": 0.0,
+        "cer": 0.0
+      },
+      "normalized": {
+        "ref_tokens": 16,
+        "hits": 16,
+        "substitutions": 0,
+        "deletions": 0,
+        "insertions": 0,
+        "wer": 0.0,
+        "cer": 0.0,
+        "cer_space_insensitive": 0.0
+      },
+      "recognition_only_wer": 0.0,
+      "region_summary": {}
+    },
+    "P2-STT-15": {
+      "fixture": "gap_1500ms",
+      "strict": {
+        "ref_tokens": 13,
+        "hits": 11,
+        "substitutions": 2,
+        "deletions": 0,
+        "insertions": 0,
+        "wer": 0.1538,
+        "cer": 0.0303
+      },
+      "normalized": {
+        "ref_tokens": 13,
+        "hits": 13,
+        "substitutions": 0,
+        "deletions": 0,
+        "insertions": 0,
+        "wer": 0.0,
+        "cer": 0.0,
+        "cer_space_insensitive": 0.0
+      },
+      "recognition_only_wer": 0.0,
+      "region_summary": {}
+    }
+  },
+  "negative_control": {
+    "description": "H4 reference vs an unrelated Hindi transcript (P2-STT-11): transliteration-aware WER should be high if loose matching is not producing false matches",
+    "transliteration_aware_wer": 0.9,
+    "hits": 2
+  }
+}
