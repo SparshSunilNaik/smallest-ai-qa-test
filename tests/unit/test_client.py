@@ -90,3 +90,19 @@ def test_missing_key_refuses_authenticated_request(settings):
         with pytest.raises(HaltRun, match="not configured"):
             c.request("A", "GET", "/p")
     assert ledger_for(settings).used == 0
+
+
+
+def test_connection_phases_from_trace_events():
+    from smallest_qa.client import connection_phases
+
+    fresh = [("connection.connect_tcp.started", 1.0), ("connection.connect_tcp.complete", 31.0),
+             ("connection.start_tls.started", 31.0), ("connection.start_tls.complete", 101.0),
+             ("http11.send_request_headers.started", 101.5), ("http11.send_request_body.complete", 102.0),
+             ("http11.receive_response_headers.complete", 352.0)]
+    p = connection_phases(fresh)
+    assert p == {"connection_reused": 0.0, "tcp_connect_incl_dns": 30.0, "tls_handshake": 70.0, "send_request": 0.5,
+                 "server_wait_incl_rtt": 250.0}
+    reused = connection_phases(fresh[4:])
+    assert reused["connection_reused"] == 1.0 and "tls_handshake" not in reused
+    assert connection_phases([]) == {}

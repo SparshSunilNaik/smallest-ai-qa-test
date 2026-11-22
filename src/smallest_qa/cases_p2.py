@@ -818,7 +818,7 @@ def param_rate(rate: int) -> Callable[[Context, CaseResult], None]:
 
 def latency(text: str, n: int, *, fresh: bool = False) -> Callable[[Context, CaseResult], None]:
     def run(ctx: Context, res: CaseResult) -> None:
-        ttfb, voiced, total, rtf = [], [], [], []
+        ttfb, voiced, total, rtf, samples = [], [], [], [], []
         for i in range(n):
             ex, obs = api.stream_sse(ctx.client, res.case_id, api.tts_body(text, output_format="pcm"),
                                      fresh_connection=fresh)
@@ -833,11 +833,24 @@ def latency(text: str, n: int, *, fresh: bool = False) -> Callable[[Context, Cas
                     voiced.append(v)
                 dur = len(obs.audio) / 2 / 24000
                 rtf.append(dur / (ex.duration_ms / 1000))
+            samples.append({
+                "sample": i + 1, "status": ex.status, "transport_error": ex.error,
+                "request_id": ex.request_ids().get("x-request-id"), "chars": len(text),
+                "ttfb_ms": ex.ttfb_ms and round(ex.ttfb_ms, 1),
+                "first_audio_event_ms": obs.first_audio_ms and round(obs.first_audio_ms, 1),
+                "first_voiced_audio_ms": _first_voiced_ms(obs, 24000) if obs.audio_chunks else None,
+                "done_event_ms": obs.done_ms and round(obs.done_ms, 1),
+                "total_ms": ex.duration_ms and round(ex.duration_ms, 1),
+                "audio_s": round(len(obs.audio) / 2 / 24000, 3), "audio_chunks": len(obs.audio_chunks),
+                "fresh_client": fresh, **{k: v for k, v in ex.extra_timings.items()
+                                          if k in ("connection_reused", "tcp_connect_incl_dns", "tls_handshake",
+                                                   "send_request", "server_wait_incl_rtt")}})
         res.metrics.update({"chars": len(text), "fresh_connection": fresh,
                             "method": "sequential, concurrency 1, client wall clock incl. network; nearest-rank p95",
                             "ttfb_ms": summarize(ttfb), "first_voiced_audio_ms": summarize(voiced),
                             "total_ms": summarize(total), "audio_s_per_wall_s": summarize(rtf),
-                            "raw_ttfb_ms": [round(v, 1) for v in ttfb], "raw_total_ms": [round(v, 1) for v in total]})
+                            "raw_ttfb_ms": [round(v, 1) for v in ttfb], "raw_total_ms": [round(v, 1) for v in total],
+                            "samples": samples})
         res.notes.append(f"n={len(total)}. Docs state 'First chunk arrives in ~100ms' (streaming page) and TTFB "
                          "200 ms (model cards); client-side numbers include network RTT and cannot confirm or "
                          "refute either.")
@@ -1072,11 +1085,11 @@ P2_CASES: list[CaseSpec] = [
     # ---------------- Batch 6 (P2): latency ---------------------------------------------------------------
     _c("P2-LAT-01", "6", "P2", "Latency", "SSE TTFB, 19-char text, n=3", EXPLORATORY, "measurement only",
        (D.TTS_STREAMING,), 3, latency(T_20, 3), synth_chars=3 * len(T_20)),
-    _c("P2-LAT-02", "6", "P2", "Latency", "SSE TTFB, ~110-char text, n=5", EXPLORATORY, "measurement only",
+    _c("P2-LAT-02", "6", "P2", "Latency", "SSE TTFB, 110-char text, n=5", EXPLORATORY, "measurement only",
        (D.TTS_STREAMING,), 5, latency(T_140, 5), synth_chars=5 * len(T_140)),
-    _c("P2-LAT-03", "6", "P2", "Latency", "SSE TTFB, ~500-char text, n=3", EXPLORATORY, "measurement only",
+    _c("P2-LAT-03", "6", "P2", "Latency", "SSE TTFB, 492-char text, n=3", EXPLORATORY, "measurement only",
        (D.TTS_STREAMING,), 3, latency(T_500, 3), synth_chars=3 * len(T_500)),
-    _c("P2-LAT-04", "6", "P2", "Latency", "SSE TTFB on a fresh TCP/TLS connection, n=2", EXPLORATORY,
+    _c("P2-LAT-04", "6", "P2", "Latency", "SSE TTFB on a fresh TCP/TLS connection, 110-char text, n=2", EXPLORATORY,
        "measurement only (cold vs warm)", (D.TTS_STREAMING,), 2, latency(T_140, 2, fresh=True),
        synth_chars=2 * len(T_140)),
 ]

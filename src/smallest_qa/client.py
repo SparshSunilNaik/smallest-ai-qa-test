@@ -114,6 +114,32 @@ class Exchange:
         }
 
 
+def connection_phases(events: list[tuple[str, float]]) -> dict[str, float]:
+    """Split one request into phases from httpcore trace events (ms since send start, monotonic clock).
+    connect_tcp includes DNS resolution. server_wait = request fully sent -> response headers received, i.e.
+    server processing plus one network round trip; it cannot be separated further client-side.
+    'connection_reused' = 1.0 when no TCP connect happened for this request."""
+    t = {}
+    for name, ms in events:
+        t.setdefault(name, ms)  # first occurrence
+
+    def span(a: str, b: str) -> float | None:
+        return round(t[b] - t[a], 1) if a in t and b in t else None
+
+    out: dict[str, float] = {"connection_reused": 0.0 if "connection.connect_tcp.started" in t else 1.0}
+    for key, a, b in (("tcp_connect_incl_dns", "connection.connect_tcp.started", "connection.connect_tcp.complete"),
+                      ("tls_handshake", "connection.start_tls.started", "connection.start_tls.complete"),
+                      ("send_request", "http11.send_request_headers.started", "http11.send_request_body.complete"),
+                      ("server_wait_incl_rtt", "http11.send_request_body.complete",
+                       "http11.receive_response_headers.complete")):
+        v = span(a, b)
+        if v is not None:
+            out[key] = v
+    if not events:
+        out.pop("connection_reused")  # no instrumentation (e.g. mock transport)
+    return out
+
+
 def _audio_seconds(content: bytes) -> float:
     """Best-effort audio duration for spend estimates (WAV header, else 16 kHz 16-bit assumption)."""
     from .audio import AudioFormatError, parse_wav
@@ -285,10 +311,16 @@ class QAClient:
         )
         cap = max_bytes or self.settings.max_response_bytes
         http = self._new_http() if fresh_connection else self._http
-        t0 = time.perf_counter()
+        t0 = time.perf_counter()  # perf_counter is monotonic
+        trace_events: list[tuple[str, float]] = []
+
+        def _trace(name: str, _info: dict) -> None:
+            trace_events.append((name, (time.perf_counter() - t0) * 1000))
+
         try:
             request = http.build_request(
-                method, path, params=params, json=json_body, content=content, headers=req_headers
+                method, path, params=params, json=json_body, content=content, headers=req_headers,
+                extensions={"trace": _trace},
             )
             response = http.send(request, stream=True)
             try:
@@ -327,5 +359,6 @@ class QAClient:
             if fresh_connection:
                 http.close()
         ex.duration_ms = (time.perf_counter() - t0) * 1000
+        ex.extra_timings.update(connection_phases(trace_events))
         self.finished(ex, expect_auth_ok=expect_auth_ok and auth == "valid")
         return ex

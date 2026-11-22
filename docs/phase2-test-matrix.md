@@ -100,9 +100,9 @@ Provenance: **documented** deviations can become defects after reproduction; **q
 | ID | Pri | Area | Test | Provenance | Documented / expected behaviour | Source | Req |
 |---|---|---|---|---|---|---|---|
 | P2-LAT-01 | P2 | Latency | SSE TTFB, 19-char text, n=3 | exploratory | measurement only | models/text-to-speech/streaming | 3 |
-| P2-LAT-02 | P2 | Latency | SSE TTFB, ~110-char text, n=5 | exploratory | measurement only | models/text-to-speech/streaming | 5 |
-| P2-LAT-03 | P2 | Latency | SSE TTFB, ~500-char text, n=3 | exploratory | measurement only | models/text-to-speech/streaming | 3 |
-| P2-LAT-04 | P2 | Latency | SSE TTFB on a fresh TCP/TLS connection, n=2 | exploratory | measurement only (cold vs warm) | models/text-to-speech/streaming | 2 |
+| P2-LAT-02 | P2 | Latency | SSE TTFB, 110-char text, n=5 | exploratory | measurement only | models/text-to-speech/streaming | 5 |
+| P2-LAT-03 | P2 | Latency | SSE TTFB, 492-char text, n=3 | exploratory | measurement only | models/text-to-speech/streaming | 3 |
+| P2-LAT-04 | P2 | Latency | SSE TTFB on a fresh TCP/TLS connection, 110-char text, n=2 | exploratory | measurement only (cold vs warm) | models/text-to-speech/streaming | 2 |
 
 ## Batch 3h (15 requests, est. $0.024)
 
