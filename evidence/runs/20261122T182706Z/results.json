@@ -1,0 +1,709 @@
+{
+  "run_id": "20261122T182706Z",
+  "phase": 2,
+  "batch": "repro-q6",
+  "started": {
+    "utc": "2026-11-22T18:27:09.295+00:00",
+    "ist": "2026-11-22T23:57:09.295+05:30"
+  },
+  "finished": {
+    "utc": "2026-11-22T18:27:12.253+00:00",
+    "ist": "2026-11-22T23:57:12.253+05:30"
+  },
+  "harness_version": "0.1.0",
+  "environment": {
+    "python": "3.13.13",
+    "httpx": "0.28.1",
+    "platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
+    "base_url": "https://api.smallest.ai"
+  },
+  "api_key_configured": true,
+  "halted": null,
+  "requests_this_run": 2,
+  "ledger_used_after_run": 123,
+  "ledger_cap": 128,
+  "fixture": {
+    "path": "fixtures/audio/stt_en_16k.wav",
+    "generator": "macOS say -v Samantha --file-format=WAVE --data-format=LEI16@16000",
+    "reference_text": "The quick brown fox jumps over the lazy dog. Speech recognition quality is measured by comparing the words.",
+    "sha256": "cc3d3e75a72ca66f64fba9607342328861d6c3171eba0d8fe2dea5a7aa357f01",
+    "bytes": 205846,
+    "duration_s": 6.305,
+    "sample_rate": 16000
+  },
+  "p2_fixtures": {
+    "gap_multi_q6": {
+      "fixture_id": "gap_multi_q6",
+      "recipe": {
+        "fixture_id": "gap_multi_q6",
+        "category": "timestamps",
+        "description": "Four phrases separated by 0.8 s, 1.2 s and 1.6 s inserted silences",
+        "language": "en",
+        "reference": "Please call me back on Monday about the glass order today.",
+        "parts": [
+          [
+            "say",
+            "Samantha",
+            "Please call me back"
+          ],
+          [
+            "silence",
+            0.8
+          ],
+          [
+            "say",
+            "Samantha",
+            "on Monday"
+          ],
+          [
+            "silence",
+            1.2
+          ],
+          [
+            "say",
+            "Samantha",
+            "about the glass"
+          ],
+          [
+            "silence",
+            1.6
+          ],
+          [
+            "say",
+            "Samantha",
+            "order today."
+          ]
+        ],
+        "post": [],
+        "source_file": null,
+        "expected_speakers": null
+      },
+      "path": "fixtures/audio/p2/gap_multi_q6.wav",
+      "sha256": "a6a555740da64a67229daa786f1802e9de70be27c6131a1422986f7ea20785aa",
+      "bytes": 252512,
+      "duration_s": 7.89,
+      "sample_rate": 16000,
+      "segments": [
+        {
+          "kind": "say",
+          "start_s": 0.0,
+          "end_s": 1.333,
+          "voiced_start_s": 0.0,
+          "voiced_end_s": 1.113
+        },
+        {
+          "kind": "silence",
+          "start_s": 1.333,
+          "end_s": 2.133
+        },
+        {
+          "kind": "say",
+          "start_s": 2.133,
+          "end_s": 2.964,
+          "voiced_start_s": 2.133,
+          "voiced_end_s": 2.744
+        },
+        {
+          "kind": "silence",
+          "start_s": 2.964,
+          "end_s": 4.164
+        },
+        {
+          "kind": "say",
+          "start_s": 4.164,
+          "end_s": 5.287,
+          "voiced_start_s": 4.164,
+          "voiced_end_s": 5.067
+        },
+        {
+          "kind": "silence",
+          "start_s": 5.287,
+          "end_s": 6.887
+        },
+        {
+          "kind": "say",
+          "start_s": 6.887,
+          "end_s": 7.89,
+          "voiced_start_s": 6.887,
+          "voiced_end_s": 7.69
+        }
+      ],
+      "analysis": {
+        "samples": 126234,
+        "duration_s": 7.89,
+        "rms_dbfs": -19.2,
+        "peak": 25451,
+        "clipped_fraction": 0.0,
+        "leading_silence_ms": 0,
+        "trailing_silence_ms": 200,
+        "longest_internal_silence_ms": 1800,
+        "all_silent": false
+      }
+    }
+  },
+  "phase_est_usd_after_run": 0.8627,
+  "listening_queue": [],
+  "cases": [
+    {
+      "case_id": "P2-Q6-01",
+      "title": "Q6: word timestamps around 0.8/1.2/1.6 s pauses (pulse)",
+      "area": "STT reproduction",
+      "expected_behavior": "word end times vs measured speech offsets at three pauses; timestamp accuracy is not documented",
+      "doc_refs": [
+        "https://docs.smallest.ai/api-reference/models/speech-to-text/transcribe"
+      ],
+      "classification": "Passed",
+      "checks": [
+        {
+          "name": "HTTP 200",
+          "passed": true,
+          "expected": "200",
+          "actual": "200",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/api-reference/models/speech-to-text/transcribe"
+        }
+      ],
+      "metrics": {
+        "fixture": {
+          "fixture_id": "gap_multi_q6",
+          "recipe": {
+            "fixture_id": "gap_multi_q6",
+            "category": "timestamps",
+            "description": "Four phrases separated by 0.8 s, 1.2 s and 1.6 s inserted silences",
+            "language": "en",
+            "reference": "Please call me back on Monday about the glass order today.",
+            "parts": [
+              [
+                "say",
+                "Samantha",
+                "Please call me back"
+              ],
+              [
+                "silence",
+                0.8
+              ],
+              [
+                "say",
+                "Samantha",
+                "on Monday"
+              ],
+              [
+                "silence",
+                1.2
+              ],
+              [
+                "say",
+                "Samantha",
+                "about the glass"
+              ],
+              [
+                "silence",
+                1.6
+              ],
+              [
+                "say",
+                "Samantha",
+                "order today."
+              ]
+            ],
+            "post": [],
+            "source_file": null,
+            "expected_speakers": null
+          },
+          "path": "fixtures/audio/p2/gap_multi_q6.wav",
+          "sha256": "a6a555740da64a67229daa786f1802e9de70be27c6131a1422986f7ea20785aa",
+          "bytes": 252512,
+          "duration_s": 7.89,
+          "sample_rate": 16000,
+          "segments": [
+            {
+              "kind": "say",
+              "start_s": 0.0,
+              "end_s": 1.333,
+              "voiced_start_s": 0.0,
+              "voiced_end_s": 1.113
+            },
+            {
+              "kind": "silence",
+              "start_s": 1.333,
+              "end_s": 2.133
+            },
+            {
+              "kind": "say",
+              "start_s": 2.133,
+              "end_s": 2.964,
+              "voiced_start_s": 2.133,
+              "voiced_end_s": 2.744
+            },
+            {
+              "kind": "silence",
+              "start_s": 2.964,
+              "end_s": 4.164
+            },
+            {
+              "kind": "say",
+              "start_s": 4.164,
+              "end_s": 5.287,
+              "voiced_start_s": 4.164,
+              "voiced_end_s": 5.067
+            },
+            {
+              "kind": "silence",
+              "start_s": 5.287,
+              "end_s": 6.887
+            },
+            {
+              "kind": "say",
+              "start_s": 6.887,
+              "end_s": 7.89,
+              "voiced_start_s": 6.887,
+              "voiced_end_s": 7.69
+            }
+          ],
+          "analysis": {
+            "samples": 126234,
+            "duration_s": 7.89,
+            "rms_dbfs": -19.2,
+            "peak": 25451,
+            "clipped_fraction": 0.0,
+            "leading_silence_ms": 0,
+            "trailing_silence_ms": 200,
+            "longest_internal_silence_ms": 1800,
+            "all_silent": false
+          }
+        },
+        "words": [
+          {
+            "start": 0,
+            "end": 0.56,
+            "word": "Please",
+            "confidence": 0.9431
+          },
+          {
+            "start": 0.56,
+            "end": 0.8,
+            "word": "call",
+            "confidence": 0.9999
+          },
+          {
+            "start": 0.8,
+            "end": 1.12,
+            "word": "me",
+            "confidence": 0.9998
+          },
+          {
+            "start": 1.12,
+            "end": 2.08,
+            "word": "back",
+            "confidence": 1
+          },
+          {
+            "start": 2.08,
+            "end": 2.32,
+            "word": "on",
+            "confidence": 0.9746
+          },
+          {
+            "start": 2.32,
+            "end": 4.08,
+            "word": "Monday",
+            "confidence": 0.9149
+          },
+          {
+            "start": 4.08,
+            "end": 4.48,
+            "word": "about",
+            "confidence": 0.9999
+          },
+          {
+            "start": 4.48,
+            "end": 4.72,
+            "word": "the",
+            "confidence": 1
+          },
+          {
+            "start": 4.72,
+            "end": 6.72,
+            "word": "glass",
+            "confidence": 0.9638
+          },
+          {
+            "start": 6.8,
+            "end": 7.28,
+            "word": "order",
+            "confidence": 0.7347
+          },
+          {
+            "start": 7.28,
+            "end": 7.6,
+            "word": "today.",
+            "confidence": 0.9862
+          }
+        ],
+        "transcription": "Please call me back on Monday about the glass order today.",
+        "reference": "Please call me back on Monday about the glass order today.",
+        "wer": 0.0,
+        "cer": 0.0,
+        "audio_s": 7.89,
+        "latency_ms": 801
+      },
+      "notes": [],
+      "requests": [
+        {
+          "case_id": "P2-Q6-01",
+          "ledger_seq": 122,
+          "timestamp_utc": "2026-11-22T18:27:09.317+00:00",
+          "timestamp_ist": "2026-11-22T23:57:09.317+05:30",
+          "method": "POST",
+          "endpoint": "/waves/v1/stt/",
+          "query_params": {
+            "model": "pulse",
+            "language": "en",
+            "word_timestamps": "true"
+          },
+          "request": {
+            "binary_body": {
+              "bytes": 252512,
+              "sha256": "a6a555740da64a67229daa786f1802e9de70be27c6131a1422986f7ea20785aa"
+            },
+            "headers": {
+              "Content-Type": "application/octet-stream",
+              "Authorization": "[REDACTED]"
+            }
+          },
+          "auth_mode": "valid",
+          "status": 200,
+          "content_type": "application/json; charset=utf-8",
+          "response_bytes": 940,
+          "response_truncated_at_cap": false,
+          "response_sha256": "dbf6d75b063f83e22093942beca59fdff14ea57963589a86a78f375d788808f8",
+          "time_to_headers_ms": 800.7,
+          "ttfb_ms": 801.0,
+          "duration_ms": 801.3,
+          "extra_timings_ms": {
+            "connection_reused": 0.0,
+            "tcp_connect_incl_dns": 109.2,
+            "tls_handshake": 140.4,
+            "send_request": 65.3,
+            "server_wait_incl_rtt": 483.0
+          },
+          "request_ids": {
+            "x-request-id": "0eae2c70-03b7-473f-ad91-716f062ced3b"
+          },
+          "response_headers": {
+            "date": "Sun, 22 Nov 2026 18:27:10 GMT",
+            "content-type": "application/json; charset=utf-8",
+            "content-length": "940",
+            "connection": "keep-alive",
+            "set-cookie": "[REDACTED]",
+            "x-request-id": "0eae2c70-03b7-473f-ad91-716f062ced3b",
+            "cache-control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+            "pragma": "no-cache",
+            "expires": "0",
+            "strict-transport-security": "max-age=31536000; includeSubDomains",
+            "content-security-policy": "default-src 'self';script-src 'self';style-src 'self' 'unsafe-inline';img-src 'self' data: https://d1o0umtiv0iuvd.cloudfront.net https://d4a5s42qh2351.cloudfront.net https://waves-history.s3.ap-south-1.amazonaws.com https://waves-history-dev.s3.ap-south-1.amazonaws.com https://db2izkvf1oocn.cloudfront.net https://media.plivo.com https://dlw9ti8dmuxc7.cloudfront.net;connect-src 'self';frame-ancestors 'none';upgrade-insecure-requests;base-uri 'self';font-src 'self' https: data:;form-action 'self';object-src 'none';script-src-attr 'none'",
+            "cross-origin-opener-policy": "same-origin",
+            "cross-origin-resource-policy": "same-origin",
+            "origin-agent-cluster": "?1",
+            "referrer-policy": "no-referrer",
+            "x-content-type-options": "nosniff",
+            "x-dns-prefetch-control": "off",
+            "x-download-options": "noopen",
+            "x-frame-options": "SAMEORIGIN",
+            "x-permitted-cross-domain-policies": "none",
+            "x-xss-protection": "0",
+            "vary": "Origin",
+            "access-control-allow-credentials": "true",
+            "access-control-expose-headers": "Set-Cookie,X-Smallest-Prompt-Guard,X-Request-Id,Content-Disposition",
+            "etag": "W/\"3ac-s9OUUIPo44TeZJt6M8qnyJvzGNk\""
+          },
+          "body_excerpt": "{\"status\":\"success\",\"transcription\":\"Please call me back on Monday about the glass order today.\",\"words\":[{\"start\":0,\"end\":0.56,\"word\":\"Please\",\"confidence\":0.9431},{\"start\":0.56,\"end\":0.8,\"word\":\"call\",\"confidence\":0.9999},{\"start\":0.8,\"end\":1.12,\"word\":\"me\",\"confidence\":0.9998},{\"start\":1.12,\"end\":2.08,\"word\":\"back\",\"confidence\":1},{\"start\":2.08,\"end\":2.32,\"word\":\"on\",\"confidence\":0.9746},{\"start\":2.32,\"end\":4.08,\"word\":\"Monday\",\"confidence\":0.9149},{\"start\":4.08,\"end\":4.48,\"word\":\"about\",\"confidence\":0.9999},{\"start\":4.48,\"end\":4.72,\"word\":\"the\",\"confidence\":1},{\"start\":4.72,\"end\":6.72,\"wor...[truncated]",
+          "transport_error": null,
+          "cancelled_by_client": false,
+          "fresh_connection": false,
+          "body_chunks": 1
+        }
+      ]
+    },
+    {
+      "case_id": "P2-Q6-02",
+      "title": "Q6: same clip on pulse-pro (same-audio cross-model)",
+      "area": "STT reproduction",
+      "expected_behavior": "as P2-Q6-01",
+      "doc_refs": [
+        "https://docs.smallest.ai/api-reference/models/speech-to-text/transcribe"
+      ],
+      "classification": "Passed",
+      "checks": [
+        {
+          "name": "HTTP 200",
+          "passed": true,
+          "expected": "200",
+          "actual": "200",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/api-reference/models/speech-to-text/transcribe"
+        }
+      ],
+      "metrics": {
+        "fixture": {
+          "fixture_id": "gap_multi_q6",
+          "recipe": {
+            "fixture_id": "gap_multi_q6",
+            "category": "timestamps",
+            "description": "Four phrases separated by 0.8 s, 1.2 s and 1.6 s inserted silences",
+            "language": "en",
+            "reference": "Please call me back on Monday about the glass order today.",
+            "parts": [
+              [
+                "say",
+                "Samantha",
+                "Please call me back"
+              ],
+              [
+                "silence",
+                0.8
+              ],
+              [
+                "say",
+                "Samantha",
+                "on Monday"
+              ],
+              [
+                "silence",
+                1.2
+              ],
+              [
+                "say",
+                "Samantha",
+                "about the glass"
+              ],
+              [
+                "silence",
+                1.6
+              ],
+              [
+                "say",
+                "Samantha",
+                "order today."
+              ]
+            ],
+            "post": [],
+            "source_file": null,
+            "expected_speakers": null
+          },
+          "path": "fixtures/audio/p2/gap_multi_q6.wav",
+          "sha256": "a6a555740da64a67229daa786f1802e9de70be27c6131a1422986f7ea20785aa",
+          "bytes": 252512,
+          "duration_s": 7.89,
+          "sample_rate": 16000,
+          "segments": [
+            {
+              "kind": "say",
+              "start_s": 0.0,
+              "end_s": 1.333,
+              "voiced_start_s": 0.0,
+              "voiced_end_s": 1.113
+            },
+            {
+              "kind": "silence",
+              "start_s": 1.333,
+              "end_s": 2.133
+            },
+            {
+              "kind": "say",
+              "start_s": 2.133,
+              "end_s": 2.964,
+              "voiced_start_s": 2.133,
+              "voiced_end_s": 2.744
+            },
+            {
+              "kind": "silence",
+              "start_s": 2.964,
+              "end_s": 4.164
+            },
+            {
+              "kind": "say",
+              "start_s": 4.164,
+              "end_s": 5.287,
+              "voiced_start_s": 4.164,
+              "voiced_end_s": 5.067
+            },
+            {
+              "kind": "silence",
+              "start_s": 5.287,
+              "end_s": 6.887
+            },
+            {
+              "kind": "say",
+              "start_s": 6.887,
+              "end_s": 7.89,
+              "voiced_start_s": 6.887,
+              "voiced_end_s": 7.69
+            }
+          ],
+          "analysis": {
+            "samples": 126234,
+            "duration_s": 7.89,
+            "rms_dbfs": -19.2,
+            "peak": 25451,
+            "clipped_fraction": 0.0,
+            "leading_silence_ms": 0,
+            "trailing_silence_ms": 200,
+            "longest_internal_silence_ms": 1800,
+            "all_silent": false
+          }
+        },
+        "words": [
+          {
+            "word": "Please",
+            "start": 0.16,
+            "end": 0.24,
+            "confidence": 0.9797
+          },
+          {
+            "word": "call",
+            "start": 0.4,
+            "end": 0.48,
+            "confidence": 0.9203
+          },
+          {
+            "word": "me",
+            "start": 0.72,
+            "end": 0.8,
+            "confidence": 0.9878
+          },
+          {
+            "word": "back",
+            "start": 0.96,
+            "end": 1.04,
+            "confidence": 0.9452
+          },
+          {
+            "word": "on",
+            "start": 2.08,
+            "end": 2.16,
+            "confidence": 0.9773
+          },
+          {
+            "word": "Monday.",
+            "start": 2.32,
+            "end": 3.04,
+            "confidence": 0.9738
+          },
+          {
+            "word": "About",
+            "start": 4.16,
+            "end": 4.24,
+            "confidence": 0.9373
+          },
+          {
+            "word": "the",
+            "start": 4.48,
+            "end": 4.56,
+            "confidence": 0.9308
+          },
+          {
+            "word": "glass.",
+            "start": 4.64,
+            "end": 6.64,
+            "confidence": 0.9526
+          },
+          {
+            "word": "Order",
+            "start": 6.8,
+            "end": 6.88,
+            "confidence": 0.9479
+          },
+          {
+            "word": "today.",
+            "start": 7.44,
+            "end": 7.83,
+            "confidence": 0.9101
+          }
+        ],
+        "transcription": "Please call me back on Monday. About the glass. Order today.",
+        "reference": "Please call me back on Monday about the glass order today.",
+        "wer": 0.0,
+        "cer": 0.0,
+        "audio_s": 7.89,
+        "latency_ms": 624
+      },
+      "notes": [],
+      "requests": [
+        {
+          "case_id": "P2-Q6-02",
+          "ledger_seq": 123,
+          "timestamp_utc": "2026-11-22T18:27:11.628+00:00",
+          "timestamp_ist": "2026-11-22T23:57:11.628+05:30",
+          "method": "POST",
+          "endpoint": "/waves/v1/stt/",
+          "query_params": {
+            "model": "pulse-pro",
+            "language": "en",
+            "word_timestamps": "true"
+          },
+          "request": {
+            "binary_body": {
+              "bytes": 252512,
+              "sha256": "a6a555740da64a67229daa786f1802e9de70be27c6131a1422986f7ea20785aa"
+            },
+            "headers": {
+              "Content-Type": "application/octet-stream",
+              "Authorization": "[REDACTED]"
+            }
+          },
+          "auth_mode": "valid",
+          "status": 200,
+          "content_type": "application/json; charset=utf-8",
+          "response_bytes": 944,
+          "response_truncated_at_cap": false,
+          "response_sha256": "39e5724a11368160917332406f85076f2e8dbeb515d652f176840103946dfc39",
+          "time_to_headers_ms": 623.1,
+          "ttfb_ms": 623.4,
+          "duration_ms": 623.6,
+          "extra_timings_ms": {
+            "connection_reused": 1.0,
+            "send_request": 1.0,
+            "server_wait_incl_rtt": 619.7
+          },
+          "request_ids": {
+            "x-request-id": "65d2c559-81a1-44c5-8464-c7b83464679f",
+            "body.request_id": "4cd63715-7b79-4514-86f7-159523183a2e"
+          },
+          "response_headers": {
+            "date": "Sun, 22 Nov 2026 18:27:12 GMT",
+            "content-type": "application/json; charset=utf-8",
+            "content-length": "944",
+            "connection": "keep-alive",
+            "set-cookie": "[REDACTED]",
+            "x-request-id": "65d2c559-81a1-44c5-8464-c7b83464679f",
+            "cache-control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+            "pragma": "no-cache",
+            "expires": "0",
+            "strict-transport-security": "max-age=31536000; includeSubDomains",
+            "content-security-policy": "default-src 'self';script-src 'self';style-src 'self' 'unsafe-inline';img-src 'self' data: https://d1o0umtiv0iuvd.cloudfront.net https://d4a5s42qh2351.cloudfront.net https://waves-history.s3.ap-south-1.amazonaws.com https://waves-history-dev.s3.ap-south-1.amazonaws.com https://db2izkvf1oocn.cloudfront.net https://media.plivo.com https://dlw9ti8dmuxc7.cloudfront.net;connect-src 'self';frame-ancestors 'none';upgrade-insecure-requests;base-uri 'self';font-src 'self' https: data:;form-action 'self';object-src 'none';script-src-attr 'none'",
+            "cross-origin-opener-policy": "same-origin",
+            "cross-origin-resource-policy": "same-origin",
+            "origin-agent-cluster": "?1",
+            "referrer-policy": "no-referrer",
+            "x-content-type-options": "nosniff",
+            "x-dns-prefetch-control": "off",
+            "x-download-options": "noopen",
+            "x-frame-options": "SAMEORIGIN",
+            "x-permitted-cross-domain-policies": "none",
+            "x-xss-protection": "0",
+            "vary": "Origin",
+            "access-control-allow-credentials": "true",
+            "access-control-expose-headers": "Set-Cookie,X-Smallest-Prompt-Guard,X-Request-Id,Content-Disposition",
+            "etag": "W/\"3b0-GOd7INWqsR0ur3WhZcLO1rSlnpI\""
+          },
+          "body_excerpt": "{\"status\":\"success\",\"transcription\":\"Please call me back on Monday. About the glass. Order today.\",\"words\":[{\"word\":\"Please\",\"start\":0.16,\"end\":0.24,\"confidence\":0.9797},{\"word\":\"call\",\"start\":0.4,\"end\":0.48,\"confidence\":0.9203},{\"word\":\"me\",\"start\":0.72,\"end\":0.8,\"confidence\":0.9878},{\"word\":\"back\",\"start\":0.96,\"end\":1.04,\"confidence\":0.9452},{\"word\":\"on\",\"start\":2.08,\"end\":2.16,\"confidence\":0.9773},{\"word\":\"Monday.\",\"start\":2.32,\"end\":3.04,\"confidence\":0.9738},{\"word\":\"About\",\"start\":4.16,\"end\":4.24,\"confidence\":0.9373},{\"word\":\"the\",\"start\":4.48,\"end\":4.56,\"confidence\":0.9308},{\"word\":\"glas...[truncated]",
+          "transport_error": null,
+          "cancelled_by_client": false,
+          "fresh_connection": false,
+          "body_chunks": 1
+        }
+      ]
+    }
+  ]
+}

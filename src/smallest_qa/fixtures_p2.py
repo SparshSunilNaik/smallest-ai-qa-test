@@ -75,6 +75,17 @@ RECIPES: tuple[Recipe, ...] = (
     Recipe("gap_1500ms", "timestamps", "Two sentences separated by exactly 1.5 s inserted silence", "en",
            f"{T_GAP_1} {T_GAP_2}", (("say", "Samantha", T_GAP_1), ("silence", 1.5), ("say", "Samantha", T_GAP_2))),
 )
+# Reproduction fixture for Q6 (approved 2026-11-22): three pauses of different length after words with different
+# final sounds (plosive "back", nasal "Monday", fricative "glass").
+Q6_SEGMENTS = ("Please call me back", "on Monday", "about the glass", "order today.")
+Q6_PAUSES = (0.8, 1.2, 1.6)
+RECIPES = RECIPES + (
+    Recipe("gap_multi_q6", "timestamps", "Four phrases separated by 0.8 s, 1.2 s and 1.6 s inserted silences", "en",
+           " ".join(Q6_SEGMENTS),
+           (("say", "Samantha", Q6_SEGMENTS[0]), ("silence", Q6_PAUSES[0]), ("say", "Samantha", Q6_SEGMENTS[1]),
+            ("silence", Q6_PAUSES[1]), ("say", "Samantha", Q6_SEGMENTS[2]), ("silence", Q6_PAUSES[2]),
+            ("say", "Samantha", Q6_SEGMENTS[3]))),
+)
 RECIPES_BY_ID = {r.fixture_id: r for r in RECIPES}
 
 

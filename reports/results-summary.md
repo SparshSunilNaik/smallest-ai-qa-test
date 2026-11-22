@@ -1,16 +1,16 @@
 # Results summary (auto-generated from evidence/runs)
 
-- Runs: 11; cumulative API requests (ledger): 121/128
+- Runs: 13; cumulative API requests (ledger): 124/128
 - Counts are per test case. Several cases can share one root cause; consolidated findings, severity and interpretation are in `reports/qa-report-draft.md`.
 
 ## Classification counts
 
-- Passed: 64
+- Passed: 66
 - Confirmed defect: 6
 - Candidate finding requiring reproduction: 19
 - Expected behavior: 0
 - Documentation ambiguity: 1
-- Inconclusive: 0
+- Inconclusive: 1
 - Not tested: 0
 
 ## Per case (latest executed observation)
@@ -58,6 +58,9 @@
 | P2-PAR-01 | speed=0.5 | Passed | 1 | 20261122T180703Z | 200 |
 | P2-PAR-02 | speed=2.0 | Candidate finding requiring reproduction | 1 | 20261122T180703Z | 200 |
 | P2-PAR-03 | sample_rate=8000 WAV header | Passed | 1 | 20261122T180703Z | 200 |
+| P2-Q1-01 | Q1: H4 Hinglish audio via REAL-TIME STT, language=hi | Inconclusive | 1 | 20261122T182734Z | 101 |
+| P2-Q6-01 | Q6: word timestamps around 0.8/1.2/1.6 s pauses (pulse) | Passed | 1 | 20261122T182706Z | 200 |
+| P2-Q6-02 | Q6: same clip on pulse-pro (same-audio cross-model) | Passed | 1 | 20261122T182706Z | 200 |
 | P2-SDK-01 | smallestai 5.14.0 synthesize_tts (quickstart parameters) | Passed | 1 | 20261122T171937Z | 200 |
 | P2-SDK-02 | smallestai 5.14.0 synthesize_sse_tts yields audio | Confirmed defect | 2 | 20261122T172115Z | 200 |
 | P2-SDK-03 | smallestai 5.14.0 speech_to_text.transcribe | Passed | 1 | 20261122T171937Z | 200 |

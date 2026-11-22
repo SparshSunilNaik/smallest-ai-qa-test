@@ -1180,3 +1180,74 @@ def batch_cases(batch: str) -> list[CaseSpec]:  # noqa: F811 - extends the earli
     if batch in BATCH_VARIANTS:
         return [P2_BY_ID[i] for i in BATCH_VARIANTS[batch]]
     return [c for c in P2_CASES if c.batch == batch]
+
+
+# ============================================================================= Reproduction workstream (approved)
+
+def _q1_realtime(ctx: Context, res: CaseResult) -> None:
+    """Q1: Hinglish English-word script in REAL-TIME STT (the mode the docs describe), same H4 audio."""
+    from .audio import wav_pcm16
+    from .human import PROMPTS_BY_ID, load_approved_audio
+    from .translit import is_devanagari, loose_key, transliterate_word
+    from .ws import run_ws_stt
+
+    root = ctx.state.get("human_dir")
+    got = load_approved_audio("H4", root) if root else load_approved_audio("H4")
+    if got is None:
+        res.notes.append("Not sent: H4 approval missing or stale")
+        res.classification = NOT_TESTED
+        return
+    wav, meta = got
+    pcm, rate = wav_pcm16(wav)
+    params = {"model": "pulse", "language": "hi", "encoding": "linear16", "sample_rate": str(rate)}
+    ex, obs = run_ws_stt(ctx.client, res.case_id, pcm, params)
+    res.exchanges.append(ex)
+    ctx.save_private(f"{res.case_id}-realtime-messages.json", json.dumps(obs.messages, ensure_ascii=False).encode())
+    res.check("WebSocket handshake succeeded", ex.status == 101, "101", ex.status, DOCUMENTED, D_RT_STT)
+    res.check("session ends with is_last=true after close_stream", obs.is_last_ms is not None and not obs.timed_out,
+              "is_last received", f"is_last={obs.is_last_ms is not None} timed_out={obs.timed_out}", DOCUMENTED,
+              D_RT_STT)
+    finals = obs.finals
+    text = " ".join(str(m.get("transcript") or "") for m in finals)
+    toks = normalize(text)
+    groups = [list(t) for t in PROMPTS_BY_ID["H4"].key_tokens]
+    roman = key_token_hits(text, groups)
+    keys = {loose_key(transliterate_word(t)) if is_devanagari(t) else loose_key(t) for t in toks}
+    aware = sum(1 for g in groups if any(loose_key(a) in keys for a in g))
+    res.metrics.update({
+        "mode": "real-time WebSocket STT", "params": params, "clip_sha256": meta["sha256"],
+        "messages": len(obs.messages), "finals": len(finals),
+        "languages_fields": sorted({tuple(m.get("languages") or []) for m in finals}, key=str),
+        "language_fields": sorted({str(m.get("language")) for m in finals}),
+        "script": {"tokens": len(toks), "devanagari_tokens": sum(is_devanagari(t) for t in toks),
+                   "latin_tokens": sum(t.isascii() and t.isalpha() for t in toks)},
+        "english_words_roman_script": roman["hit"], "english_words_script_aware": aware,
+        "english_words_total": len(groups),
+        "handshake_ms": obs.handshake_ms and round(obs.handshake_ms, 1),
+        "close_stream_to_is_last_ms": (round(obs.is_last_ms - obs.close_stream_sent_ms, 1)
+                                       if obs.is_last_ms and obs.close_stream_sent_ms else None),
+        "transcripts_shared_in_evidence": False})
+    res.check("English words in Hindi speech returned in Roman script (documented for real-time)",
+              roman["hit"] == len(groups) if aware == len(groups) else None,
+              f"{len(groups)} of {len(groups)} in Roman script",
+              f"{roman['hit']} Roman / {aware} recognised (script-aware)", DOCUMENTED, D_LANGDET)
+
+
+D_RT_STT = "https://docs.smallest.ai/models/speech-to-text/realtime-web-socket/quickstart"
+P2_CASES.extend([
+    _c("P2-Q6-01", "repro", "P0", "STT reproduction", "Q6: word timestamps around 0.8/1.2/1.6 s pauses (pulse)",
+       EXPLORATORY, "word end times vs measured speech offsets at three pauses; timestamp accuracy is not documented",
+       (D.STT_TRANSCRIBE,), 1, _stt_fixture("gap_multi_q6", wer_max=None, params={"word_timestamps": "true"}),
+       stt_audio_seconds=8.0, p2_fixtures=("gap_multi_q6",)),
+    _c("P2-Q6-02", "repro", "P0", "STT reproduction", "Q6: same clip on pulse-pro (same-audio cross-model)",
+       EXPLORATORY, "as P2-Q6-01", (D.STT_TRANSCRIBE,), 1,
+       _stt_fixture("gap_multi_q6", "pulse-pro", wer_max=None, params={"word_timestamps": "true"}),
+       stt_audio_seconds=8.0, p2_fixtures=("gap_multi_q6",)),
+    _c("P2-Q1-01", "repro", "P0", "STT reproduction", "Q1: H4 Hinglish audio via REAL-TIME STT, language=hi",
+       DOCUMENTED, "English words inside Hindi speech stay in Roman script (real-time docs); same audio as P2-HUM-04",
+       (D_LANGDET, D_RT_STT), 1, _q1_realtime, stt_audio_seconds=9.0),
+    _c("P2-Q1-02", "repro", "P0", "STT reproduction", "Q1: conditional repeat of P2-Q1-01 (only if it contradicts docs)",
+       DOCUMENTED, "as P2-Q1-01", (D_LANGDET, D_RT_STT), 1, _q1_realtime, stt_audio_seconds=9.0),
+])
+P2_BY_ID.update({c.case_id: c for c in P2_CASES})
+BATCHES = [b for b in BATCHES if b != "repro"]

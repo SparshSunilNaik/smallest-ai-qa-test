@@ -140,3 +140,102 @@ def run_ws_tts(client: QAClient, case_id: str, message: dict[str, Any], *, overa
     ex.headers.setdefault("content-type", "application/x-ws-frames+json")
     client.finished(ex, expect_auth_ok=expect_auth_ok)
     return ex, obs
+
+
+# ----------------------------------------------------------------------------- real-time STT (Q1 reproduction)
+
+WS_STT_PATH = "/waves/v1/stt/live"
+
+
+@dataclass
+class STTStreamObservation:
+    messages: list[dict[str, Any]] = field(default_factory=list)  # full messages (PRIVATE: contain transcripts)
+    message_times_ms: list[float] = field(default_factory=list)
+    chunks_sent: int = 0
+    bytes_sent: int = 0
+    handshake_ms: float | None = None
+    close_stream_sent_ms: float | None = None
+    is_last_ms: float | None = None
+    closed_by_server: bool = False
+    timed_out: bool = False
+    invalid_messages: int = 0
+
+    @property
+    def finals(self) -> list[dict[str, Any]]:
+        return [m for m in self.messages if m.get("is_final")]
+
+
+def run_ws_stt(client: QAClient, case_id: str, pcm16: bytes, params: dict[str, str], *,
+               chunk_size: int = 4096, overall_timeout_s: float = 40.0) -> tuple[Exchange, STTStreamObservation]:
+    """Documented protocol (realtime-web-socket quickstart): binary PCM chunks (4096 B recommended), then
+    {"type": "close_stream"}; read until a message with is_last=true. One connection = one ledger entry."""
+    from urllib.parse import urlencode
+
+    from websockets.exceptions import ConnectionClosed, InvalidStatus
+    from websockets.sync.client import connect
+
+    seq = client.reserve(case_id, "WS", WS_STT_PATH, protocol="ws", est_stt_seconds=len(pcm16) / 32000)
+    client.pace()
+    base = client.settings.base_url.replace("https://", "wss://").replace("http://", "ws://")
+    url = f"{base}{WS_STT_PATH}?{urlencode(params)}"
+    ex = Exchange(case_id=case_id, seq=seq, method="WS", path=WS_STT_PATH, params=dict(params),
+                  request_summary={"audio_bytes": len(pcm16), "chunk_size": chunk_size,
+                                   "headers": {"Authorization": "[REDACTED]"}},
+                  auth_mode="valid", started=stamp_pair())
+    obs = STTStreamObservation()
+    t0 = time.perf_counter()
+    try:
+        with connect(url, additional_headers={"Authorization": f"Bearer {client.settings.api_key}"},
+                     open_timeout=client.settings.connect_timeout_s, close_timeout=5,
+                     max_size=client.settings.max_response_bytes) as ws:
+            obs.handshake_ms = (time.perf_counter() - t0) * 1000
+            ex.status = 101
+            for i in range(0, len(pcm16), chunk_size):
+                ws.send(pcm16[i: i + chunk_size])
+                obs.chunks_sent += 1
+                obs.bytes_sent += len(pcm16[i: i + chunk_size])
+            ws.send(json.dumps({"type": "close_stream"}))
+            obs.close_stream_sent_ms = (time.perf_counter() - t0) * 1000
+            deadline = t0 + overall_timeout_s
+            while True:
+                remaining = deadline - time.perf_counter()
+                if remaining <= 0:
+                    obs.timed_out = True
+                    break
+                try:
+                    raw = ws.recv(timeout=remaining)
+                except TimeoutError:
+                    obs.timed_out = True
+                    break
+                except ConnectionClosed:
+                    obs.closed_by_server = True
+                    break
+                t_ms = (time.perf_counter() - t0) * 1000
+                if ex.ttfb_ms is None:
+                    ex.ttfb_ms = t_ms
+                try:
+                    msg = json.loads(raw)
+                except (json.JSONDecodeError, TypeError):
+                    obs.invalid_messages += 1
+                    continue
+                obs.messages.append(msg)
+                obs.message_times_ms.append(round(t_ms, 1))
+                if msg.get("is_last"):
+                    obs.is_last_ms = t_ms
+                    break
+    except InvalidStatus as exc:
+        ex.status = exc.response.status_code
+        ex.body = exc.response.body or b""
+    except Exception as exc:  # recorded, never masked as a backend defect
+        ex.error = f"ws: {type(exc).__name__}: {exc}"
+    ex.duration_ms = (time.perf_counter() - t0) * 1000
+    # Committed evidence gets structure only; transcripts are attached privately by the caller.
+    ex.body = ex.body or json.dumps([{k: (type(v).__name__ if k == "transcript" else v) for k, v in m.items()
+                                      if k not in ("words",)} for m in obs.messages[:40]]).encode()
+    ex.headers.setdefault("content-type", "application/x-ws-frames+json")
+    for k, v in (("handshake", obs.handshake_ms), ("close_stream_sent", obs.close_stream_sent_ms),
+                 ("is_last", obs.is_last_ms)):
+        if v is not None:
+            ex.extra_timings[k] = v
+    client.finished(ex, expect_auth_ok=True)
+    return ex, obs

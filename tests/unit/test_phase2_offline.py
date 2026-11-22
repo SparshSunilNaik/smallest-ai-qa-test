@@ -106,7 +106,7 @@ def test_analysis_detects_internal_gap_and_mulaw_roundtrip():
 
 def test_recipes_are_complete_and_documented():
     ids = [r.fixture_id for r in RECIPES]
-    assert len(ids) == len(set(ids)) == 15
+    assert len(ids) == len(set(ids)) == 16
     for r in RECIPES:
         assert r.description and r.language and (r.parts or r.source_file)
 

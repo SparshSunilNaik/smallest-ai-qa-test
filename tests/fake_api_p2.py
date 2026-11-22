@@ -211,3 +211,28 @@ def start_ws_server():
     threading.Thread(target=server.serve_forever, daemon=True).start()
     port = server.socket.getsockname()[1]
     return server, f"http://127.0.0.1:{port}"
+
+
+
+def start_ws_stt_server(transcript: str):
+    """Local real-time STT double: accepts binary chunks, answers close_stream with a final + is_last message."""
+    from websockets.sync.server import serve
+
+    def handler(ws):
+        if ws.request.headers.get("Authorization") != f"Bearer {VALID_KEY}":
+            ws.close(code=1008)
+            return
+        got = 0
+        for msg in ws:
+            if isinstance(msg, bytes):
+                got += len(msg)
+                continue
+            if json.loads(msg).get("type") == "close_stream":
+                ws.send(json.dumps({"session_id": "s", "transcript": transcript, "is_final": True, "is_last": True,
+                                    "language": "hi", "languages": ["en", "hi"], "bytes_seen": got}))
+                break
+        ws.close()
+
+    server = serve(handler, "127.0.0.1", 0)
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    return server, f"http://127.0.0.1:{server.socket.getsockname()[1]}"

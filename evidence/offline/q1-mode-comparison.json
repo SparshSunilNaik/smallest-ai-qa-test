@@ -1,0 +1,41 @@
+{
+  "question": "Q1: script of English words in Hindi-English speech, same audio (H4, sha256 5bbc49f5...) in two modes",
+  "documentation": {
+    "page": "https://docs.smallest.ai/models/speech-to-text/features/language-detection",
+    "statements": [
+      "`hi` also keeps English words in Roman script. (table 'Which value to use for Indian languages'; all aggregators in that table are streaming-only)",
+      "English words inside Hindi speech stay in Roman script. (section 'Real-Time response with indic')"
+    ],
+    "scope_assessment": "real-time guidance; pre-recorded behaviour not stated"
+  },
+  "pre_recorded": {
+    "case": "P2-HUM-04",
+    "run": "20261122T174926Z",
+    "request_id": "95bacd5b-f4ff-4d65-ae87-10ce877d950d",
+    "script": {
+      "hyp_tokens": 20,
+      "devanagari_tokens": 20,
+      "latin_tokens": 0
+    },
+    "english_words_roman_script": 0,
+    "english_words_script_aware": 8,
+    "english_words_total": 8
+  },
+  "real_time": {
+    "case": "P2-Q1-01",
+    "run": "20261122T182734Z",
+    "script": {
+      "tokens": 20,
+      "devanagari_tokens": 13,
+      "latin_tokens": 7
+    },
+    "english_words_roman_script": 7,
+    "english_words_script_aware": 7,
+    "english_words_total": 8,
+    "unrecognised_prompt_word": "please",
+    "timestamp_utc": "2026-11-22T18:27:34.068+00:00",
+    "ledger_seq": 124
+  },
+  "conclusion": "Documented real-time behaviour observed (all recognised English words in Roman script); pre-recorded returned the same words in Devanagari. Mode difference + documentation scope gap; not an API defect. Conditional request P2-Q1-02 skipped.",
+  "transcripts_shared": false
+}

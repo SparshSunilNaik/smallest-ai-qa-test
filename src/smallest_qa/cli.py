@@ -268,9 +268,17 @@ def cmd_human_eval(args) -> int:
 def cmd_q6(args) -> int:
     import json
 
-    from .q6_analysis import analyze
+    from .q6_analysis import analyze, analyze_multi
 
     settings = load_settings()
+    if args.multi:
+        res = analyze_multi(settings.evidence_dir, args.run, REPO_ROOT / "fixtures" / "audio" / "p2" /
+                            "gap_multi_q6.wav", ("P2-Q6-01", "P2-Q6-02"))
+        out = settings.evidence_dir / "offline" / f"q6-reproduction-{args.run}.json"
+        out.write_text(json.dumps(res, indent=2) + "\n", encoding="utf-8")
+        print(json.dumps(res, indent=1)[:4000])
+        print(f"Wrote {out.relative_to(REPO_ROOT)}")
+        return 0
     res = analyze(settings.evidence_dir, args.run, REPO_ROOT / "fixtures" / "audio" / "p2" / "gap_1500ms.wav")
     out = settings.evidence_dir / "offline" / f"q6-timestamp-analysis-{args.run}.json"
     out.write_text(json.dumps(res, indent=2) + "\n", encoding="utf-8")
@@ -389,6 +397,7 @@ def main(argv: list[str] | None = None) -> int:
                     help="write a new numbered revision instead of the original summary file")
     q6 = sub.add_parser("q6", help="offline: word timestamps vs waveform for P2-STT-15")
     q6.add_argument("--run", required=True)
+    q6.add_argument("--multi", action="store_true", help="analyse the Q6 reproduction run (gap_multi_q6)")
     rp = sub.add_parser("sse-replay", help="offline: replay recorded live SSE wire bytes into the SDK")
     rp.add_argument("--run", required=True)
     args = parser.parse_args(argv)

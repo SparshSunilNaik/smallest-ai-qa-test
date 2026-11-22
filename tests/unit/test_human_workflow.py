@@ -138,3 +138,50 @@ def test_review_corrects_reference_offline_and_versions_it(tmp_path):
     m = load_clip("H5", root)
     assert m["reference_transcript"].endswith("mango") and m["approval_valid"] is True  # audio unchanged
     assert m["reference_history"][0]["previous"].endswith("mangoes")
+
+
+
+def _run_q1(settings, fixture_wav, tmp_path, transcript):
+    from fake_api_p2 import start_ws_stt_server
+
+    root = tmp_path / "human"
+    record_session(["H4"], recorder=FakeRecorder(), root=root, say=lambda *_: None, ask=_script("", "", "a", ""))
+    set_approval("H4", True, root=root)
+    server, url = start_ws_stt_server(transcript)
+    import smallest_qa.cases_p2 as c2
+
+    orig = c2.Context.__init__
+
+    def init(self, *a, **k):
+        orig(self, *a, **k)
+        self.state["human_dir"] = root
+
+    c2.Context.__init__ = init
+    try:
+        s = Settings(**{**settings.__dict__, "max_requests": 128, "base_url": url})
+        run_dir = execute(s, [P2_BY_ID["P2-Q1-01"]], transport=FakeP2().transport(), sleep=lambda x: None,
+                          log=lambda *a: None, fixture_provider=lambda: fixture_wav, phase=2, batch="repro",
+                          doc_example_mode="skip")
+    finally:
+        c2.Context.__init__ = orig
+        server.shutdown()
+    return json.loads((run_dir / "results.json").read_text())["cases"][0], run_dir
+
+
+# Synthetic, self-written test sentences (NOT derived from any recording or STT output). They reuse the eight
+# English prompt words only, in a different sentence, so the script-classification logic can be exercised.
+_ROMAN = "aaj wali meeting cancel nahi, new client ka time confirm hua, please email check karna"
+_DEVANAGARI = "आज वाली मीटिंग कैंसल नहीं, न्यू क्लाइंट का टाइम कन्फ़र्म हुआ, प्लीज़ ईमेल चेक करना"
+_MIXED = "आज वाली meeting cancel नहीं, new client का time confirm हुआ, please email चेक करना"
+
+
+def test_q1_realtime_roman_script_passes_and_keeps_transcript_private(settings, fixture_wav, tmp_path):
+    case, run_dir = _run_q1(settings, fixture_wav, tmp_path, _MIXED)
+    assert case["classification"] == PASSED and case["metrics"]["english_words_roman_script"] == 8
+    assert "meeting" not in (run_dir / "results.json").read_text()  # transcript never committed
+
+
+def test_q1_realtime_devanagari_english_is_flagged(settings, fixture_wav, tmp_path):
+    case, _ = _run_q1(settings, fixture_wav, tmp_path, _DEVANAGARI)
+    assert case["classification"] == "Candidate finding requiring reproduction"
+    assert case["metrics"]["english_words_script_aware"] == 8 and case["metrics"]["english_words_roman_script"] == 0
