@@ -321,3 +321,17 @@ def test_ws_idle_timeout_close_is_not_accepted_as_close_after_complete(settings,
     assert "server closes the socket promptly after `complete` (<= 5 s)" in failed
     assert "no error frame after a successful `complete`" in failed
     assert case["classification"] == CANDIDATE
+
+
+
+def test_q6_speech_bounds_and_threshold_range():
+    from smallest_qa.q6_analysis import speech_bounds
+
+    rate = 16000
+    pcm = tone_pcm("x", rate, 1.0) + b"\x00\x00" * rate + tone_pcm("y", rate, 1.0)
+    from smallest_qa.audio import pcm16_samples
+
+    s = pcm16_samples(pcm)
+    _, end1 = speech_bounds(s, rate, (0.0, 1.5), 10, -40.0)
+    start2, _ = speech_bounds(s, rate, (1.5, 3.0), 10, -40.0)
+    assert abs(end1 - 1.0) <= 0.01 and abs(start2 - 2.0) <= 0.01

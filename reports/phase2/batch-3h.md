@@ -161,3 +161,30 @@ All 8 synthetic speech clips scored **normalized WER 0.000**:
 | `evidence/runs/20261122T174926Z/results.json` | Committed. Synthetic transcripts in full; human cases as rates only. |
 | `evidence/offline/human-eval-20261122T174926Z.json` | Committed. Counts and rates only. |
 | `evidence/private/20261122T174926Z/human-eval-detail.json` | Git-ignored. Token-level alignments and transcripts. |
+
+## Addendum (offline, after review; no API requests)
+
+**Q6, measured against the waveform.**
+
+- **Inputs:** the local `gap_1500ms.wav`, whose SHA-256 `f8790c6e…` matches the request body hash, and the committed word timestamps.
+- **Method:** speech offset and onset were measured with 3 frame sizes (5, 10 and 20 ms) and 5 energy thresholds (−30 to −50 dBFS).
+- **Results:**
+
+  | Measurement | Value |
+  |---|---|
+  | Word before the pause: reported end | **2.88 s** |
+  | Measured end of its speech | 1.30–1.43 s |
+  | Discrepancy | **+1.45 to +1.58 s** |
+  | Next word: reported start | 3.04 s |
+  | Measured onset | 3.14–3.145 s |
+  | Discrepancy | **−0.10 s** |
+
+- **Timestamp grid:** 0.08 s, so add ±0.04 s quantisation to the figures above.
+- **Word boundaries:** 6 of the 7 consecutive word pairs share an exact boundary (end equals the next word's start).
+- **HYPOTHESIS:** timestamps tile the timeline, and silence is attributed to the preceding word.
+
+This is a single synthetic observation, so it remains a quality observation, **not a confirmed defect**. A further limitation: only the first 8 words were preserved in evidence. Synthetic STT cases now keep the full `words` array. Details are in `evidence/offline/q6-timestamp-analysis-20261122T174926Z.json`.
+
+**Q1 status (unchanged):** this is a *candidate documentation inconsistency* only. The quoted statements sit on a page that describes real-time language detection. We do **not** claim that the pre-recorded API violates them. Resolving it needs either a docs clarification or a real-time test, and no reproduction will be run without prior discussion.
+
+**H5 review workflow:** `uv run smallest-qa human review H5 --run 20261122T174926Z` shows the audio, reference and hypothesis side by side, locally. Corrections are versioned, and the WER/CER is recomputed offline. `uv run smallest-qa human-eval --run 20261122T174926Z --revision` then writes a new committed revision with counts only. The original summary is never overwritten.

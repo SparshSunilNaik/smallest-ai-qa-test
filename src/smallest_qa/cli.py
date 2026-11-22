@@ -222,6 +222,12 @@ def cmd_human(args) -> int:
         elif args.action == "delete":
             delete_clip(i)
             print(f"{i}: deleted from disk")
+        elif args.action == "review":
+            from .human_review import review
+
+            if not args.run:
+                raise SystemExit("review needs --run <run_id>, e.g. --run 20261122T174926Z")
+            review(i, args.run, load_settings().evidence_dir)
         elif args.action == "edit-reference":
             text = input(f"New reference transcript for {i}: ").strip()
             if text:
@@ -241,6 +247,13 @@ def cmd_human_eval(args) -> int:
     priv = settings.evidence_dir / "private" / args.run / "human-eval-detail.json"
     priv.write_text(json.dumps(detail, indent=2, ensure_ascii=False, default=str) + "\n", encoding="utf-8")
     pub = settings.evidence_dir / "offline" / f"human-eval-{args.run}.json"
+    if args.revision or pub.exists():
+        n = 1
+        while (pub.parent / f"human-eval-{args.run}-rev{n}.json").exists():
+            n += 1
+        pub = pub.parent / f"human-eval-{args.run}-rev{n}.json"
+        public["revision"] = n
+        public["revision_note"] = "recomputed offline after speaker reference review; no API request"
     text = scrub_paths(json.dumps(public, indent=2, ensure_ascii=False, default=str))
     for pid, clip in detail["clips"].items():  # fail closed: unshared human text must never reach committed output
         if not public["clips"][pid].get("transcript_shared"):
@@ -249,6 +262,20 @@ def cmd_human_eval(args) -> int:
                     raise SystemExit(f"refusing to write: {pid} text would leak into committed evidence")
     pub.write_text(text + "\n", encoding="utf-8")
     print(f"private detail: {priv.relative_to(REPO_ROOT)} (git-ignored)\ncommitted summary: {pub.relative_to(REPO_ROOT)}")
+    return 0
+
+
+def cmd_q6(args) -> int:
+    import json
+
+    from .q6_analysis import analyze
+
+    settings = load_settings()
+    res = analyze(settings.evidence_dir, args.run, REPO_ROOT / "fixtures" / "audio" / "p2" / "gap_1500ms.wav")
+    out = settings.evidence_dir / "offline" / f"q6-timestamp-analysis-{args.run}.json"
+    out.write_text(json.dumps(res, indent=2) + "\n", encoding="utf-8")
+    print(json.dumps({k: v for k, v in res.items() if k not in ("grid", "interpretation")}, indent=1))
+    print(f"Wrote {out.relative_to(REPO_ROOT)}")
     return 0
 
 
@@ -351,12 +378,17 @@ def main(argv: list[str] | None = None) -> int:
     rec = sub.add_parser("record", help="LOCAL ONLY: record human STT clips with your microphone")
     rec.add_argument("--prompt", help="comma-separated prompt ids (default H1-H5)")
     hp = sub.add_parser("human", help="manage local human clips (list/approve/revoke/delete/edit-reference)")
-    hp.add_argument("action", choices=("list", "approve", "revoke", "delete", "edit-reference"))
+    hp.add_argument("action", choices=("list", "approve", "revoke", "delete", "edit-reference", "review"))
+    hp.add_argument("--run", help="with review: the run whose saved STT response to compare against")
     hp.add_argument("ids", nargs="?", help="comma-separated clip ids, e.g. H1,H3")
     hp.add_argument("--share-transcript", action="store_true",
                     help="with approve: allow the reference and Smallest's transcript in committed evidence")
     he = sub.add_parser("human-eval", help="offline: WER/CER analysis of a Batch 3h run (no API requests)")
     he.add_argument("--run", required=True)
+    he.add_argument("--revision", action="store_true",
+                    help="write a new numbered revision instead of the original summary file")
+    q6 = sub.add_parser("q6", help="offline: word timestamps vs waveform for P2-STT-15")
+    q6.add_argument("--run", required=True)
     rp = sub.add_parser("sse-replay", help="offline: replay recorded live SSE wire bytes into the SDK")
     rp.add_argument("--run", required=True)
     args = parser.parse_args(argv)
@@ -364,7 +396,7 @@ def main(argv: list[str] | None = None) -> int:
                 "report": cmd_report, "sdk-compat": cmd_sdk_compat, "fixtures-p2": cmd_fixtures_p2,
                 "docs-offline": cmd_docs_offline, "matrix-p2": cmd_matrix_p2,
                 "sse-replay": cmd_sse_replay, "record": cmd_record, "human": cmd_human,
-                "human-eval": cmd_human_eval}
+                "human-eval": cmd_human_eval, "q6": cmd_q6}
     return handlers[args.cmd](args)
 
 

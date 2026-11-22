@@ -118,7 +118,7 @@ def _transcribe(ctx: Context, case_id: str, audio: bytes, language: str = "en", 
 
 
 def _roundtrip(ctx: Context, res: CaseResult, wav: bytes, text: str, language: str,
-               groups: list[list[str]], absent: list[str] = ()) -> None:
+               groups: list[list[str]], absent: list[str] = (), numeric: bool = False) -> None:
     """TTS->STT machine proxy. EXPLORATORY: STT errors and TTS errors cannot be separated here."""
     ex, body = _transcribe(ctx, res.case_id, wav, language)
     res.exchanges.append(ex)
@@ -132,6 +132,17 @@ def _roundtrip(ctx: Context, res: CaseResult, wav: bytes, text: str, language: s
                                 "note": "machine proxy only; not a pronunciation judgement"}
     res.check("round-trip: expected spoken items recovered", hits["hit"] == hits["total"], f"{hits['total']} items",
               f"{hits['hit']} found; missing {hits['missing']}", EXPLORATORY)
+    if numeric:
+        from collections import Counter
+
+        from .wer import canonical_numbers
+
+        want, got = Counter(canonical_numbers(text)), Counter(canonical_numbers(tx))
+        missing = list((want - got).elements())
+        res.metrics["roundtrip"]["numeric"] = {"input": canonical_numbers(text), "transcript": canonical_numbers(tx),
+                                               "missing": missing}
+        res.check("round-trip: numeric/currency values recovered (canonical, format-independent)", not missing,
+                  [f"{v} {u}".strip() for v, u in want.elements()], missing or "all recovered", EXPLORATORY)
     if absent:
         words = set(normalize(tx))
         leaked = [a for a in absent if a in words]
@@ -683,6 +694,7 @@ def _stt_fixture(fixture_id: str, model: str = "pulse", wer_max: float | None = 
             return
         ref = fx.recipe.reference
         wer, cer = word_error_rate(ref, tx), char_error_rate(ref, tx)
+        res.metrics["words"] = (body or {}).get("words", [])[:300]  # synthetic audio only; full timestamps
         res.metrics.update({"transcription": tx, "reference": ref, "wer": round(wer, 3), "cer": round(cer, 3),
                             "audio_s": round(fx.duration_s, 2), "latency_ms": ex.duration_ms and round(ex.duration_ms)})
         if wer_max is not None:
@@ -728,7 +740,7 @@ def _gap_checks(ctx: Context, res: CaseResult, fx, body: dict) -> None:
 # ============================================================================= Batch 4/5: TTS correctness
 
 def _tts_case(text: str, *, language: str = "en", groups: list[list[str]] | None = None, absent: list[str] = (),
-              roundtrip: bool = True, focus: str = "", use_cer_ref: bool = False,
+              roundtrip: bool = True, focus: str = "", use_cer_ref: bool = False, numeric: bool = False,
               **params: Any) -> Callable[[Context, CaseResult], None]:
     def run(ctx: Context, res: CaseResult) -> None:
         ex = api.synthesize(ctx.client, res.case_id, api.tts_body(text, language=language, **params))
@@ -737,7 +749,7 @@ def _tts_case(text: str, *, language: str = "en", groups: list[list[str]] | None
         pcm = _tts_integrity(ctx, res, ex, text, listen_focus=focus)
         if pcm is None or not roundtrip:
             return
-        _roundtrip(ctx, res, ex.body, text, language, groups or [], absent)
+        _roundtrip(ctx, res, ex.body, text, language, groups or [], absent, numeric=numeric)
         if use_cer_ref and "roundtrip" in res.metrics:
             res.metrics["roundtrip"]["cer_vs_input_text"] = round(
                 char_error_rate(text, res.metrics["roundtrip"]["transcription"]), 3)
@@ -967,11 +979,11 @@ P2_CASES: list[CaseSpec] = [
     # ---------------- Batch 4 (P1): TTS normalisation round trips + params ------------------------------
     _c("P2-TTS-N01", "4", "P1", "TTS correctness", "Numbers: decimals, order id, count", EXPLORATORY,
        "integrity + round-trip recovers amounts", (D.TTS_SYNC,), 2, _tts_case(T_N01, groups=_KEYS_N01,
-                                                                              focus="number reading"),
+                                                                              focus="number reading", numeric=True),
        synth_chars=len(T_N01), stt_audio_seconds=6, requires_human=True),
     _c("P2-TTS-N02", "4", "P1", "TTS correctness", "Currency: ₹, $, €", EXPLORATORY,
        "integrity + round-trip recovers amounts and currency names", (D.TTS_SYNC,), 2,
-       _tts_case(T_N02, groups=_KEYS_N02, focus="currency symbols read as rupees/dollars/euros"),
+       _tts_case(T_N02, groups=_KEYS_N02, focus="currency symbols read as rupees/dollars/euros", numeric=True),
        synth_chars=len(T_N02), stt_audio_seconds=6, requires_human=True),
     _c("P2-TTS-N03", "4", "P1", "TTS correctness", "Date 05/03/2024 with date_format=US", DOCUMENTED,
        "'May third, twenty twenty four' (documented example)", (D_BEST, D.TTS_SYNC), 2,
@@ -983,7 +995,8 @@ P2_CASES: list[CaseSpec] = [
                  focus="date read as 5 March"), synth_chars=len(T_DATE), stt_audio_seconds=4, requires_human=True),
     _c("P2-TTS-N05", "4", "P1", "TTS correctness", "math_notation=true: '6 x 7'", DOCUMENTED,
        "'six times seven' (documented example)", (D_MATH,), 2,
-       _tts_case(T_MATH, math_notation=True, groups=[["times", "into", "multiplied"]], focus="'x' read as times"),
+       _tts_case(T_MATH, math_notation=True, groups=[["times", "into", "multiplied"]], focus="'x' read as times",
+                 numeric=True),
        synth_chars=len(T_MATH), stt_audio_seconds=4, requires_human=True),
     _c("P2-TTS-N06", "4", "P1", "TTS correctness", "Unicode punctuation, emoji, accented Latin", EXPLORATORY,
        "200 + integrity; emoji not voiced", (D.TTS_SYNC,), 2,

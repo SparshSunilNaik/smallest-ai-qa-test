@@ -202,19 +202,27 @@ def canonical_numbers(text: str) -> list[tuple[str, str]]:
 
     pending_prefix = None
     last_was_digit = False
+    last_was_number = False
     for p in pieces:
         if p in _UNITS or p in _TENS or p in _SCALES or p in _ORD or p == "point" or (p == "and" and buf):
             buf.append(p)
             continue
         if p == "and":
             continue
-        flush_words()
+        if buf:
+            flush_words()
+            if pending_prefix and items and not items[-1][1]:
+                items[-1][1], pending_prefix = pending_prefix, None
+            last_was_number = True
         if p in ("₹", "$", "€"):
             pending_prefix = _CURRENCY[p]
             continue
         if p in _CURRENCY:
-            if items and not items[-1][1]:
-                items[-1][1] = _CURRENCY[p]
+            if items and not items[-1][1] and last_was_number:
+                items[-1][1] = _CURRENCY[p]  # "499 rupees"
+            else:
+                pending_prefix = _CURRENCY[p]  # "rupees 499"
+            last_was_number = False
             continue
         if p in _SUBUNIT:
             if items and not items[-1][1]:
@@ -235,8 +243,11 @@ def canonical_numbers(text: str) -> list[tuple[str, str]]:
                               else "num"])
             pending_prefix = None
             last_was_digit = True
+            last_was_number = True
             continue
         last_was_digit = False  # any other word ends a digit run
+        if p not in _SUBUNIT:
+            last_was_number = False
     flush_words()
     return [(format(v.normalize(), "f"), u) for v, u, _ in items]
 

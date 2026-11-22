@@ -118,3 +118,23 @@ def test_approved_clip_sent_once_and_transcript_withheld_without_opt_in(settings
 def test_human_audio_directory_is_git_ignored():
     r = subprocess.run(["git", "check-ignore", "-q", "fixtures/audio/human/H1.wav"], cwd=REPO_ROOT)
     assert r.returncode == 0
+
+
+def test_review_corrects_reference_offline_and_versions_it(tmp_path):
+    from smallest_qa.human_review import review
+
+    root = tmp_path / "human"
+    record_session(["H5"], recorder=FakeRecorder(), root=root, say=lambda *_: None,
+                   ask=_script("", "", "a", "we went to the market and bought mangoes"))
+    set_approval("H5", True, root=root)
+    ev = tmp_path / "evidence"
+    (ev / "private" / "R").mkdir(parents=True)
+    (ev / "private" / "R" / "H5-stt-response.json").write_text(
+        json.dumps({"transcription": "we went to the market and bought mango"}))
+    played = []
+    out = review("H5", "R", ev, root=root, say=lambda *_: None, play=played.append,
+                 ask=_script("p", "e", "we went to the market and bought mango", "q"))
+    assert played and out["changed"] and out["before"]["normalized"]["wer"] > 0 and out["after"]["normalized"]["wer"] == 0
+    m = load_clip("H5", root)
+    assert m["reference_transcript"].endswith("mango") and m["approval_valid"] is True  # audio unchanged
+    assert m["reference_history"][0]["previous"].endswith("mangoes")
