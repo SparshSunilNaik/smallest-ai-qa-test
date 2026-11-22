@@ -119,7 +119,7 @@ def _transcribe(ctx: Context, case_id: str, audio: bytes, language: str = "en", 
 
 
 def _roundtrip(ctx: Context, res: CaseResult, wav: bytes, text: str, language: str,
-               groups: list[list[str]], absent: list[str] = (), numeric: bool = False) -> None:
+               groups: list[list[str]], absent: list[str] = (), numeric: bool = False, tail: int = 0) -> None:
     """TTS->STT machine proxy. EXPLORATORY: STT errors and TTS errors cannot be separated here."""
     ex, body = _transcribe(ctx, res.case_id, wav, language)
     res.exchanges.append(ex)
@@ -131,8 +131,28 @@ def _roundtrip(ctx: Context, res: CaseResult, wav: bytes, text: str, language: s
     res.metrics["roundtrip"] = {"transcription": tx, "key_tokens": hits,
                                 "wer_vs_input_text": round(word_error_rate(text, tx), 3),
                                 "note": "machine proxy only; not a pronunciation judgement"}
-    res.check("round-trip: expected spoken items recovered", hits["hit"] == hits["total"], f"{hits['total']} items",
-              f"{hits['hit']} found; missing {hits['missing']}", EXPLORATORY)
+    missing = list(hits["missing"])
+    if language == "hi":
+        # STT may write English words in Devanagari (Batch 3h, Q1): match on a transliteration-aware key so an
+        # STT script choice is not mistaken for a TTS problem. Original transcript is stored unchanged.
+        from .translit import is_devanagari, loose_key, transliterate_word
+        from .wer import align as _align
+
+        toks = normalize(tx)
+        keys = {loose_key(transliterate_word(t)) if is_devanagari(t) else loose_key(t) for t in toks}
+        missing = [g[0] for g in groups if g[0] in hits["missing"] and not any(loose_key(a) in keys for a in g)]
+        in_keys = [loose_key(t) for t in normalize(text)]
+        out_keys = [loose_key(transliterate_word(t)) if is_devanagari(t) else loose_key(t) for t in toks]
+        t_ops = _align(in_keys, out_keys)
+        res.metrics["roundtrip"]["script_aware"] = {
+            "roman_script_hits": hits["hit"], "script_aware_hits": len(groups) - len(missing), "total": len(groups),
+            "devanagari_tokens": sum(is_devanagari(t) for t in toks),
+            "latin_tokens": sum(t.isascii() and t.isalpha() for t in toks),
+            "transliteration_aware_wer_vs_input": round(sum(o.kind != "eq" for o in t_ops) / max(1, len(in_keys)), 3),
+            "note": "approximate transliteration (translit.py); analysis aid only"}
+    res.check("round-trip: expected spoken items recovered" + (" (script-aware)" if language == "hi" else ""),
+              not missing, f"{len(groups)} items", f"{len(groups) - len(missing)} found; missing {missing}",
+              EXPLORATORY)
     if numeric:
         from collections import Counter
 
@@ -144,6 +164,16 @@ def _roundtrip(ctx: Context, res: CaseResult, wav: bytes, text: str, language: s
                                                "missing": missing}
         res.check("round-trip: numeric/currency values recovered (canonical, format-independent)", not missing,
                   [f"{v} {u}".strip() for v, u in want.elements()], missing or "all recovered", EXPLORATORY)
+    if tail:
+        from .wer import align as _align
+
+        ref_t, hyp_t = normalize(text), normalize(tx)
+        ops = _align(ref_t, hyp_t)
+        last = set(range(max(0, len(ref_t) - tail), len(ref_t)))
+        tail_hits = sum(1 for o in ops if o.kind == "eq" and o.ref_index in last)
+        res.metrics["roundtrip"]["tail_coverage"] = {"last_n_input_words": len(last), "matched_in_order": tail_hits}
+        res.check(f"round-trip: last {len(last)} input words present in order (truncation proxy)",
+                  tail_hits >= 0.8 * len(last), f">= {int(0.8 * len(last))}", tail_hits, EXPLORATORY)
     if absent:
         words = set(normalize(tx))
         leaked = [a for a in absent if a in words]
@@ -742,7 +772,7 @@ def _gap_checks(ctx: Context, res: CaseResult, fx, body: dict) -> None:
 
 def _tts_case(text: str, *, language: str = "en", groups: list[list[str]] | None = None, absent: list[str] = (),
               roundtrip: bool = True, focus: str = "", use_cer_ref: bool = False, numeric: bool = False,
-              **params: Any) -> Callable[[Context, CaseResult], None]:
+              tail: int = 0, **params: Any) -> Callable[[Context, CaseResult], None]:
     def run(ctx: Context, res: CaseResult) -> None:
         ex = api.synthesize(ctx.client, res.case_id, api.tts_body(text, language=language, **params))
         res.exchanges.append(ex)
@@ -750,7 +780,7 @@ def _tts_case(text: str, *, language: str = "en", groups: list[list[str]] | None
         pcm = _tts_integrity(ctx, res, ex, text, listen_focus=focus)
         if pcm is None or not roundtrip:
             return
-        _roundtrip(ctx, res, ex.body, text, language, groups or [], absent, numeric=numeric)
+        _roundtrip(ctx, res, ex.body, text, language, groups or [], absent, numeric=numeric, tail=tail)
         if use_cer_ref and "roundtrip" in res.metrics:
             res.metrics["roundtrip"]["cer_vs_input_text"] = round(
                 char_error_rate(text, res.metrics["roundtrip"]["transcription"]), 3)
@@ -926,7 +956,7 @@ P2_CASES: list[CaseSpec] = [
     _c("P2-STR-04", "2", "P1", "Streaming", "Sync vs SSE duration parity (same 250-char text)", EXPLORATORY,
        "durations within 20%", (D.TTS_SYNC, D.TTS_STREAMING), 1, stream_parity, synth_chars=len(T_250),
        depends_on=("P2-STR-01",)),
-    _c("P2-STR-08", "2", "P1", "Streaming", "SSE 1000-char stream completes", DOCUMENTED,
+    _c("P2-STR-08", "2", "P1", "Streaming", "SSE 880-character stream completes", DOCUMENTED,
        "single terminal frame; full-length audio", (D.TTS_STREAMING,), 1, stream_long, synth_chars=len(T_1000),
        requires_human=True),
     _c("P2-WS-01", "2", "P0", "Streaming", "WebSocket TTS with word_timestamps (meher)", DOCUMENTED,
@@ -1034,9 +1064,9 @@ P2_CASES: list[CaseSpec] = [
        "documented 3-4-3 grouping ('987-6543-210'); grouping needs listening", (D_BEST,), 1,
        _tts_case(T_PHONE, roundtrip=False, focus="3-4-3 digit grouping"), synth_chars=len(T_PHONE),
        requires_human=True),
-    _c("P2-TTS-L01", "5", "P1", "TTS correctness", "1000-character paragraph (sync)", DOCUMENTED,
+    _c("P2-TTS-L01", "5", "P1", "TTS correctness", "880-character paragraph (sync; same text as P2-STR-08)", DOCUMENTED,
        "valid WAV; completion verified by round-trip of the final sentence", (D.TTS_SYNC, D_BEST), 2,
-       _tts_case(T_1000, groups=[["purple"], ["elephant"], ["gopal", "gopaal"]],
+       _tts_case(T_1000, groups=[["purple"], ["elephant"], ["gopal", "gopaal"]], tail=20,
                  focus="no truncation; consistent voice"), synth_chars=len(T_1000), stt_audio_seconds=70,
        requires_human=True),
     # ---------------- Batch 6 (P2): latency ---------------------------------------------------------------

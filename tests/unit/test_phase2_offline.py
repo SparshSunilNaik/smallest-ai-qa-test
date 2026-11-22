@@ -344,3 +344,21 @@ def test_speaking_rate_heuristic_scales_with_speed(settings, fixture_wav, tmp_pa
     fast = cases["P2-PAR-02"]
     rate_check = next(c for c in fast["checks"] if c["name"].startswith("speed2.0: speaking rate"))
     assert "at speed 2" in rate_check["name"] and rate_check["expected"] == "10-60"
+
+
+
+def test_batch5_roundtrip_script_aware_and_tail_coverage(settings, fixture_wav, tmp_path):
+    """Hinglish round trip must not fail just because STT writes English words in Devanagari."""
+
+    class DevanagariSTT(FakeP2):
+        def register(self, audio, text):
+            if text.startswith("Kal ki meeting"):
+                text = "कल की मीटिंग तीन बजे है प्लीज़ अपना लैपटॉप ले आना"
+            super().register(audio, text)
+
+    cases, _, _ = _run_batch(settings, fixture_wav, DevanagariSTT(), "5", tmp_path)
+    n08 = cases["P2-TTS-N08"]
+    sa = n08["metrics"]["roundtrip"]["script_aware"]
+    assert sa["roman_script_hits"] == 0 and sa["script_aware_hits"] == 3 and n08["classification"] == PASSED
+    tail = cases["P2-TTS-L01"]["metrics"]["roundtrip"]["tail_coverage"]
+    assert tail == {"last_n_input_words": 20, "matched_in_order": 20}

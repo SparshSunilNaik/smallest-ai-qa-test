@@ -95,15 +95,15 @@ New documentation inconsistencies found while researching Phase 2 (documentation
 | 2 | SSE/STT/voices error contract, stream integrity (pcm, mp3, ulaw), sync/SSE parity, WebSocket + word timestamps, cancellation | 19 | $0.28 |
 | 3 | STT accuracy: synthetic accents, noise, short utterances, silence, Hindi, Hinglish, 8 kHz, diarization, timestamps | 15 | $0.01 |
 | 4 | TTS normalisation round trips (numbers, currency, dates US/EU, math, Unicode); speed and sample-rate effects | 16 | $0.07 |
-| 5 | Hindi, Hinglish, Indian names, abbreviations, phone grouping, 1000-character synthesis | 9 | $0.14 |
+| 5 | Hindi, Hinglish, Indian names, abbreviations, phone grouping, 880-character synthesis | 9 | $0.14 |
 | 6 | Latency by text length (19/110/500 chars), warm vs cold connection | 13 | $0.25 |
 | **Total** | | **90** | **≈ $0.79** |
 | Reserve | Reproduction of the strongest candidates | 10 | |
 
 Cost caveats:
 
-- **Cancellation:** the cost of the cancelled 1000-character stream is estimated as if fully billed. Partial-stream billing is not documented.
-- **Long audio:** nothing exceeds about 70 s of audio. The longest items are the 1000-character synthesis (sync and SSE) and its round-trip transcription. Anything longer requires separate approval.
+- **Cancellation:** the cost of the cancelled 880-character stream is estimated as if fully billed. Partial-stream billing is not documented.
+- **Long audio:** nothing exceeds about 70 s of audio. The longest items are the 880-character synthesis (sync and SSE) and its round-trip transcription. Anything longer requires separate approval.
 
 ## 4. Prioritised execution order
 

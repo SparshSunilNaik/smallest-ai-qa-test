@@ -32,7 +32,7 @@
 | P2-STR-02 SSE mp3 | 202 chunks; only 2 start on an MP3 frame boundary; the concatenated stream is valid MP3 (`afinfo`: 24 kHz mono, 128 kbit/s, 4.99 s) | `07305cf8-9c33-4482-9572-dff9f3bd0973` | TTFB 275 ms | **Passed** (integrity). Exploratory note: SSE events are byte slices, not whole frames (D-2). |
 | P2-STR-03 SSE μ-law, 8 kHz | Raw 8-bit samples, no header; decodes to 5.6 s of non-silent audio | `ba4f359b-f984-4e99-83d7-251b7834aeda` | TTFB 267 ms | **Passed** |
 | P2-STR-04 sync vs SSE, same text | Sync pcm 12.23 s vs SSE 11.16 s (ratio 0.913). Voiced speech: 11.89 s vs 10.88 s. Sync pcm `Content-Type: application/octet-stream`. | `96292ed3-5f5f-4199-8080-3ee4e7e12c86` | Sync total 2499 ms; TTFB 2430 ms | **Passed** (within 20%). Observation: the two endpoints produce different-length speech for identical text. |
-| P2-STR-08 SSE, 1000 characters | 299 chunks; 46.8 s of audio; 0 ms stall; 5.84× real time; single terminal frame | `2070e82c-2854-42e7-ae8e-e271543dc5f5` | TTFB 259 ms; done 8289 ms | **Passed**. Completeness by ear is pending listening. |
+| P2-STR-08 SSE, 880 characters (originally mislabelled "1000") | 299 chunks; 46.8 s of audio; 0 ms stall; 5.84× real time; single terminal frame | `2070e82c-2854-42e7-ae8e-e271543dc5f5` | TTFB 259 ms; done 8289 ms | **Passed**. Completeness by ear is pending listening. |
 | P2-WS-01 WebSocket + word timestamps (`meher`) | 34 chunks; **20 `word_timestamp` events** (monotonic; all 20 words recovered); 1 `complete`; **no server close** within the 30 s window | — (the WebSocket handshake carries no `x-request-id`) | Handshake 405 ms; first audio 689 ms; `complete` 6718 ms | Word timestamps **Passed**. Close behaviour: **Confirmed, reproduced: F6** |
 | *Reproduction* P2-WS-01 (75 s window) | 36 chunks; 20 word events; `complete` at 5874 ms; then **54.7 s of silence**, then `{"status":"error","message":"Connection timed out after 60 seconds of inactivity"}` and a server close at 60.5 s | — | | Confirms F6. The harness labelled this "Passed" because the original check accepted any server close. The check is now tightened and has a regression test. **This review supersedes that label.** |
 | P2-WS-02 WebSocket unknown voice | Error frame `{"request_id":…,"status":"error","message":"Invalid input data","errors":[…"Voice '…' is not available…"]}`; then no close until the client's 15 s deadline | — | Handshake 414 ms; error frame 551 ms | Error reporting **Passed**. Lingering connection: same behaviour as F6 (not separately reproduced). |
@@ -118,3 +118,7 @@ The 2026-11-05 changelog says "`mp3` streams MP3 frames". Events are not frame-a
   - the idle-close regression for F6;
   - the human-recording workflow.
 - The committed evidence contains no audio, no key and no local paths. The streamed audio is only in the git-ignored `evidence/private/20261122T172801Z/`, together with the listening pack.
+
+## Correction (2026-11-22, during Batch 5 preparation)
+
+The "1000-character" text used by P2-STR-08 and by the cancellation case P2-STR-05 is actually **880 characters**. All the measurements above are unchanged. Only the label was wrong.

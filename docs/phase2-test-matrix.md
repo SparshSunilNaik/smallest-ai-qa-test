@@ -44,7 +44,7 @@ Provenance: **documented** deviations can become defects after reproduction; **q
 | P2-STR-02 | P1 | Streaming | SSE mp3 framing | documented | MPEG frames ('mp3 streams MP3 frames') | models/text-to-speech/streaming<br>changelog/models/2026/11/5 | 1 |
 | P2-STR-03 | P1 | Streaming | SSE ulaw 8 kHz | documented | raw 8-bit samples, decodable | changelog/models/2026/11/5 | 1 |
 | P2-STR-04 | P1 | Streaming | Sync vs SSE duration parity (same 250-char text) | exploratory | durations within 20% | api-reference/models/text-to-speech/synthesize-speech<br>models/text-to-speech/streaming | 1 |
-| P2-STR-08 | P1 | Streaming | SSE 1000-char stream completes 🎧 | documented | single terminal frame; full-length audio | models/text-to-speech/streaming | 1 |
+| P2-STR-08 | P1 | Streaming | SSE 880-character stream completes 🎧 | documented | single terminal frame; full-length audio | models/text-to-speech/streaming | 1 |
 | P2-WS-01 | P0 | Streaming | WebSocket TTS with word_timestamps (meher) | documented | chunk frames, one complete, server close; word events for meher (docs conflict on meher) | api-reference/models/text-to-speech/tts<br>models/text-to-speech/streaming<br>model-cards/text-to-speech/lightning-v-3-1 | 1 |
 | P2-WS-02 | P1 | Streaming | WebSocket unknown voice | exploratory | error frame, no audio, no hang (error frame schema not documented) | api-reference/models/text-to-speech/tts | 1 |
 | P2-STR-05 | P0 | Streaming | Client cancellation then immediate follow-up request | exploratory | clean cancel; observe whether the concurrency slot is released (up to 2 follow-up probes) | api-reference/concurrency-and-limits<br>models/text-to-speech/streaming | 3 |
@@ -93,7 +93,7 @@ Provenance: **documented** deviations can become defects after reproduction; **q
 | P2-TTS-N09 | P1 | TTS correctness | Indian names and place names 🎧 | exploratory | integrity only; pronunciation needs listening | api-reference/models/text-to-speech/synthesize-speech | 1 |
 | P2-TTS-N10 | P1 | TTS correctness | Abbreviations (Dr., Rd., ATM, approx., km, IIT) 🎧 | exploratory | integrity only; expansion needs listening | api-reference/models/text-to-speech/synthesize-speech | 1 |
 | P2-TTS-N11 | P1 | TTS correctness | Phone number 9876543210 🎧 | documented | documented 3-4-3 grouping ('987-6543-210'); grouping needs listening | models/text-to-speech/best-practices | 1 |
-| P2-TTS-L01 | P1 | TTS correctness | 1000-character paragraph (sync) 🎧 | documented | valid WAV; completion verified by round-trip of the final sentence | api-reference/models/text-to-speech/synthesize-speech<br>models/text-to-speech/best-practices | 2 |
+| P2-TTS-L01 | P1 | TTS correctness | 880-character paragraph (sync; same text as P2-STR-08) 🎧 | documented | valid WAV; completion verified by round-trip of the final sentence | api-reference/models/text-to-speech/synthesize-speech<br>models/text-to-speech/best-practices | 2 |
 
 ## Batch 6 (13 requests, est. $0.247)
 
