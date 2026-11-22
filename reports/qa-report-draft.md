@@ -1,3 +1,5 @@
+> **Superseded.** This is the Phase 1 draft, kept for history. The current documents are [`final-submission.md`](final-submission.md) and [`final-engineering-report.md`](final-engineering-report.md). F2 in particular was re-assessed in Phase 2.
+
 # QA report draft for the Smallest AI candidate submission
 
 > **Status: draft for Sparsh's review.** Every observation below comes from `evidence/runs/*/results.json`. Numbers are client-side measurements from one network location, so they are not server SLOs. Sparsh has not yet independently re-verified these results. Re-open the documentation links before submitting.
