@@ -362,3 +362,11 @@ def test_batch5_roundtrip_script_aware_and_tail_coverage(settings, fixture_wav, 
     assert sa["roman_script_hits"] == 0 and sa["script_aware_hits"] == 3 and n08["classification"] == PASSED
     tail = cases["P2-TTS-L01"]["metrics"]["roundtrip"]["tail_coverage"]
     assert tail == {"last_n_input_words": 20, "matched_in_order": 20}
+
+
+
+def test_transliteration_aware_wer_is_zero_for_identical_devanagari(settings, fixture_wav, tmp_path):
+    """Regression for Batch 5 P2-TTS-N07: Devanagari input must be transliterated like the output."""
+    cases, _, _ = _run_batch(settings, fixture_wav, FakeP2(), "5", tmp_path)
+    sa = cases["P2-TTS-N07"]["metrics"]["roundtrip"]["script_aware"]
+    assert sa["transliteration_aware_wer_vs_input"] == 0.0

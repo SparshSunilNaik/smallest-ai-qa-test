@@ -1,11 +1,11 @@
 # Results summary (auto-generated from evidence/runs)
 
-- Runs: 9; cumulative API requests (ledger): 99/128
+- Runs: 10; cumulative API requests (ledger): 108/128
 - Counts are per test case. Several cases can share one root cause; consolidated findings, severity and interpretation are in `reports/qa-report-draft.md`.
 
 ## Classification counts
 
-- Passed: 54
+- Passed: 60
 - Confirmed defect: 6
 - Candidate finding requiring reproduction: 19
 - Expected behavior: 0
@@ -73,12 +73,18 @@
 | P2-STT-13 | 8 kHz telephony-band audio (16 kHz recommended) | Passed | 1 | 20261122T174926Z | 200 |
 | P2-STT-14 | Two speakers with diarize=true | Passed | 1 | 20261122T174926Z | 200 |
 | P2-STT-15 | Word timestamps vs a known 1.5 s inserted pause | Candidate finding requiring reproduction | 1 | 20261122T174926Z | 200 |
+| P2-TTS-L01 | 880-character paragraph (sync; same text as P2-STR-08) | Passed | 1 | 20261122T181341Z | 200, 200 |
 | P2-TTS-N01 | Numbers: decimals, order id, count | Passed | 1 | 20261122T180703Z | 200, 200 |
 | P2-TTS-N02 | Currency: ₹, $, € | Passed | 1 | 20261122T180703Z | 200, 200 |
 | P2-TTS-N03 | Date 05/03/2024 with date_format=US | Passed | 1 | 20261122T180703Z | 200, 200 |
 | P2-TTS-N04 | Date 05/03/2024 with date_format=EU | Passed | 1 | 20261122T180703Z | 200, 200 |
 | P2-TTS-N05 | math_notation=true: '6 x 7' | Passed | 1 | 20261122T180703Z | 200, 200 |
 | P2-TTS-N06 | Unicode punctuation, emoji, accented Latin | Candidate finding requiring reproduction | 1 | 20261122T180703Z | 200, 200 |
+| P2-TTS-N07 | Hindi Devanagari, language=hi | Passed | 1 | 20261122T181341Z | 200, 200 |
+| P2-TTS-N08 | Romanised Hinglish, language=hi | Passed | 1 | 20261122T181341Z | 200, 200 |
+| P2-TTS-N09 | Indian names and place names | Passed | 1 | 20261122T181341Z | 200 |
+| P2-TTS-N10 | Abbreviations (Dr., Rd., ATM, approx., km, IIT) | Passed | 1 | 20261122T181341Z | 200 |
+| P2-TTS-N11 | Phone number 9876543210 | Passed | 1 | 20261122T181341Z | 200 |
 | P2-WS-01 | WebSocket TTS with word_timestamps (meher) | Passed | 2 | 20261122T173129Z | 101 |
 | P2-WS-02 | WebSocket unknown voice | Candidate finding requiring reproduction | 1 | 20261122T172801Z | 101 |
 | STR-01 | SSE streaming success, framing, completion, TTFB (pcm) | Passed | 1 | 20261122T163926Z | 200 |

@@ -141,7 +141,7 @@ def _roundtrip(ctx: Context, res: CaseResult, wav: bytes, text: str, language: s
         toks = normalize(tx)
         keys = {loose_key(transliterate_word(t)) if is_devanagari(t) else loose_key(t) for t in toks}
         missing = [g[0] for g in groups if g[0] in hits["missing"] and not any(loose_key(a) in keys for a in g)]
-        in_keys = [loose_key(t) for t in normalize(text)]
+        in_keys = [loose_key(transliterate_word(t)) if is_devanagari(t) else loose_key(t) for t in normalize(text)]
         out_keys = [loose_key(transliterate_word(t)) if is_devanagari(t) else loose_key(t) for t in toks]
         t_ops = _align(in_keys, out_keys)
         res.metrics["roundtrip"]["script_aware"] = {

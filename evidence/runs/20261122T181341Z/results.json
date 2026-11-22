@@ -1,0 +1,1323 @@
+{
+  "run_id": "20261122T181341Z",
+  "phase": 2,
+  "batch": "5",
+  "started": {
+    "utc": "2026-11-22T18:13:41.928+00:00",
+    "ist": "2026-11-22T23:43:41.928+05:30"
+  },
+  "finished": {
+    "utc": "2026-11-22T18:14:07.856+00:00",
+    "ist": "2026-11-22T23:44:07.856+05:30"
+  },
+  "harness_version": "0.1.0",
+  "environment": {
+    "python": "3.13.13",
+    "httpx": "0.28.1",
+    "platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
+    "base_url": "https://api.smallest.ai"
+  },
+  "api_key_configured": true,
+  "halted": null,
+  "requests_this_run": 9,
+  "ledger_used_after_run": 108,
+  "ledger_cap": 128,
+  "fixture": {
+    "path": "fixtures/audio/stt_en_16k.wav",
+    "generator": "macOS say -v Samantha --file-format=WAVE --data-format=LEI16@16000",
+    "reference_text": "The quick brown fox jumps over the lazy dog. Speech recognition quality is measured by comparing the words.",
+    "sha256": "cc3d3e75a72ca66f64fba9607342328861d6c3171eba0d8fe2dea5a7aa357f01",
+    "bytes": 205846,
+    "duration_s": 6.305,
+    "sample_rate": 16000
+  },
+  "p2_fixtures": {},
+  "phase_est_usd_after_run": 0.6136,
+  "listening_queue": [
+    {
+      "clip": "P2-TTS-N07.wav",
+      "case_id": "P2-TTS-N07",
+      "text": "मेरा नाम प्रिया है और मैं दिल्ली में रहती हूँ।",
+      "focus": "Hindi pronunciation"
+    },
+    {
+      "clip": "P2-TTS-N08.wav",
+      "case_id": "P2-TTS-N08",
+      "text": "Kal ki meeting teen baje hai, please apna laptop le aana.",
+      "focus": "romanised Hindi read naturally"
+    },
+    {
+      "clip": "P2-TTS-N09.wav",
+      "case_id": "P2-TTS-N09",
+      "text": "Sriram Venkataraman, Aishwarya Iyer and Gurpreet Singh Dhillon joined the call from Thiruvananthapuram.",
+      "focus": "name pronunciation"
+    },
+    {
+      "clip": "P2-TTS-N10.wav",
+      "case_id": "P2-TTS-N10",
+      "text": "Dr. Sharma lives on MG Rd. near the ATM, approx. 5 km from the IIT campus.",
+      "focus": "abbreviation expansion"
+    },
+    {
+      "clip": "P2-TTS-N11.wav",
+      "case_id": "P2-TTS-N11",
+      "text": "Please call me back on 9876543210.",
+      "focus": "3-4-3 digit grouping"
+    },
+    {
+      "clip": "P2-TTS-L01.wav",
+      "case_id": "P2-TTS-L01",
+      "text": "Thank you for calling Horizon Bank. Your recent payment has been received, and your account is now up to date. If you would like to hear your balance, please stay on the line, and an agent will help you shortly with any other questions. We also wanted to let you know about our new savings plan, which offers a higher interest rate for customers who keep a minimum balance for twelve months. You can sign up through the mobile app or at any branch, and there are no extra fees to get started. Our branches are open from nine in the morning until five in the evening on weekdays, and from ten until two on Saturdays. For security reasons, we will never ask for your password or one time code over the phone, so please do not share them with anyone. If you notice any unusual activity, contact our support team immediately. The final sentence mentions a purple elephant named Gopal.",
+      "focus": "no truncation; consistent voice"
+    }
+  ],
+  "cases": [
+    {
+      "case_id": "P2-TTS-N07",
+      "title": "Hindi Devanagari, language=hi",
+      "area": "TTS correctness",
+      "expected_behavior": "integrity + round-trip CER",
+      "doc_refs": [
+        "https://docs.smallest.ai/model-cards/text-to-speech/lightning-v-3-1-pro"
+      ],
+      "classification": "Passed",
+      "checks": [
+        {
+          "name": "HTTP 200",
+          "passed": true,
+          "expected": "200",
+          "actual": "200",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/api-reference/models/text-to-speech/synthesize-speech"
+        },
+        {
+          "name": "WAV sample rate equals requested",
+          "passed": true,
+          "expected": 24000,
+          "actual": "24000",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/api-reference/models/text-to-speech/synthesize-speech"
+        },
+        {
+          "name": "audio not silent",
+          "passed": true,
+          "expected": "speech energy present",
+          "actual": "rms -14.1 dBFS",
+          "requirement": "quality",
+          "doc_ref": null
+        },
+        {
+          "name": "no clipping (<0.1% samples at full scale)",
+          "passed": true,
+          "expected": "< 0.001",
+          "actual": "0.0",
+          "requirement": "quality",
+          "doc_ref": null
+        },
+        {
+          "name": "no internal silence > 2 s (dropped content heuristic)",
+          "passed": true,
+          "expected": "<= 2000 ms",
+          "actual": "20",
+          "requirement": "quality",
+          "doc_ref": null
+        },
+        {
+          "name": "speaking rate plausible (5-30 chars/s at speed 1)",
+          "passed": true,
+          "expected": "5-30",
+          "actual": "18.7",
+          "requirement": "quality",
+          "doc_ref": null
+        },
+        {
+          "name": "round-trip STT HTTP 200",
+          "passed": true,
+          "expected": "200",
+          "actual": "200",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/api-reference/models/speech-to-text/transcribe"
+        },
+        {
+          "name": "round-trip: expected spoken items recovered (script-aware)",
+          "passed": true,
+          "expected": "0 items",
+          "actual": "0 found; missing []",
+          "requirement": "exploratory",
+          "doc_ref": null
+        }
+      ],
+      "metrics": {
+        "params": {
+          "language": "hi"
+        },
+        "audio_integrity": {
+          "samples": 59040,
+          "duration_s": 2.46,
+          "rms_dbfs": -14.1,
+          "peak": 27731,
+          "clipped_fraction": 0.0,
+          "leading_silence_ms": 100,
+          "trailing_silence_ms": 480,
+          "longest_internal_silence_ms": 20,
+          "all_silent": false,
+          "chars": 46,
+          "chars_per_s": 18.7
+        },
+        "roundtrip": {
+          "transcription": "मेरा नाम प्रिया है और मैं दिल्ली में रहती हूँ।",
+          "key_tokens": {
+            "hit": 0,
+            "total": 0,
+            "missing": []
+          },
+          "wer_vs_input_text": 0.0,
+          "note": "machine proxy only; not a pronunciation judgement",
+          "script_aware": {
+            "roman_script_hits": 0,
+            "script_aware_hits": 0,
+            "total": 0,
+            "devanagari_tokens": 10,
+            "latin_tokens": 0,
+            "transliteration_aware_wer_vs_input": 1.0,
+            "note": "approximate transliteration (translit.py); analysis aid only"
+          },
+          "cer_vs_input_text": 0.0
+        }
+      },
+      "notes": [],
+      "requests": [
+        {
+          "case_id": "P2-TTS-N07",
+          "ledger_seq": 100,
+          "timestamp_utc": "2026-11-22T18:13:41.948+00:00",
+          "timestamp_ist": "2026-11-22T23:43:41.948+05:30",
+          "method": "POST",
+          "endpoint": "/waves/v1/tts",
+          "query_params": {},
+          "request": {
+            "json": {
+              "text": "मेरा नाम प्रिया है और मैं दिल्ली में रहती हूँ।",
+              "voice_id": "meher",
+              "model": "lightning_v3.1_pro",
+              "language": "hi",
+              "sample_rate": 24000,
+              "output_format": "wav"
+            },
+            "text_chars": 46,
+            "headers": {
+              "Content-Type": "application/json",
+              "Authorization": "[REDACTED]"
+            }
+          },
+          "auth_mode": "valid",
+          "status": 200,
+          "content_type": "audio/wav",
+          "response_bytes": 118124,
+          "response_truncated_at_cap": false,
+          "response_sha256": "55d2b1b3ecfb2aca2a89dab6189f2fef33827d7a1200e03675db0e6db1ba0171",
+          "time_to_headers_ms": 1093.6,
+          "ttfb_ms": 1093.9,
+          "duration_ms": 1163.4,
+          "extra_timings_ms": {},
+          "request_ids": {
+            "x-request-id": "1ca07e3a-08ad-42a7-9fc0-82cb7d988432",
+            "x-session-id": "1ca07e3a-08ad-42a7-9fc0-82cb7d988432",
+            "x-external-session-id": "",
+            "x-external-request-id": ""
+          },
+          "response_headers": {
+            "date": "Sun, 22 Nov 2026 18:13:42 GMT",
+            "content-type": "audio/wav",
+            "content-length": "118124",
+            "connection": "keep-alive",
+            "set-cookie": "[REDACTED]",
+            "x-request-id": "1ca07e3a-08ad-42a7-9fc0-82cb7d988432",
+            "cache-control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+            "pragma": "no-cache",
+            "expires": "0",
+            "strict-transport-security": "max-age=31536000; includeSubDomains",
+            "content-security-policy": "default-src 'self';script-src 'self';style-src 'self' 'unsafe-inline';img-src 'self' data: https://d1o0umtiv0iuvd.cloudfront.net https://d4a5s42qh2351.cloudfront.net https://waves-history.s3.ap-south-1.amazonaws.com https://waves-history-dev.s3.ap-south-1.amazonaws.com https://db2izkvf1oocn.cloudfront.net https://media.plivo.com https://dlw9ti8dmuxc7.cloudfront.net;connect-src 'self';frame-ancestors 'none';upgrade-insecure-requests;base-uri 'self';font-src 'self' https: data:;form-action 'self';object-src 'none';script-src-attr 'none'",
+            "cross-origin-opener-policy": "same-origin",
+            "cross-origin-resource-policy": "same-origin",
+            "origin-agent-cluster": "?1",
+            "referrer-policy": "no-referrer",
+            "x-content-type-options": "nosniff",
+            "x-dns-prefetch-control": "off",
+            "x-download-options": "noopen",
+            "x-frame-options": "SAMEORIGIN",
+            "x-permitted-cross-domain-policies": "none",
+            "x-xss-protection": "0",
+            "vary": "Origin",
+            "access-control-allow-credentials": "true",
+            "access-control-expose-headers": "Set-Cookie,X-Smallest-Prompt-Guard,X-Request-Id,Content-Disposition",
+            "x-session-id": "1ca07e3a-08ad-42a7-9fc0-82cb7d988432",
+            "x-external-session-id": "",
+            "x-external-request-id": "",
+            "etag": "W/\"1cd6c-N9hs6hUKyIA9f80sEWbM+KcvZQY\""
+          },
+          "body_excerpt": null,
+          "transport_error": null,
+          "cancelled_by_client": false,
+          "fresh_connection": false,
+          "body_chunks": 11
+        },
+        {
+          "case_id": "P2-TTS-N07",
+          "ledger_seq": 101,
+          "timestamp_utc": "2026-11-22T18:13:44.617+00:00",
+          "timestamp_ist": "2026-11-22T23:43:44.617+05:30",
+          "method": "POST",
+          "endpoint": "/waves/v1/stt/",
+          "query_params": {
+            "model": "pulse",
+            "language": "hi"
+          },
+          "request": {
+            "binary_body": {
+              "bytes": 118124,
+              "sha256": "55d2b1b3ecfb2aca2a89dab6189f2fef33827d7a1200e03675db0e6db1ba0171"
+            },
+            "headers": {
+              "Content-Type": "application/octet-stream",
+              "Authorization": "[REDACTED]"
+            }
+          },
+          "auth_mode": "valid",
+          "status": 200,
+          "content_type": "application/json; charset=utf-8",
+          "response_bytes": 233,
+          "response_truncated_at_cap": false,
+          "response_sha256": "b733ed6a190f8290ca71cb865f3da44c1d0521fb8a874dfd18eaee0a23eb28b7",
+          "time_to_headers_ms": 480.3,
+          "ttfb_ms": 480.6,
+          "duration_ms": 480.8,
+          "extra_timings_ms": {},
+          "request_ids": {
+            "x-request-id": "a233118a-eedc-4ea6-b850-057235a595b8"
+          },
+          "response_headers": {
+            "date": "Sun, 22 Nov 2026 18:13:45 GMT",
+            "content-type": "application/json; charset=utf-8",
+            "content-length": "233",
+            "connection": "keep-alive",
+            "set-cookie": "[REDACTED]",
+            "x-request-id": "a233118a-eedc-4ea6-b850-057235a595b8",
+            "cache-control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+            "pragma": "no-cache",
+            "expires": "0",
+            "strict-transport-security": "max-age=31536000; includeSubDomains",
+            "content-security-policy": "default-src 'self';script-src 'self';style-src 'self' 'unsafe-inline';img-src 'self' data: https://d1o0umtiv0iuvd.cloudfront.net https://d4a5s42qh2351.cloudfront.net https://waves-history.s3.ap-south-1.amazonaws.com https://waves-history-dev.s3.ap-south-1.amazonaws.com https://db2izkvf1oocn.cloudfront.net https://media.plivo.com https://dlw9ti8dmuxc7.cloudfront.net;connect-src 'self';frame-ancestors 'none';upgrade-insecure-requests;base-uri 'self';font-src 'self' https: data:;form-action 'self';object-src 'none';script-src-attr 'none'",
+            "cross-origin-opener-policy": "same-origin",
+            "cross-origin-resource-policy": "same-origin",
+            "origin-agent-cluster": "?1",
+            "referrer-policy": "no-referrer",
+            "x-content-type-options": "nosniff",
+            "x-dns-prefetch-control": "off",
+            "x-download-options": "noopen",
+            "x-frame-options": "SAMEORIGIN",
+            "x-permitted-cross-domain-policies": "none",
+            "x-xss-protection": "0",
+            "vary": "Origin",
+            "access-control-allow-credentials": "true",
+            "access-control-expose-headers": "Set-Cookie,X-Smallest-Prompt-Guard,X-Request-Id,Content-Disposition",
+            "etag": "W/\"e9-UScut63SfI60DTAg6Vd++Sn7S8k\""
+          },
+          "body_excerpt": "{\"status\":\"success\",\"transcription\":\"मेरा नाम प्रिया है और मैं दिल्ली में रहती हूँ।\",\"words\":[],\"utterances\":[],\"metadata\":{\"duration\":2.46,\"fileSize\":118124}}",
+          "transport_error": null,
+          "cancelled_by_client": false,
+          "fresh_connection": false,
+          "body_chunks": 1
+        }
+      ]
+    },
+    {
+      "case_id": "P2-TTS-N08",
+      "title": "Romanised Hinglish, language=hi",
+      "area": "TTS correctness",
+      "expected_behavior": "integrity + English words recovered",
+      "doc_refs": [
+        "https://docs.smallest.ai/model-cards/text-to-speech/lightning-v-3-1-pro"
+      ],
+      "classification": "Passed",
+      "checks": [
+        {
+          "name": "HTTP 200",
+          "passed": true,
+          "expected": "200",
+          "actual": "200",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/api-reference/models/text-to-speech/synthesize-speech"
+        },
+        {
+          "name": "WAV sample rate equals requested",
+          "passed": true,
+          "expected": 24000,
+          "actual": "24000",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/api-reference/models/text-to-speech/synthesize-speech"
+        },
+        {
+          "name": "audio not silent",
+          "passed": true,
+          "expected": "speech energy present",
+          "actual": "rms -13.7 dBFS",
+          "requirement": "quality",
+          "doc_ref": null
+        },
+        {
+          "name": "no clipping (<0.1% samples at full scale)",
+          "passed": true,
+          "expected": "< 0.001",
+          "actual": "0.0",
+          "requirement": "quality",
+          "doc_ref": null
+        },
+        {
+          "name": "no internal silence > 2 s (dropped content heuristic)",
+          "passed": true,
+          "expected": "<= 2000 ms",
+          "actual": "340",
+          "requirement": "quality",
+          "doc_ref": null
+        },
+        {
+          "name": "speaking rate plausible (5-30 chars/s at speed 1)",
+          "passed": true,
+          "expected": "5-30",
+          "actual": "18.9",
+          "requirement": "quality",
+          "doc_ref": null
+        },
+        {
+          "name": "round-trip STT HTTP 200",
+          "passed": true,
+          "expected": "200",
+          "actual": "200",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/api-reference/models/speech-to-text/transcribe"
+        },
+        {
+          "name": "round-trip: expected spoken items recovered (script-aware)",
+          "passed": true,
+          "expected": "3 items",
+          "actual": "3 found; missing []",
+          "requirement": "exploratory",
+          "doc_ref": null
+        }
+      ],
+      "metrics": {
+        "params": {
+          "language": "hi"
+        },
+        "audio_integrity": {
+          "samples": 72240,
+          "duration_s": 3.01,
+          "rms_dbfs": -13.7,
+          "peak": 26918,
+          "clipped_fraction": 0.0,
+          "leading_silence_ms": 40,
+          "trailing_silence_ms": 200,
+          "longest_internal_silence_ms": 340,
+          "all_silent": false,
+          "chars": 57,
+          "chars_per_s": 18.94
+        },
+        "roundtrip": {
+          "transcription": "कल की meeting 3:00 बजे है। Please अपना laptop ले आना।",
+          "key_tokens": {
+            "hit": 3,
+            "total": 3,
+            "missing": []
+          },
+          "wer_vs_input_text": 0.818,
+          "note": "machine proxy only; not a pronunciation judgement",
+          "script_aware": {
+            "roman_script_hits": 3,
+            "script_aware_hits": 3,
+            "total": 3,
+            "devanagari_tokens": 7,
+            "latin_tokens": 3,
+            "transliteration_aware_wer_vs_input": 0.182,
+            "note": "approximate transliteration (translit.py); analysis aid only"
+          }
+        }
+      },
+      "notes": [],
+      "requests": [
+        {
+          "case_id": "P2-TTS-N08",
+          "ledger_seq": 102,
+          "timestamp_utc": "2026-11-22T18:13:46.600+00:00",
+          "timestamp_ist": "2026-11-22T23:43:46.600+05:30",
+          "method": "POST",
+          "endpoint": "/waves/v1/tts",
+          "query_params": {},
+          "request": {
+            "json": {
+              "text": "Kal ki meeting teen baje hai, please apna laptop le aana.",
+              "voice_id": "meher",
+              "model": "lightning_v3.1_pro",
+              "language": "hi",
+              "sample_rate": 24000,
+              "output_format": "wav"
+            },
+            "text_chars": 57,
+            "headers": {
+              "Content-Type": "application/json",
+              "Authorization": "[REDACTED]"
+            }
+          },
+          "auth_mode": "valid",
+          "status": 200,
+          "content_type": "audio/wav",
+          "response_bytes": 144524,
+          "response_truncated_at_cap": false,
+          "response_sha256": "bc1397a2c5f027bbe32bd2a1996cc1d2889eb5d9da3762a6f55d9d06a3857545",
+          "time_to_headers_ms": 688.0,
+          "ttfb_ms": 688.3,
+          "duration_ms": 713.1,
+          "extra_timings_ms": {},
+          "request_ids": {
+            "x-request-id": "d9e4c918-ac5a-4ba0-837b-a51c881316c2",
+            "x-session-id": "d9e4c918-ac5a-4ba0-837b-a51c881316c2",
+            "x-external-session-id": "",
+            "x-external-request-id": ""
+          },
+          "response_headers": {
+            "date": "Sun, 22 Nov 2026 18:13:47 GMT",
+            "content-type": "audio/wav",
+            "content-length": "144524",
+            "connection": "keep-alive",
+            "set-cookie": "[REDACTED]",
+            "x-request-id": "d9e4c918-ac5a-4ba0-837b-a51c881316c2",
+            "cache-control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+            "pragma": "no-cache",
+            "expires": "0",
+            "strict-transport-security": "max-age=31536000; includeSubDomains",
+            "content-security-policy": "default-src 'self';script-src 'self';style-src 'self' 'unsafe-inline';img-src 'self' data: https://d1o0umtiv0iuvd.cloudfront.net https://d4a5s42qh2351.cloudfront.net https://waves-history.s3.ap-south-1.amazonaws.com https://waves-history-dev.s3.ap-south-1.amazonaws.com https://db2izkvf1oocn.cloudfront.net https://media.plivo.com https://dlw9ti8dmuxc7.cloudfront.net;connect-src 'self';frame-ancestors 'none';upgrade-insecure-requests;base-uri 'self';font-src 'self' https: data:;form-action 'self';object-src 'none';script-src-attr 'none'",
+            "cross-origin-opener-policy": "same-origin",
+            "cross-origin-resource-policy": "same-origin",
+            "origin-agent-cluster": "?1",
+            "referrer-policy": "no-referrer",
+            "x-content-type-options": "nosniff",
+            "x-dns-prefetch-control": "off",
+            "x-download-options": "noopen",
+            "x-frame-options": "SAMEORIGIN",
+            "x-permitted-cross-domain-policies": "none",
+            "x-xss-protection": "0",
+            "vary": "Origin",
+            "access-control-allow-credentials": "true",
+            "access-control-expose-headers": "Set-Cookie,X-Smallest-Prompt-Guard,X-Request-Id,Content-Disposition",
+            "x-session-id": "d9e4c918-ac5a-4ba0-837b-a51c881316c2",
+            "x-external-session-id": "",
+            "x-external-request-id": "",
+            "etag": "W/\"2348c-1W7qdgoxxgpxPYT7VHhNiX6LuOc\""
+          },
+          "body_excerpt": null,
+          "transport_error": null,
+          "cancelled_by_client": false,
+          "fresh_connection": false,
+          "body_chunks": 13
+        },
+        {
+          "case_id": "P2-TTS-N08",
+          "ledger_seq": 103,
+          "timestamp_utc": "2026-11-22T18:13:48.819+00:00",
+          "timestamp_ist": "2026-11-22T23:43:48.819+05:30",
+          "method": "POST",
+          "endpoint": "/waves/v1/stt/",
+          "query_params": {
+            "model": "pulse",
+            "language": "hi"
+          },
+          "request": {
+            "binary_body": {
+              "bytes": 144524,
+              "sha256": "bc1397a2c5f027bbe32bd2a1996cc1d2889eb5d9da3762a6f55d9d06a3857545"
+            },
+            "headers": {
+              "Content-Type": "application/octet-stream",
+              "Authorization": "[REDACTED]"
+            }
+          },
+          "auth_mode": "valid",
+          "status": 200,
+          "content_type": "application/json; charset=utf-8",
+          "response_bytes": 206,
+          "response_truncated_at_cap": false,
+          "response_sha256": "0411302162dd8b37ec11b7dffdde65204ea2c78456828a5fcc2d8cf66cece0e9",
+          "time_to_headers_ms": 467.2,
+          "ttfb_ms": 467.3,
+          "duration_ms": 467.4,
+          "extra_timings_ms": {},
+          "request_ids": {
+            "x-request-id": "e4c91393-fb64-49e6-9475-ddef125c59c1"
+          },
+          "response_headers": {
+            "date": "Sun, 22 Nov 2026 18:13:49 GMT",
+            "content-type": "application/json; charset=utf-8",
+            "content-length": "206",
+            "connection": "keep-alive",
+            "set-cookie": "[REDACTED]",
+            "x-request-id": "e4c91393-fb64-49e6-9475-ddef125c59c1",
+            "cache-control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+            "pragma": "no-cache",
+            "expires": "0",
+            "strict-transport-security": "max-age=31536000; includeSubDomains",
+            "content-security-policy": "default-src 'self';script-src 'self';style-src 'self' 'unsafe-inline';img-src 'self' data: https://d1o0umtiv0iuvd.cloudfront.net https://d4a5s42qh2351.cloudfront.net https://waves-history.s3.ap-south-1.amazonaws.com https://waves-history-dev.s3.ap-south-1.amazonaws.com https://db2izkvf1oocn.cloudfront.net https://media.plivo.com https://dlw9ti8dmuxc7.cloudfront.net;connect-src 'self';frame-ancestors 'none';upgrade-insecure-requests;base-uri 'self';font-src 'self' https: data:;form-action 'self';object-src 'none';script-src-attr 'none'",
+            "cross-origin-opener-policy": "same-origin",
+            "cross-origin-resource-policy": "same-origin",
+            "origin-agent-cluster": "?1",
+            "referrer-policy": "no-referrer",
+            "x-content-type-options": "nosniff",
+            "x-dns-prefetch-control": "off",
+            "x-download-options": "noopen",
+            "x-frame-options": "SAMEORIGIN",
+            "x-permitted-cross-domain-policies": "none",
+            "x-xss-protection": "0",
+            "vary": "Origin",
+            "access-control-allow-credentials": "true",
+            "access-control-expose-headers": "Set-Cookie,X-Smallest-Prompt-Guard,X-Request-Id,Content-Disposition",
+            "etag": "W/\"ce-sXI5M53H0JGoqBDjmnoMwgBtELA\""
+          },
+          "body_excerpt": "{\"status\":\"success\",\"transcription\":\"कल की meeting 3:00 बजे है। Please अपना laptop ले आना।\",\"words\":[],\"utterances\":[],\"metadata\":{\"duration\":3.01,\"fileSize\":144524}}",
+          "transport_error": null,
+          "cancelled_by_client": false,
+          "fresh_connection": false,
+          "body_chunks": 1
+        }
+      ]
+    },
+    {
+      "case_id": "P2-TTS-N09",
+      "title": "Indian names and place names",
+      "area": "TTS correctness",
+      "expected_behavior": "integrity only; pronunciation needs listening",
+      "doc_refs": [
+        "https://docs.smallest.ai/api-reference/models/text-to-speech/synthesize-speech"
+      ],
+      "classification": "Passed",
+      "checks": [
+        {
+          "name": "HTTP 200",
+          "passed": true,
+          "expected": "200",
+          "actual": "200",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/api-reference/models/text-to-speech/synthesize-speech"
+        },
+        {
+          "name": "WAV sample rate equals requested",
+          "passed": true,
+          "expected": 24000,
+          "actual": "24000",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/api-reference/models/text-to-speech/synthesize-speech"
+        },
+        {
+          "name": "audio not silent",
+          "passed": true,
+          "expected": "speech energy present",
+          "actual": "rms -11.9 dBFS",
+          "requirement": "quality",
+          "doc_ref": null
+        },
+        {
+          "name": "no clipping (<0.1% samples at full scale)",
+          "passed": true,
+          "expected": "< 0.001",
+          "actual": "0.0",
+          "requirement": "quality",
+          "doc_ref": null
+        },
+        {
+          "name": "no internal silence > 2 s (dropped content heuristic)",
+          "passed": true,
+          "expected": "<= 2000 ms",
+          "actual": "260",
+          "requirement": "quality",
+          "doc_ref": null
+        },
+        {
+          "name": "speaking rate plausible (5-30 chars/s at speed 1)",
+          "passed": true,
+          "expected": "5-30",
+          "actual": "19.1",
+          "requirement": "quality",
+          "doc_ref": null
+        }
+      ],
+      "metrics": {
+        "params": {
+          "language": "en"
+        },
+        "audio_integrity": {
+          "samples": 129600,
+          "duration_s": 5.4,
+          "rms_dbfs": -11.9,
+          "peak": 31361,
+          "clipped_fraction": 0.0,
+          "leading_silence_ms": 40,
+          "trailing_silence_ms": 260,
+          "longest_internal_silence_ms": 260,
+          "all_silent": false,
+          "chars": 103,
+          "chars_per_s": 19.07
+        }
+      },
+      "notes": [],
+      "requests": [
+        {
+          "case_id": "P2-TTS-N09",
+          "ledger_seq": 104,
+          "timestamp_utc": "2026-11-22T18:13:50.791+00:00",
+          "timestamp_ist": "2026-11-22T23:43:50.791+05:30",
+          "method": "POST",
+          "endpoint": "/waves/v1/tts",
+          "query_params": {},
+          "request": {
+            "json": {
+              "text": "Sriram Venkataraman, Aishwarya Iyer and Gurpreet Singh Dhillon joined the call from Thiruvananthapuram.",
+              "voice_id": "meher",
+              "model": "lightning_v3.1_pro",
+              "language": "en",
+              "sample_rate": 24000,
+              "output_format": "wav"
+            },
+            "text_chars": 103,
+            "headers": {
+              "Content-Type": "application/json",
+              "Authorization": "[REDACTED]"
+            }
+          },
+          "auth_mode": "valid",
+          "status": 200,
+          "content_type": "audio/wav",
+          "response_bytes": 259244,
+          "response_truncated_at_cap": false,
+          "response_sha256": "e775d8e564d82c98ddfa37d755b6b8f55ba64080d8d63e631f519db4fda1d5f1",
+          "time_to_headers_ms": 1006.2,
+          "ttfb_ms": 1006.3,
+          "duration_ms": 1047.4,
+          "extra_timings_ms": {},
+          "request_ids": {
+            "x-request-id": "27e761e9-c427-445f-bc7d-56c065b98924",
+            "x-session-id": "27e761e9-c427-445f-bc7d-56c065b98924",
+            "x-external-session-id": "",
+            "x-external-request-id": ""
+          },
+          "response_headers": {
+            "date": "Sun, 22 Nov 2026 18:13:51 GMT",
+            "content-type": "audio/wav",
+            "content-length": "259244",
+            "connection": "keep-alive",
+            "set-cookie": "[REDACTED]",
+            "x-request-id": "27e761e9-c427-445f-bc7d-56c065b98924",
+            "cache-control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+            "pragma": "no-cache",
+            "expires": "0",
+            "strict-transport-security": "max-age=31536000; includeSubDomains",
+            "content-security-policy": "default-src 'self';script-src 'self';style-src 'self' 'unsafe-inline';img-src 'self' data: https://d1o0umtiv0iuvd.cloudfront.net https://d4a5s42qh2351.cloudfront.net https://waves-history.s3.ap-south-1.amazonaws.com https://waves-history-dev.s3.ap-south-1.amazonaws.com https://db2izkvf1oocn.cloudfront.net https://media.plivo.com https://dlw9ti8dmuxc7.cloudfront.net;connect-src 'self';frame-ancestors 'none';upgrade-insecure-requests;base-uri 'self';font-src 'self' https: data:;form-action 'self';object-src 'none';script-src-attr 'none'",
+            "cross-origin-opener-policy": "same-origin",
+            "cross-origin-resource-policy": "same-origin",
+            "origin-agent-cluster": "?1",
+            "referrer-policy": "no-referrer",
+            "x-content-type-options": "nosniff",
+            "x-dns-prefetch-control": "off",
+            "x-download-options": "noopen",
+            "x-frame-options": "SAMEORIGIN",
+            "x-permitted-cross-domain-policies": "none",
+            "x-xss-protection": "0",
+            "vary": "Origin",
+            "access-control-allow-credentials": "true",
+            "access-control-expose-headers": "Set-Cookie,X-Smallest-Prompt-Guard,X-Request-Id,Content-Disposition",
+            "x-session-id": "27e761e9-c427-445f-bc7d-56c065b98924",
+            "x-external-session-id": "",
+            "x-external-request-id": "",
+            "etag": "W/\"3f4ac-5U6jObOQuPIJZ/gDGNxEbNrrRYI\""
+          },
+          "body_excerpt": null,
+          "transport_error": null,
+          "cancelled_by_client": false,
+          "fresh_connection": false,
+          "body_chunks": 19
+        }
+      ]
+    },
+    {
+      "case_id": "P2-TTS-N10",
+      "title": "Abbreviations (Dr., Rd., ATM, approx., km, IIT)",
+      "area": "TTS correctness",
+      "expected_behavior": "integrity only; expansion needs listening",
+      "doc_refs": [
+        "https://docs.smallest.ai/api-reference/models/text-to-speech/synthesize-speech"
+      ],
+      "classification": "Passed",
+      "checks": [
+        {
+          "name": "HTTP 200",
+          "passed": true,
+          "expected": "200",
+          "actual": "200",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/api-reference/models/text-to-speech/synthesize-speech"
+        },
+        {
+          "name": "WAV sample rate equals requested",
+          "passed": true,
+          "expected": 24000,
+          "actual": "24000",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/api-reference/models/text-to-speech/synthesize-speech"
+        },
+        {
+          "name": "audio not silent",
+          "passed": true,
+          "expected": "speech energy present",
+          "actual": "rms -14.7 dBFS",
+          "requirement": "quality",
+          "doc_ref": null
+        },
+        {
+          "name": "no clipping (<0.1% samples at full scale)",
+          "passed": true,
+          "expected": "< 0.001",
+          "actual": "0.0",
+          "requirement": "quality",
+          "doc_ref": null
+        },
+        {
+          "name": "no internal silence > 2 s (dropped content heuristic)",
+          "passed": true,
+          "expected": "<= 2000 ms",
+          "actual": "460",
+          "requirement": "quality",
+          "doc_ref": null
+        },
+        {
+          "name": "speaking rate plausible (5-30 chars/s at speed 1)",
+          "passed": true,
+          "expected": "5-30",
+          "actual": "13.3",
+          "requirement": "quality",
+          "doc_ref": null
+        }
+      ],
+      "metrics": {
+        "params": {
+          "language": "en"
+        },
+        "audio_integrity": {
+          "samples": 133320,
+          "duration_s": 5.555,
+          "rms_dbfs": -14.7,
+          "peak": 29667,
+          "clipped_fraction": 0.0,
+          "leading_silence_ms": 40,
+          "trailing_silence_ms": 240,
+          "longest_internal_silence_ms": 460,
+          "all_silent": false,
+          "chars": 74,
+          "chars_per_s": 13.32
+        }
+      },
+      "notes": [],
+      "requests": [
+        {
+          "case_id": "P2-TTS-N10",
+          "ledger_seq": 105,
+          "timestamp_utc": "2026-11-22T18:13:53.344+00:00",
+          "timestamp_ist": "2026-11-22T23:43:53.344+05:30",
+          "method": "POST",
+          "endpoint": "/waves/v1/tts",
+          "query_params": {},
+          "request": {
+            "json": {
+              "text": "Dr. Sharma lives on MG Rd. near the ATM, approx. 5 km from the IIT campus.",
+              "voice_id": "meher",
+              "model": "lightning_v3.1_pro",
+              "language": "en",
+              "sample_rate": 24000,
+              "output_format": "wav"
+            },
+            "text_chars": 74,
+            "headers": {
+              "Content-Type": "application/json",
+              "Authorization": "[REDACTED]"
+            }
+          },
+          "auth_mode": "valid",
+          "status": 200,
+          "content_type": "audio/wav",
+          "response_bytes": 266684,
+          "response_truncated_at_cap": false,
+          "response_sha256": "a1dd418bb7af2d124aa596fe4dab425feb3ae89aa455a1c4c154c104718ffecb",
+          "time_to_headers_ms": 1141.6,
+          "ttfb_ms": 1141.9,
+          "duration_ms": 1160.6,
+          "extra_timings_ms": {},
+          "request_ids": {
+            "x-request-id": "01228cde-799f-43aa-9ae7-6e75308a97d5",
+            "x-session-id": "01228cde-799f-43aa-9ae7-6e75308a97d5",
+            "x-external-session-id": "",
+            "x-external-request-id": ""
+          },
+          "response_headers": {
+            "date": "Sun, 22 Nov 2026 18:13:54 GMT",
+            "content-type": "audio/wav",
+            "content-length": "266684",
+            "connection": "keep-alive",
+            "set-cookie": "[REDACTED]",
+            "x-request-id": "01228cde-799f-43aa-9ae7-6e75308a97d5",
+            "cache-control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+            "pragma": "no-cache",
+            "expires": "0",
+            "strict-transport-security": "max-age=31536000; includeSubDomains",
+            "content-security-policy": "default-src 'self';script-src 'self';style-src 'self' 'unsafe-inline';img-src 'self' data: https://d1o0umtiv0iuvd.cloudfront.net https://d4a5s42qh2351.cloudfront.net https://waves-history.s3.ap-south-1.amazonaws.com https://waves-history-dev.s3.ap-south-1.amazonaws.com https://db2izkvf1oocn.cloudfront.net https://media.plivo.com https://dlw9ti8dmuxc7.cloudfront.net;connect-src 'self';frame-ancestors 'none';upgrade-insecure-requests;base-uri 'self';font-src 'self' https: data:;form-action 'self';object-src 'none';script-src-attr 'none'",
+            "cross-origin-opener-policy": "same-origin",
+            "cross-origin-resource-policy": "same-origin",
+            "origin-agent-cluster": "?1",
+            "referrer-policy": "no-referrer",
+            "x-content-type-options": "nosniff",
+            "x-dns-prefetch-control": "off",
+            "x-download-options": "noopen",
+            "x-frame-options": "SAMEORIGIN",
+            "x-permitted-cross-domain-policies": "none",
+            "x-xss-protection": "0",
+            "vary": "Origin",
+            "access-control-allow-credentials": "true",
+            "access-control-expose-headers": "Set-Cookie,X-Smallest-Prompt-Guard,X-Request-Id,Content-Disposition",
+            "x-session-id": "01228cde-799f-43aa-9ae7-6e75308a97d5",
+            "x-external-session-id": "",
+            "x-external-request-id": "",
+            "etag": "W/\"411bc-9PM3S0zxaMz2BJZGHRrmzTlz2lg\""
+          },
+          "body_excerpt": null,
+          "transport_error": null,
+          "cancelled_by_client": false,
+          "fresh_connection": false,
+          "body_chunks": 19
+        }
+      ]
+    },
+    {
+      "case_id": "P2-TTS-N11",
+      "title": "Phone number 9876543210",
+      "area": "TTS correctness",
+      "expected_behavior": "documented 3-4-3 grouping ('987-6543-210'); grouping needs listening",
+      "doc_refs": [
+        "https://docs.smallest.ai/models/text-to-speech/best-practices"
+      ],
+      "classification": "Passed",
+      "checks": [
+        {
+          "name": "HTTP 200",
+          "passed": true,
+          "expected": "200",
+          "actual": "200",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/api-reference/models/text-to-speech/synthesize-speech"
+        },
+        {
+          "name": "WAV sample rate equals requested",
+          "passed": true,
+          "expected": 24000,
+          "actual": "24000",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/api-reference/models/text-to-speech/synthesize-speech"
+        },
+        {
+          "name": "audio not silent",
+          "passed": true,
+          "expected": "speech energy present",
+          "actual": "rms -13.1 dBFS",
+          "requirement": "quality",
+          "doc_ref": null
+        },
+        {
+          "name": "no clipping (<0.1% samples at full scale)",
+          "passed": true,
+          "expected": "< 0.001",
+          "actual": "0.0",
+          "requirement": "quality",
+          "doc_ref": null
+        },
+        {
+          "name": "no internal silence > 2 s (dropped content heuristic)",
+          "passed": true,
+          "expected": "<= 2000 ms",
+          "actual": "120",
+          "requirement": "quality",
+          "doc_ref": null
+        },
+        {
+          "name": "speaking rate plausible (5-30 chars/s at speed 1)",
+          "passed": true,
+          "expected": "5-30",
+          "actual": "8.6",
+          "requirement": "quality",
+          "doc_ref": null
+        }
+      ],
+      "metrics": {
+        "params": {
+          "language": "en"
+        },
+        "audio_integrity": {
+          "samples": 95400,
+          "duration_s": 3.975,
+          "rms_dbfs": -13.1,
+          "peak": 32467,
+          "clipped_fraction": 0.0,
+          "leading_silence_ms": 40,
+          "trailing_silence_ms": 260,
+          "longest_internal_silence_ms": 120,
+          "all_silent": false,
+          "chars": 34,
+          "chars_per_s": 8.55
+        }
+      },
+      "notes": [],
+      "requests": [
+        {
+          "case_id": "P2-TTS-N11",
+          "ledger_seq": 106,
+          "timestamp_utc": "2026-11-22T18:13:56.010+00:00",
+          "timestamp_ist": "2026-11-22T23:43:56.010+05:30",
+          "method": "POST",
+          "endpoint": "/waves/v1/tts",
+          "query_params": {},
+          "request": {
+            "json": {
+              "text": "Please call me back on 9876543210.",
+              "voice_id": "meher",
+              "model": "lightning_v3.1_pro",
+              "language": "en",
+              "sample_rate": 24000,
+              "output_format": "wav"
+            },
+            "text_chars": 34,
+            "headers": {
+              "Content-Type": "application/json",
+              "Authorization": "[REDACTED]"
+            }
+          },
+          "auth_mode": "valid",
+          "status": 200,
+          "content_type": "audio/wav",
+          "response_bytes": 190844,
+          "response_truncated_at_cap": false,
+          "response_sha256": "5b224c74c1e6f687d54ff26579cb0ed4a1603fa001a39f705995b2bee18353d1",
+          "time_to_headers_ms": 778.5,
+          "ttfb_ms": 778.8,
+          "duration_ms": 800.5,
+          "extra_timings_ms": {},
+          "request_ids": {
+            "x-request-id": "159aa933-4a21-418f-bc57-a16faf6f610d",
+            "x-session-id": "159aa933-4a21-418f-bc57-a16faf6f610d",
+            "x-external-session-id": "",
+            "x-external-request-id": ""
+          },
+          "response_headers": {
+            "date": "Sun, 22 Nov 2026 18:13:56 GMT",
+            "content-type": "audio/wav",
+            "content-length": "190844",
+            "connection": "keep-alive",
+            "set-cookie": "[REDACTED]",
+            "x-request-id": "159aa933-4a21-418f-bc57-a16faf6f610d",
+            "cache-control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+            "pragma": "no-cache",
+            "expires": "0",
+            "strict-transport-security": "max-age=31536000; includeSubDomains",
+            "content-security-policy": "default-src 'self';script-src 'self';style-src 'self' 'unsafe-inline';img-src 'self' data: https://d1o0umtiv0iuvd.cloudfront.net https://d4a5s42qh2351.cloudfront.net https://waves-history.s3.ap-south-1.amazonaws.com https://waves-history-dev.s3.ap-south-1.amazonaws.com https://db2izkvf1oocn.cloudfront.net https://media.plivo.com https://dlw9ti8dmuxc7.cloudfront.net;connect-src 'self';frame-ancestors 'none';upgrade-insecure-requests;base-uri 'self';font-src 'self' https: data:;form-action 'self';object-src 'none';script-src-attr 'none'",
+            "cross-origin-opener-policy": "same-origin",
+            "cross-origin-resource-policy": "same-origin",
+            "origin-agent-cluster": "?1",
+            "referrer-policy": "no-referrer",
+            "x-content-type-options": "nosniff",
+            "x-dns-prefetch-control": "off",
+            "x-download-options": "noopen",
+            "x-frame-options": "SAMEORIGIN",
+            "x-permitted-cross-domain-policies": "none",
+            "x-xss-protection": "0",
+            "vary": "Origin",
+            "access-control-allow-credentials": "true",
+            "access-control-expose-headers": "Set-Cookie,X-Smallest-Prompt-Guard,X-Request-Id,Content-Disposition",
+            "x-session-id": "159aa933-4a21-418f-bc57-a16faf6f610d",
+            "x-external-session-id": "",
+            "x-external-request-id": "",
+            "etag": "W/\"2e97c-IEzdOVkUihbxrBiQHp+vPzfESNA\""
+          },
+          "body_excerpt": null,
+          "transport_error": null,
+          "cancelled_by_client": false,
+          "fresh_connection": false,
+          "body_chunks": 16
+        }
+      ]
+    },
+    {
+      "case_id": "P2-TTS-L01",
+      "title": "880-character paragraph (sync; same text as P2-STR-08)",
+      "area": "TTS correctness",
+      "expected_behavior": "valid WAV; completion verified by round-trip of the final sentence",
+      "doc_refs": [
+        "https://docs.smallest.ai/api-reference/models/text-to-speech/synthesize-speech",
+        "https://docs.smallest.ai/models/text-to-speech/best-practices"
+      ],
+      "classification": "Passed",
+      "checks": [
+        {
+          "name": "HTTP 200",
+          "passed": true,
+          "expected": "200",
+          "actual": "200",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/api-reference/models/text-to-speech/synthesize-speech"
+        },
+        {
+          "name": "WAV sample rate equals requested",
+          "passed": true,
+          "expected": 24000,
+          "actual": "24000",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/api-reference/models/text-to-speech/synthesize-speech"
+        },
+        {
+          "name": "audio not silent",
+          "passed": true,
+          "expected": "speech energy present",
+          "actual": "rms -14.0 dBFS",
+          "requirement": "quality",
+          "doc_ref": null
+        },
+        {
+          "name": "no clipping (<0.1% samples at full scale)",
+          "passed": true,
+          "expected": "< 0.001",
+          "actual": "0.0",
+          "requirement": "quality",
+          "doc_ref": null
+        },
+        {
+          "name": "no internal silence > 2 s (dropped content heuristic)",
+          "passed": true,
+          "expected": "<= 2000 ms",
+          "actual": "580",
+          "requirement": "quality",
+          "doc_ref": null
+        },
+        {
+          "name": "speaking rate plausible (5-30 chars/s at speed 1)",
+          "passed": true,
+          "expected": "5-30",
+          "actual": "19.1",
+          "requirement": "quality",
+          "doc_ref": null
+        },
+        {
+          "name": "round-trip STT HTTP 200",
+          "passed": true,
+          "expected": "200",
+          "actual": "200",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/api-reference/models/speech-to-text/transcribe"
+        },
+        {
+          "name": "round-trip: expected spoken items recovered",
+          "passed": true,
+          "expected": "3 items",
+          "actual": "3 found; missing []",
+          "requirement": "exploratory",
+          "doc_ref": null
+        },
+        {
+          "name": "round-trip: last 20 input words present in order (truncation proxy)",
+          "passed": true,
+          "expected": ">= 16",
+          "actual": "20",
+          "requirement": "exploratory",
+          "doc_ref": null
+        }
+      ],
+      "metrics": {
+        "params": {
+          "language": "en"
+        },
+        "audio_integrity": {
+          "samples": 1107614,
+          "duration_s": 46.151,
+          "rms_dbfs": -14.0,
+          "peak": 31866,
+          "clipped_fraction": 0.0,
+          "leading_silence_ms": 40,
+          "trailing_silence_ms": 240,
+          "longest_internal_silence_ms": 580,
+          "all_silent": false,
+          "chars": 880,
+          "chars_per_s": 19.07
+        },
+        "roundtrip": {
+          "transcription": "Thank you for calling Horizon Bank. Your recent payment has been received, and your account is now up to date. If you would like to hear your balance, please stay on the line, and an agent will help you shortly with any other questions. We also wanted to let you know about our new savings plan, which offers a higher interest rate for customers who keep a minimum balance for 12 months. You can sign up through the mobile app or at any branch, and there are no extra fees to get started. Our branches are open from nine in the morning until five in the evening on weekdays and from ten until two on saturdays. For security reasons, we will never ask for your password or one time code over the phone. So please do not share them with anyone. If you notice any unusual activity, contact our support team immediately. The final sentence mentions a purple elephant named Gopal.",
+          "key_tokens": {
+            "hit": 3,
+            "total": 3,
+            "missing": []
+          },
+          "wer_vs_input_text": 0.006,
+          "note": "machine proxy only; not a pronunciation judgement",
+          "tail_coverage": {
+            "last_n_input_words": 20,
+            "matched_in_order": 20
+          }
+        }
+      },
+      "notes": [],
+      "requests": [
+        {
+          "case_id": "P2-TTS-L01",
+          "ledger_seq": 107,
+          "timestamp_utc": "2026-11-22T18:13:58.316+00:00",
+          "timestamp_ist": "2026-11-22T23:43:58.316+05:30",
+          "method": "POST",
+          "endpoint": "/waves/v1/tts",
+          "query_params": {},
+          "request": {
+            "json": {
+              "text": "Thank you for calling Horizon Bank. Your recent payment has been received, and your account is now up to date. If you would like to hear your balance, please stay on the line, and an agent will help you shortly with any other questions. We also wanted to let you know about our new savings plan, which offers a higher interest rate for customers who keep a minimum balance for twelve months. You can sign up through the mobile app or at any branch, and there are no extra fees to get started. Our branches are open from nine in the morning until five in the evening on weekdays, and from ten until two on Saturdays. For security reasons, we will never ask for your password or one time code over the phone, so please do not share them with anyone. If you notice any unusual activity, contact our support team immediately. The final sentence mentions a purple elephant named Gopal.",
+              "voice_id": "meher",
+              "model": "lightning_v3.1_pro",
+              "language": "en",
+              "sample_rate": 24000,
+              "output_format": "wav"
+            },
+            "text_chars": 880,
+            "headers": {
+              "Content-Type": "application/json",
+              "Authorization": "[REDACTED]"
+            }
+          },
+          "auth_mode": "valid",
+          "status": 200,
+          "content_type": "audio/wav",
+          "response_bytes": 2215272,
+          "response_truncated_at_cap": false,
+          "response_sha256": "d15f33d4df810cd9a9aeb498243ab0ee5003056ac4d42639c2677a1a12293e3a",
+          "time_to_headers_ms": 7111.0,
+          "ttfb_ms": 7111.3,
+          "duration_ms": 7256.0,
+          "extra_timings_ms": {},
+          "request_ids": {
+            "x-request-id": "f77ed298-b23e-4541-8c98-244801c115a2",
+            "x-session-id": "f77ed298-b23e-4541-8c98-244801c115a2",
+            "x-external-session-id": "",
+            "x-external-request-id": ""
+          },
+          "response_headers": {
+            "date": "Sun, 22 Nov 2026 18:14:05 GMT",
+            "content-type": "audio/wav",
+            "content-length": "2215272",
+            "connection": "keep-alive",
+            "set-cookie": "[REDACTED]",
+            "x-request-id": "f77ed298-b23e-4541-8c98-244801c115a2",
+            "cache-control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+            "pragma": "no-cache",
+            "expires": "0",
+            "strict-transport-security": "max-age=31536000; includeSubDomains",
+            "content-security-policy": "default-src 'self';script-src 'self';style-src 'self' 'unsafe-inline';img-src 'self' data: https://d1o0umtiv0iuvd.cloudfront.net https://d4a5s42qh2351.cloudfront.net https://waves-history.s3.ap-south-1.amazonaws.com https://waves-history-dev.s3.ap-south-1.amazonaws.com https://db2izkvf1oocn.cloudfront.net https://media.plivo.com https://dlw9ti8dmuxc7.cloudfront.net;connect-src 'self';frame-ancestors 'none';upgrade-insecure-requests;base-uri 'self';font-src 'self' https: data:;form-action 'self';object-src 'none';script-src-attr 'none'",
+            "cross-origin-opener-policy": "same-origin",
+            "cross-origin-resource-policy": "same-origin",
+            "origin-agent-cluster": "?1",
+            "referrer-policy": "no-referrer",
+            "x-content-type-options": "nosniff",
+            "x-dns-prefetch-control": "off",
+            "x-download-options": "noopen",
+            "x-frame-options": "SAMEORIGIN",
+            "x-permitted-cross-domain-policies": "none",
+            "x-xss-protection": "0",
+            "vary": "Origin",
+            "access-control-allow-credentials": "true",
+            "access-control-expose-headers": "Set-Cookie,X-Smallest-Prompt-Guard,X-Request-Id,Content-Disposition",
+            "x-session-id": "f77ed298-b23e-4541-8c98-244801c115a2",
+            "x-external-session-id": "",
+            "x-external-request-id": "",
+            "etag": "W/\"21cd68-OPqetGZhNsHrwsaX3z3V3fNh8qY\""
+          },
+          "body_excerpt": null,
+          "transport_error": null,
+          "cancelled_by_client": false,
+          "fresh_connection": false,
+          "body_chunks": 140
+        },
+        {
+          "case_id": "P2-TTS-L01",
+          "ledger_seq": 108,
+          "timestamp_utc": "2026-11-22T18:14:07.080+00:00",
+          "timestamp_ist": "2026-11-22T23:44:07.080+05:30",
+          "method": "POST",
+          "endpoint": "/waves/v1/stt/",
+          "query_params": {
+            "model": "pulse",
+            "language": "en"
+          },
+          "request": {
+            "binary_body": {
+              "bytes": 2215272,
+              "sha256": "d15f33d4df810cd9a9aeb498243ab0ee5003056ac4d42639c2677a1a12293e3a"
+            },
+            "headers": {
+              "Content-Type": "application/octet-stream",
+              "Authorization": "[REDACTED]"
+            }
+          },
+          "auth_mode": "valid",
+          "status": 200,
+          "content_type": "application/json; charset=utf-8",
+          "response_bytes": 991,
+          "response_truncated_at_cap": false,
+          "response_sha256": "deaee383f4ccbf946e2c6f92343710d39716c4bbeb8bf87b61c2049207d44405",
+          "time_to_headers_ms": 761.1,
+          "ttfb_ms": 761.3,
+          "duration_ms": 761.5,
+          "extra_timings_ms": {},
+          "request_ids": {
+            "x-request-id": "7d46f587-c68d-4b95-8439-0370693fc690"
+          },
+          "response_headers": {
+            "date": "Sun, 22 Nov 2026 18:14:07 GMT",
+            "content-type": "application/json; charset=utf-8",
+            "content-length": "991",
+            "connection": "keep-alive",
+            "set-cookie": "[REDACTED]",
+            "x-request-id": "7d46f587-c68d-4b95-8439-0370693fc690",
+            "cache-control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+            "pragma": "no-cache",
+            "expires": "0",
+            "strict-transport-security": "max-age=31536000; includeSubDomains",
+            "content-security-policy": "default-src 'self';script-src 'self';style-src 'self' 'unsafe-inline';img-src 'self' data: https://d1o0umtiv0iuvd.cloudfront.net https://d4a5s42qh2351.cloudfront.net https://waves-history.s3.ap-south-1.amazonaws.com https://waves-history-dev.s3.ap-south-1.amazonaws.com https://db2izkvf1oocn.cloudfront.net https://media.plivo.com https://dlw9ti8dmuxc7.cloudfront.net;connect-src 'self';frame-ancestors 'none';upgrade-insecure-requests;base-uri 'self';font-src 'self' https: data:;form-action 'self';object-src 'none';script-src-attr 'none'",
+            "cross-origin-opener-policy": "same-origin",
+            "cross-origin-resource-policy": "same-origin",
+            "origin-agent-cluster": "?1",
+            "referrer-policy": "no-referrer",
+            "x-content-type-options": "nosniff",
+            "x-dns-prefetch-control": "off",
+            "x-download-options": "noopen",
+            "x-frame-options": "SAMEORIGIN",
+            "x-permitted-cross-domain-policies": "none",
+            "x-xss-protection": "0",
+            "vary": "Origin",
+            "access-control-allow-credentials": "true",
+            "access-control-expose-headers": "Set-Cookie,X-Smallest-Prompt-Guard,X-Request-Id,Content-Disposition",
+            "etag": "W/\"3df-QQwB8VI7ZTLRhDYmmCoROuJ5azY\""
+          },
+          "body_excerpt": "{\"status\":\"success\",\"transcription\":\"Thank you for calling Horizon Bank. Your recent payment has been received, and your account is now up to date. If you would like to hear your balance, please stay on the line, and an agent will help you shortly with any other questions. We also wanted to let you know about our new savings plan, which offers a higher interest rate for customers who keep a minimum balance for 12 months. You can sign up through the mobile app or at any branch, and there are no extra fees to get started. Our branches are open from nine in the morning until five in the evening o...[truncated]",
+          "transport_error": null,
+          "cancelled_by_client": false,
+          "fresh_connection": false,
+          "body_chunks": 1
+        }
+      ]
+    }
+  ]
+}
