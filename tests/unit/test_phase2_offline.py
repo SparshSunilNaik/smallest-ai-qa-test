@@ -335,3 +335,12 @@ def test_q6_speech_bounds_and_threshold_range():
     _, end1 = speech_bounds(s, rate, (0.0, 1.5), 10, -40.0)
     start2, _ = speech_bounds(s, rate, (1.5, 3.0), 10, -40.0)
     assert abs(end1 - 1.0) <= 0.01 and abs(start2 - 2.0) <= 0.01
+
+
+
+def test_speaking_rate_heuristic_scales_with_speed(settings, fixture_wav, tmp_path):
+    """Regression for Batch 4 P2-PAR-02: 35 chars/s at speed=2.0 is plausible, not a quality failure."""
+    cases, _, _ = _run_batch(settings, fixture_wav, FakeP2(), "4", tmp_path)
+    fast = cases["P2-PAR-02"]
+    rate_check = next(c for c in fast["checks"] if c["name"].startswith("speed2.0: speaking rate"))
+    assert "at speed 2" in rate_check["name"] and rate_check["expected"] == "10-60"

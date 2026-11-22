@@ -1,13 +1,13 @@
 # Results summary (auto-generated from evidence/runs)
 
-- Runs: 8; cumulative API requests (ledger): 83/128
+- Runs: 9; cumulative API requests (ledger): 99/128
 - Counts are per test case. Several cases can share one root cause; consolidated findings, severity and interpretation are in `reports/qa-report-draft.md`.
 
 ## Classification counts
 
-- Passed: 46
+- Passed: 54
 - Confirmed defect: 6
-- Candidate finding requiring reproduction: 17
+- Candidate finding requiring reproduction: 19
 - Expected behavior: 0
 - Documentation ambiguity: 1
 - Inconclusive: 0
@@ -50,6 +50,10 @@
 | P2-HUM-03 | Human: numbers, currency, dates (replaces synthetic P2-STT-04) | Passed | 1 | 20261122T174926Z | 200 |
 | P2-HUM-04 | Human: Hinglish, language=hi (replaces TTS-generated P2-STT-12) | Candidate finding requiring reproduction | 1 | 20261122T174926Z | 200 |
 | P2-HUM-05 | Human: spontaneous speech (replaces synthetic P2-STT-08) | Passed | 1 | 20261122T174926Z | 200 |
+| P2-PAR-00 | speed=1.0 baseline (140 chars) | Passed | 1 | 20261122T180703Z | 200 |
+| P2-PAR-01 | speed=0.5 | Passed | 1 | 20261122T180703Z | 200 |
+| P2-PAR-02 | speed=2.0 | Candidate finding requiring reproduction | 1 | 20261122T180703Z | 200 |
+| P2-PAR-03 | sample_rate=8000 WAV header | Passed | 1 | 20261122T180703Z | 200 |
 | P2-SDK-01 | smallestai 5.14.0 synthesize_tts (quickstart parameters) | Passed | 1 | 20261122T171937Z | 200 |
 | P2-SDK-02 | smallestai 5.14.0 synthesize_sse_tts yields audio | Confirmed defect | 2 | 20261122T172115Z | 200 |
 | P2-SDK-03 | smallestai 5.14.0 speech_to_text.transcribe | Passed | 1 | 20261122T171937Z | 200 |
@@ -69,6 +73,12 @@
 | P2-STT-13 | 8 kHz telephony-band audio (16 kHz recommended) | Passed | 1 | 20261122T174926Z | 200 |
 | P2-STT-14 | Two speakers with diarize=true | Passed | 1 | 20261122T174926Z | 200 |
 | P2-STT-15 | Word timestamps vs a known 1.5 s inserted pause | Candidate finding requiring reproduction | 1 | 20261122T174926Z | 200 |
+| P2-TTS-N01 | Numbers: decimals, order id, count | Passed | 1 | 20261122T180703Z | 200, 200 |
+| P2-TTS-N02 | Currency: ₹, $, € | Passed | 1 | 20261122T180703Z | 200, 200 |
+| P2-TTS-N03 | Date 05/03/2024 with date_format=US | Passed | 1 | 20261122T180703Z | 200, 200 |
+| P2-TTS-N04 | Date 05/03/2024 with date_format=EU | Passed | 1 | 20261122T180703Z | 200, 200 |
+| P2-TTS-N05 | math_notation=true: '6 x 7' | Passed | 1 | 20261122T180703Z | 200, 200 |
+| P2-TTS-N06 | Unicode punctuation, emoji, accented Latin | Candidate finding requiring reproduction | 1 | 20261122T180703Z | 200, 200 |
 | P2-WS-01 | WebSocket TTS with word_timestamps (meher) | Passed | 2 | 20261122T173129Z | 101 |
 | P2-WS-02 | WebSocket unknown voice | Candidate finding requiring reproduction | 1 | 20261122T172801Z | 101 |
 | STR-01 | SSE streaming success, framing, completion, TTFB (pcm) | Passed | 1 | 20261122T163926Z | 200 |

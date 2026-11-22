@@ -80,7 +80,7 @@ def _rejected(res: CaseResult, ex: Exchange, product: str, *, documented_400: bo
 
 
 def _tts_integrity(ctx: Context, res: CaseResult, ex: Exchange, text: str, *, sample_rate: int = TTS_INTEGRITY_SR,
-                   label: str = "", listen_focus: str = "") -> bytes | None:
+                   label: str = "", listen_focus: str = "", speed: float = 1.0) -> bytes | None:
     """Machine-verifiable audio integrity for a sync WAV response. Returns PCM or None."""
     p = f"{label}: " if label else ""
     res.check(f"{p}HTTP 200", ex.status == 200, "200", ex.status, DOCUMENTED, D.TTS_SYNC)
@@ -101,8 +101,9 @@ def _tts_integrity(ctx: Context, res: CaseResult, ex: Exchange, text: str, *, sa
     res.check(f"{p}no internal silence > 2 s (dropped content heuristic)",
               (a.get("longest_internal_silence_ms") or 0) <= 2000, "<= 2000 ms",
               a.get("longest_internal_silence_ms"), QUALITY)
-    res.check(f"{p}speaking rate plausible (5-30 chars/s)", cps is not None and 5 <= cps <= 30, "5-30",
-              None if cps is None else round(cps, 1), QUALITY)
+    lo, hi = 5 * speed, 30 * speed  # heuristic band scales with the requested speed
+    res.check(f"{p}speaking rate plausible ({lo:g}-{hi:g} chars/s at speed {speed:g})",
+              cps is not None and lo <= cps <= hi, f"{lo:g}-{hi:g}", None if cps is None else round(cps, 1), QUALITY)
     res.metrics[f"{label or 'audio'}_integrity"] = {**a, "chars": len(text), "chars_per_s": cps and round(cps, 2)}
     name = f"{res.case_id}{('-' + label) if label else ''}.wav"
     ctx.save_private(name, ex.body)
@@ -760,7 +761,7 @@ def param_speed(speed: float) -> Callable[[Context, CaseResult], None]:
     def run(ctx: Context, res: CaseResult) -> None:
         ex = api.synthesize(ctx.client, res.case_id, api.tts_body(T_140, speed=speed))
         res.exchanges.append(ex)
-        pcm = _tts_integrity(ctx, res, ex, T_140, label=f"speed{speed}")
+        pcm = _tts_integrity(ctx, res, ex, T_140, label=f"speed{speed}", speed=speed)
         if pcm is not None:
             dur = len(pcm) / 2 / 24000
             ctx.state.setdefault("speed_durations", {})[speed] = dur

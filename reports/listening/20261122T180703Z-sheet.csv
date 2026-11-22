@@ -1,0 +1,11 @@
+clip_id,case_id,text,listen_for,listener,date,playback_device,intelligible_1to5,matches_text_yes_no,mispronounced_words,naturalness_1to5,artifacts_none_click_cutoff_noise_robotic_other,notes
+L01,P2-TTS-N04,The meeting is on 05/03/2024.,date read as 5 March,,,,,,,,,
+L02,P2-TTS-N03,The meeting is on 05/03/2024.,date read as May 3,,,,,,,,,
+L03,P2-TTS-N02,"The fare is ₹499, the hotel costs $120, and the visa fee is €60.",currency symbols read as rupees/dollars/euros,,,,,,,,,
+L04,P2-PAR-03,"Hello, how are you?",general intelligibility,,,,,,,,,
+L05,P2-TTS-N06,"Wait… really? “Yes” — it’s done! 🎉 Café au lait, déjà vu.",punctuation pauses; emoji silent; café/déjà vu,,,,,,,,,
+L06,P2-PAR-00,Your order has shipped and should arrive by Thursday. Reply to this message if you need to change the address.,general intelligibility,,,,,,,,,
+L07,P2-TTS-N01,"Your balance is 1,250.75 dollars and order number 4572 will arrive in 3 days.",number reading,,,,,,,,,
+L08,P2-TTS-N05,What is 6 x 7? It is 42.,'x' read as times,,,,,,,,,
+L09,P2-PAR-02,Your order has shipped and should arrive by Thursday. Reply to this message if you need to change the address.,general intelligibility,,,,,,,,,
+L10,P2-PAR-01,Your order has shipped and should arrive by Thursday. Reply to this message if you need to change the address.,general intelligibility,,,,,,,,,
