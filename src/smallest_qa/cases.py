@@ -42,6 +42,8 @@ class Context:
     private_dir: Path
     fixture: Fixture | None = None
     state: dict[str, Any] = field(default_factory=dict)
+    p2_fixtures: dict[str, Any] = field(default_factory=dict)
+    listening: list[dict[str, Any]] = field(default_factory=list)  # clips queued for human listening
 
     def save_private(self, name: str, data: bytes) -> None:
         """Audio and raw bodies go to git-ignored evidence/private/ only."""
@@ -65,6 +67,13 @@ class CaseSpec:
     synth_chars: int = 0  # characters expected to be synthesised (cost estimate)
     stt_audio_requests: int = 0  # requests carrying the STT fixture (cost estimate)
     depends_on: tuple[str, ...] = ()
+    phase: int = 1
+    batch: str = ""
+    priority: str = ""  # P0 (highest) .. P2
+    stt_audio_seconds: float = 0.0  # Phase 2 cost estimate
+    p2_fixtures: tuple[str, ...] = ()  # Phase 2 STT fixtures required
+    requires_human: bool = False  # audio-content claims need listening confirmation
+    max_requests: int | None = None  # upper bound when planned_requests is data-dependent
 
 
 # ----------------------------------------------------------------------------- helpers

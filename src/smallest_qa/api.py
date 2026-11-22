@@ -78,6 +78,7 @@ class StreamObservation:
     frame_times_ms: list[float | None] = field(default_factory=list)
     invalid_frames: int = 0
     audio_chunks: list[bytes] = field(default_factory=list)
+    audio_chunk_times_ms: list[float | None] = field(default_factory=list)
     undecodable_audio: int = 0
     first_audio_ms: float | None = None
     done_ms: float | None = None
@@ -89,7 +90,8 @@ class StreamObservation:
         return b"".join(self.audio_chunks)
 
 
-def stream_sse(client: QAClient, case_id: str, body: dict[str, Any]) -> tuple[Exchange, StreamObservation]:
+def stream_sse(client: QAClient, case_id: str, body: dict[str, Any], *, stop_after_audio_chunks: int | None = None,
+               **request_kwargs: Any) -> tuple[Exchange, StreamObservation]:
     parser = SSEParser()
     obs = StreamObservation()
 
@@ -110,6 +112,7 @@ def stream_sse(client: QAClient, case_id: str, body: dict[str, Any]) -> tuple[Ex
                 try:
                     chunk = base64.b64decode(audio_b64, validate=True)
                     obs.audio_chunks.append(chunk)
+                    obs.audio_chunk_times_ms.append(ev.t_ms)
                     if obs.first_audio_ms is None:
                         obs.first_audio_ms = ev.t_ms
                 except (binascii.Error, ValueError):
@@ -125,8 +128,10 @@ def stream_sse(client: QAClient, case_id: str, body: dict[str, Any]) -> tuple[Ex
     def on_chunk(chunk: bytes, t_ms: float) -> None:
         handle(parser.feed(chunk, t_ms))
 
-    ex = client.request(case_id, "POST", TTS_SSE_PATH, json_body=body, on_chunk=on_chunk,
-                        headers={"Content-Type": "application/json", "Accept": "text/event-stream"})
+    stop_when = (lambda: len(obs.audio_chunks) >= stop_after_audio_chunks) if stop_after_audio_chunks else None
+    ex = client.request(case_id, "POST", TTS_SSE_PATH, json_body=body, on_chunk=on_chunk, stop_when=stop_when,
+                        headers={"Content-Type": "application/json", "Accept": "text/event-stream"},
+                        **request_kwargs)
     obs.trailing_unparsed_bytes = parser.pending_bytes
     handle(parser.flush(ex.duration_ms))
     if obs.first_audio_ms is not None:

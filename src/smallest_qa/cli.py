@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import argparse
+from pathlib import Path
 import sys
 
 from .cases import CASES
@@ -34,7 +35,52 @@ def _estimate(specs) -> dict:
             "stt_audio_min": stt_min, "usd": tts_min * TTS_USD_PER_MIN + stt_min * STT_USD_PER_MIN}
 
 
+def _p2_specs(args):
+    from .cases_p2 import P2_BY_ID, batch_cases
+
+    if args.only:
+        ids = [i.strip().upper() for i in args.only.split(",")]
+        unknown = [i for i in ids if i not in P2_BY_ID]
+        if unknown:
+            raise SystemExit(f"Unknown Phase 2 case id(s): {unknown}")
+        return [P2_BY_ID[i] for i in ids]
+    if not args.batch:
+        raise SystemExit("Phase 2 requires --batch N (or --only IDS)")
+    return batch_cases(args.batch)
+
+
+def cmd_plan_p2(args) -> int:
+    from .budget import estimate_usd
+    from .cases_p2 import BATCHES, batch_cases, planned
+
+    settings = load_settings()
+    ledger = ledger_for(settings)
+    print(f"API key configured: {'yes' if settings.key_configured else 'NO'}")
+    print(f"Ledger: {ledger.used} total | phase 1 {ledger.phase_used(1)}/28 (closed) | phase 2 "
+          f"{ledger.phase_used(2)}/100 used, est. ${ledger.phase_est_usd(2):.3f} of $2.00\n")
+    batches = [args.batch] if args.batch else BATCHES
+    grand_req = grand_usd = 0.0
+    for b in batches:
+        specs = batch_cases(b)
+        req = sum(planned(s) for s in specs)
+        chars = sum(s.synth_chars for s in specs)
+        stt = sum(s.stt_audio_seconds for s in specs)
+        usd = estimate_usd(chars, stt)
+        grand_req += req
+        grand_usd += usd
+        print(f"== Batch {b}: {len(specs)} cases, {req} requests, ~{chars} TTS chars, ~{stt:.0f}s STT audio, "
+              f"~${usd:.3f}")
+        for s in specs:
+            flag = " [human listening]" if s.requires_human else ""
+            print(f"   {s.case_id:<11} {s.priority:<3} {planned(s):>2}  {s.requirement:<11} {s.title}{flag}")
+    print(f"\nTotal planned: {int(grand_req)} requests, ~${grand_usd:.2f} list price; reserve "
+          f"{100 - int(grand_req)} requests for reproduction.")
+    return 0
+
+
 def cmd_plan(args) -> int:
+    if getattr(args, "phase", 1) == 2:
+        return cmd_plan_p2(args)
     settings = load_settings()
     ledger = ledger_for(settings)
     specs = select_cases(args.only.split(",") if args.only else None, args.include_optional)
@@ -80,6 +126,21 @@ def cmd_run(args) -> int:
     if not settings.key_configured:
         print("SMALLEST_API_KEY is not configured. Paste it into .env (see README).")
         return 2
+    if args.phase == 2:
+        from .runner import check_batch
+
+        specs = _p2_specs(args)
+        problems = check_batch(settings, specs, 2)
+        if problems:
+            print("Refusing:", "; ".join(problems))
+            return 2
+        ledger = ledger_for(settings)
+        print(f"Phase 2 batch {args.batch or 'adhoc'}: {len(specs)} case(s); phase 2 ledger "
+              f"{ledger.phase_used(2)}/100 before run")
+        run_dir = execute(settings, specs, phase=2, batch=args.batch or "repro")
+        print(f"\nEvidence: {run_dir.relative_to(REPO_ROOT)}/results.json and summary.md")
+        print(f"Phase 2 ledger after run: {ledger.phase_used(2)}/100; est. ${ledger.phase_est_usd(2):.3f}")
+        return 0
     specs = select_cases(args.only.split(",") if args.only else None, args.include_optional)
     ledger = ledger_for(settings)
     print(f"Live run: {len(specs)} case(s); ledger {ledger.used}/{ledger.max_requests} used before run")
@@ -100,6 +161,85 @@ def cmd_report(_args) -> int:
     return 0
 
 
+def cmd_sdk_compat(_args) -> int:
+    import json
+    import logging
+
+    from .sdk_tools import offline_checks
+
+    logging.disable(logging.WARNING)
+    settings = load_settings()
+    res = offline_checks(settings.evidence_dir)
+    out_dir = settings.evidence_dir / "offline"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    path = out_dir / "sdk-compat.json"
+    path.write_text(json.dumps(res, indent=2, ensure_ascii=False, default=str) + "\n", encoding="utf-8")
+    print(f"Wrote {path.relative_to(REPO_ROOT)} ({len(res['replays'])} recorded error bodies replayed)")
+    return 0
+
+
+def cmd_docs_offline(_args) -> int:
+    import json
+    import tempfile
+
+    from .doc_examples import offline_suite
+
+    settings = load_settings()
+    with tempfile.TemporaryDirectory() as tmp:
+        res = offline_suite(settings.evidence_dir, Path(tmp))
+    out = settings.evidence_dir / "offline" / "doc-examples-offline.json"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(res, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    for r in res:
+        print(f"{r['example']:36} exit={r['exit_code']} files={[f['starts_as'] for f in r['files']]} "
+              f"api_calls={sum(1 for c in r['calls'] if c.get('host_kind') == 'api')}")
+    print(f"Wrote {out.relative_to(REPO_ROOT)}")
+    return 0
+
+
+def cmd_matrix_p2(_args) -> int:
+    from .budget import estimate_usd
+    from .cases_p2 import BATCHES, batch_cases, planned
+
+    short = {"https://docs.smallest.ai/": "", "https://github.com/smallest-inc/": "gh:"}
+
+    def src(u: str) -> str:
+        for k, v in short.items():
+            u = u.replace(k, v)
+        return u
+
+    lines = ["# Phase 2 test matrix", "",
+             "Generated from `src/smallest_qa/cases_p2.py` by `uv run smallest-qa matrix-p2`; do not edit by hand.",
+             "Doc links are relative to `https://docs.smallest.ai/` unless prefixed `gh:` (github.com/smallest-inc).",
+             "Provenance: **documented** deviations can become defects after reproduction; **quality** and "
+             "**exploratory** are observations only. 🎧 = audio queued for human listening.", ""]
+    for b in BATCHES:
+        specs = batch_cases(b)
+        req = sum(planned(x) for x in specs)
+        usd = estimate_usd(sum(x.synth_chars for x in specs), sum(x.stt_audio_seconds for x in specs))
+        lines += [f"## Batch {b} ({req} requests, est. ${usd:.3f})", "",
+                  "| ID | Pri | Area | Test | Provenance | Documented / expected behaviour | Source | Req |",
+                  "|---|---|---|---|---|---|---|---|"]
+        for x in specs:
+            lines.append(f"| {x.case_id} | {x.priority} | {x.area} | {x.title}{' 🎧' if x.requires_human else ''} | "
+                         f"{x.requirement} | {x.expected.replace('|', '/')} | "
+                         f"{'<br>'.join(src(u) for u in x.doc_refs)} | {planned(x)} |")
+        lines.append("")
+    out = REPO_ROOT / "docs" / "phase2-test-matrix.md"
+    out.write_text("\n".join(lines), encoding="utf-8")
+    print(f"Wrote {out.relative_to(REPO_ROOT)}")
+    return 0
+
+
+def cmd_fixtures_p2(_args) -> int:
+    from .fixtures_p2 import build_all
+
+    for k, v in build_all().items():
+        print(f"{k:24} " + (v if isinstance(v, str) else f"{v.duration_s:5.2f}s {v.sample_rate} Hz "
+                                                          f"sha256={v.sha256[:12]}"))
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="smallest-qa", description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -108,14 +248,21 @@ def main(argv: list[str] | None = None) -> int:
         p = sub.add_parser(name)
         p.add_argument("--only", help="comma-separated case ids, e.g. TTS-01,STT-01")
         p.add_argument("--include-optional", action="store_true", help="include opt-in cases (TTS-08)")
+        p.add_argument("--phase", type=int, default=1, choices=(1, 2))
+        p.add_argument("--batch", help="Phase 2 batch number (1-6); at most 20 requests each")
         if name == "run":
             p.add_argument("--approve-live", action="store_true", help="required: confirms live, billable requests")
     sub.add_parser("check-key")
     sub.add_parser("make-fixtures")
     sub.add_parser("report")
+    sub.add_parser("sdk-compat", help="offline: replay recorded error bodies into the official SDK")
+    sub.add_parser("fixtures-p2", help="offline: generate Phase 2 STT fixtures with macOS say")
+    sub.add_parser("docs-offline", help="offline: run saved docs examples against recorded responses")
+    sub.add_parser("matrix-p2", help="offline: regenerate docs/phase2-test-matrix.md from the catalogue")
     args = parser.parse_args(argv)
     handlers = {"plan": cmd_plan, "run": cmd_run, "check-key": cmd_check_key, "make-fixtures": cmd_make_fixtures,
-                "report": cmd_report}
+                "report": cmd_report, "sdk-compat": cmd_sdk_compat, "fixtures-p2": cmd_fixtures_p2,
+                "docs-offline": cmd_docs_offline, "matrix-p2": cmd_matrix_p2}
     return handlers[args.cmd](args)
 
 

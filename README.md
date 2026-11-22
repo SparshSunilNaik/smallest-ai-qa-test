@@ -9,13 +9,38 @@ Every live request is bounded, sequential and budgeted. Each request is recorded
 | Path | Contents |
 |---|---|
 | `src/smallest_qa/` | The harness: an instrumented client, budget ledger, redaction, SSE and WAV parsing, and case catalogue |
-| `tests/unit/` | 32 offline tests against an in-process fake of the documented contract |
+| `tests/unit/` | 50 offline tests against in-process fakes of the documented contract (plus a local WebSocket double) |
 | `docs/api-research.md` | Facts from the docs, and the documentation observations found while researching |
 | `docs/test-plan.md` | Methodology, classification rules, safety controls and the full traceability matrix |
 | `evidence/request-ledger.jsonl` | Cumulative ledger of every live request (sanitized and committed) |
 | `evidence/runs/<run_id>/` | `results.json` and `summary.md` for each run (sanitized and committed) |
 | `evidence/private/` | Generated audio and raw bodies (**git-ignored**) |
 | `reports/` | The aggregated results summary, QA report draft and interview prep |
+
+## Phase 2 (broader coverage)
+
+The plan is in [docs/phase2-plan.md](docs/phase2-plan.md). The generated matrix is in [docs/phase2-test-matrix.md](docs/phase2-test-matrix.md).
+
+```bash
+uv run smallest-qa plan --phase 2                         # offline: batches, requests, cost, ledger status
+uv run smallest-qa fixtures-p2                            # offline: build the STT reference audio (macOS say)
+uv run smallest-qa sdk-compat                             # offline: replay recorded error bodies into smallestai SDK
+uv run smallest-qa docs-offline                           # offline: run the docs examples verbatim against recorded responses
+uv run smallest-qa run --phase 2 --batch 1 --approve-live # LIVE: one batch (at most 20 requests)
+uv run smallest-qa run --phase 2 --only P2-SDK-02 --approve-live   # LIVE: reproduce one case
+```
+
+Caps are enforced in code:
+
+| Cap | Value |
+|---|---|
+| Cumulative | 128 |
+| Phase 1 | closed at 28 |
+| Phase 2 | 100 requests |
+| Per batch | 20 |
+| Phase 2 estimated spend | $2.00 |
+
+WebSocket connections, SDK attempts and doc-example calls all go through the same ledger.
 
 ## Setup (macOS)
 

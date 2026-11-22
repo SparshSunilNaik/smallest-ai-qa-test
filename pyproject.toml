@@ -16,6 +16,15 @@ smallest-qa = "smallest_qa.cli:main"
 dev = [
     "pytest>=8",
 ]
+# Official SDK + libraries used only for SDK-compatibility and doc-example checks (Phase 2).
+sdk = [
+    "smallestai==5.14.0",
+    "requests>=2.31",
+    "websockets>=12",
+]
+
+[tool.uv]
+default-groups = ["dev", "sdk"]
 
 [build-system]
 requires = ["hatchling"]

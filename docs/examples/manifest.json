@@ -1,0 +1,43 @@
+[
+  {
+    "file": "tts_quickstart_requests.py",
+    "source_url": "https://docs.smallest.ai/models/text-to-speech/quickstart",
+    "block_index_python": 0,
+    "fetched_utc": "2026-11-22",
+    "sha256": "af64a61c66496604c9bdcf4dc13ad6e9622bbc7a940851095e4cbeaf16d45477"
+  },
+  {
+    "file": "tts_quickstart_sdk.py",
+    "source_url": "https://docs.smallest.ai/models/text-to-speech/quickstart",
+    "block_index_python": 1,
+    "fetched_utc": "2026-11-22",
+    "sha256": "517c034a511d7e42f2b8ea65eee66d3a4d5495d4c3eaaa83c9d63d410202ff3c"
+  },
+  {
+    "file": "stt_quickstart_requests.py",
+    "source_url": "https://docs.smallest.ai/models/speech-to-text/quickstart",
+    "block_index_python": 0,
+    "fetched_utc": "2026-11-22",
+    "sha256": "1c842eb38f13c957f5a22323f101e736e51c760612fe01286109a3ea26ac08fc"
+  },
+  {
+    "file": "stt_transcribe_page_example.py",
+    "source_url": "https://docs.smallest.ai/api-reference/models/speech-to-text/transcribe",
+    "block_index_python": 0,
+    "fetched_utc": "2026-11-22",
+    "sha256": "b46eaec1fc8077d5ca8b5c1bcc10c2208a210cd36ee518ee9e8ab4c30128832e"
+  },
+  {
+    "file": "stt_transcribe_page_sdk_block.py",
+    "source_url": "https://docs.smallest.ai/api-reference/models/speech-to-text/transcribe",
+    "block_index_python": 1,
+    "fetched_utc": "2026-11-22",
+    "sha256": "b6137d641de3917a17d63754f746e497714e1176627be0fd5543c6d14bafda96"
+  },
+  {
+    "file": "cookbook_transcribe_python.py",
+    "source_url": "https://github.com/smallest-inc/cookbook/blob/main/speech-to-text/transcribe-python.py",
+    "fetched_utc": "2026-11-22",
+    "sha256": "e650a610ce22d113b1ebed95096f4f3d4a409d3014ff5616b4cf420c3ccc5541"
+  }
+]

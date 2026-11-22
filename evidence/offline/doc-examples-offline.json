@@ -1,0 +1,173 @@
+[
+  {
+    "scenario": "recorded live 401 (invalid key)",
+    "example": "tts_quickstart_requests.py",
+    "mode": "offline",
+    "exit_code": 0,
+    "stdout": "Saved output.wav (24 bytes)\n",
+    "stderr_tail": "",
+    "calls": [
+      {
+        "lib": "requests",
+        "method": "POST",
+        "url_path": "/waves/v1/tts",
+        "host_kind": "api",
+        "body_bytes": 183,
+        "query": "",
+        "timeout": "None",
+        "status": 401,
+        "ms": 0.0,
+        "resp_headers": {
+          "content-type": "application/json; charset=utf-8"
+        },
+        "resp_excerpt": "{\"error\":\"unauthorized\"}"
+      }
+    ],
+    "files": [
+      {
+        "name": "output.wav",
+        "bytes": 24,
+        "starts_as": "json-text"
+      }
+    ],
+    "timed_out": false
+  },
+  {
+    "scenario": "recorded live 401 (invalid key)",
+    "example": "tts_quickstart_sdk.py",
+    "mode": "offline",
+    "exit_code": 1,
+    "stdout": "",
+    "stderr_tail": ":\n    ^\n  File \"~/.local/share/uv/python/cpython-3.13.13-macos-aarch64-none/lib/python3.13/contextlib.py\", line 141, in __enter__\n    return next(self.gen)\n  File \"<repo>/.venv/lib/python3.13/site-packages/smallestai/waves/raw_client.py\", line 1016, in synthesize_tts\n    yield _stream()\n          ~~~~~~~^^\n  File \"<repo>/.venv/lib/python3.13/site-packages/smallestai/waves/raw_client.py\", line 981, in _stream\n    raise UnauthorizedError(\n    ...<8 lines>...\n    )\nsmallestai.waves.errors.unauthorized_error.UnauthorizedError: status_code: 401, body: {'error': 'unauthorized'}\nAuthentication failed. Check your API key (SMALLEST_API_KEY) — get one at https://app.smallest.ai/dashboard/api-keys.\n",
+    "calls": [
+      {
+        "lib": "httpx",
+        "method": "POST",
+        "url_path": "/waves/v1/tts",
+        "host_kind": "api",
+        "query": "",
+        "status": 401,
+        "ms": 0.0,
+        "resp_headers": {
+          "content-type": "application/json; charset=utf-8",
+          "content-length": "24"
+        }
+      }
+    ],
+    "files": [
+      {
+        "name": "output.wav",
+        "bytes": 0,
+        "starts_as": "other"
+      }
+    ],
+    "timed_out": false
+  },
+  {
+    "scenario": "any (fails before request)",
+    "example": "stt_transcribe_page_example.py",
+    "mode": "offline",
+    "exit_code": 1,
+    "stdout": "",
+    "stderr_tail": "Traceback (most recent call last):\n  File \"/private<tmp>/tmpui5u6vh8/stt_transcribe_page_example/stt_transcribe_page_example.py\", line 9, in <module>\n    headers={\"Authorization\": f\"Bearer {API_KEY}\", \"Content-Type\": \"application/octet-stream\"},\n                                        ^^^^^^^\nNameError: name 'API_KEY' is not defined\n",
+    "calls": [],
+    "files": [],
+    "timed_out": false
+  },
+  {
+    "scenario": "synthetic 200 (to observe what is sent)",
+    "example": "stt_transcribe_page_sdk_block.py",
+    "mode": "offline",
+    "exit_code": 0,
+    "stdout": "{'status': 'success', 'transcription': 'The quick brown fox jumps over the lazy dog. Speech recognition quality is measured by comparing the words.', 'words': [], 'utterances': [], 'metadata': {'duration': 6.305, 'fileSize': 205846}}\n",
+    "stderr_tail": "",
+    "calls": [
+      {
+        "lib": "requests",
+        "method": "POST",
+        "url_path": "/waves/v1/stt/",
+        "host_kind": "api",
+        "body_bytes": 0,
+        "query": "",
+        "timeout": "None",
+        "status": 200,
+        "ms": 0.0,
+        "resp_headers": {
+          "content-type": "application/json; charset=utf-8"
+        },
+        "resp_excerpt": "{\"status\":\"success\",\"transcription\":\"The quick brown fox jumps over the lazy dog. Speech recognition quality is measured by comparing the words.\",\"words\":[],\"utterances\":[],\"metadata\":{\"duration\":6.305,\"fileSize\":205846}}"
+      }
+    ],
+    "files": [],
+    "timed_out": false
+  },
+  {
+    "scenario": "recorded live 200 body; synthetic sample download",
+    "example": "stt_quickstart_requests.py",
+    "mode": "offline",
+    "exit_code": 0,
+    "stdout": "The quick brown fox jumps over the lazy dog. Speech recognition quality is measured by comparing the words.\n",
+    "stderr_tail": "",
+    "calls": [
+      {
+        "lib": "requests",
+        "method": "GET",
+        "url_path": "/smallest-inc/cookbook/raw/main/speech-to-text/getting-started/samples/audio.wav",
+        "host_kind": "aux",
+        "body_bytes": 0,
+        "query": "",
+        "timeout": "None",
+        "status": 200,
+        "ms": 0.2,
+        "resp_headers": {
+          "content-type": "audio/wav"
+        },
+        "resp_excerpt": "<205846 bytes>"
+      },
+      {
+        "lib": "requests",
+        "method": "POST",
+        "url_path": "/waves/v1/stt/",
+        "host_kind": "api",
+        "body_bytes": 205846,
+        "query": "model=pulse-pro&language=en",
+        "timeout": "120",
+        "status": 200,
+        "ms": 0.0,
+        "resp_headers": {
+          "content-type": "application/json; charset=utf-8"
+        },
+        "resp_excerpt": "{\"status\":\"success\",\"transcription\":\"The quick brown fox jumps over the lazy dog. Speech recognition quality is measured by comparing the words.\",\"words\":[],\"utterances\":[],\"metadata\":{\"duration\":6.305,\"fileSize\":205846}}"
+      }
+    ],
+    "files": [],
+    "timed_out": false
+  },
+  {
+    "scenario": "recorded live 200 body",
+    "example": "cookbook_transcribe_python.py",
+    "mode": "offline",
+    "exit_code": 0,
+    "stdout": "Transcription: The quick brown fox jumps over the lazy dog. Speech recognition quality is measured by comparing the words.\n",
+    "stderr_tail": "",
+    "calls": [
+      {
+        "lib": "requests",
+        "method": "POST",
+        "url_path": "/waves/v1/stt/",
+        "host_kind": "api",
+        "body_bytes": 109,
+        "query": "model=pulse&language=en",
+        "timeout": "120",
+        "status": 200,
+        "ms": 0.0,
+        "resp_headers": {
+          "content-type": "application/json; charset=utf-8"
+        },
+        "resp_excerpt": "{\"status\":\"success\",\"transcription\":\"The quick brown fox jumps over the lazy dog. Speech recognition quality is measured by comparing the words.\",\"words\":[],\"utterances\":[],\"metadata\":{\"duration\":6.305,\"fileSize\":205846}}"
+      }
+    ],
+    "files": [],
+    "timed_out": false
+  }
+]

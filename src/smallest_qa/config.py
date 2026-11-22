@@ -9,7 +9,10 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_BASE_URL = "https://api.smallest.ai"
-DEFAULT_MAX_REQUESTS = 28
+DEFAULT_MAX_REQUESTS = 128  # Phase 1 (28, spent) + Phase 2 (100), cumulative
+PHASE_REQUEST_CAPS = {1: 28, 2: 100}  # Phase 1 is closed: its 28 requests are spent
+PHASE_USD_CAPS = {2: 2.00}  # estimated list-price spend; real balance is checked on the dashboard
+MAX_BATCH_REQUESTS = 20
 
 
 def _parse_dotenv(path: Path) -> dict[str, str]:

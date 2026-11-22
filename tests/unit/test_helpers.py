@@ -121,3 +121,21 @@ def test_wer_and_normalisation():
     assert normalize("Hello, World!") == ["hello", "world"]
     assert word_error_rate("the quick brown fox", "The quick, brown fox.") == 0.0
     assert word_error_rate("a b c d", "a x c") == 0.5
+
+
+def test_normalize_keeps_devanagari_vowel_signs_and_drops_danda():
+    from smallest_qa.textsim import char_error_rate, key_token_hits
+
+    assert normalize("आज मौसम अच्छा है।") == ["आज", "मौसम", "अच्छा", "है"]
+    assert char_error_rate("मौसम", "मसम") > 0  # a dropped matra must count as an error
+    assert key_token_hits("Balance is $1,250.75", [["1250", "twelve fifty"], ["dollars", "$"]])["hit"] == 1
+
+
+def test_scrub_paths_hides_home_and_tmp():
+    import os
+
+    from smallest_qa.redact import scrub_paths
+
+    home = os.path.expanduser("~")
+    out = scrub_paths(f'File "{home}/x.py" and /private/var/folders/ab/cd/T/tmp1/y.py')
+    assert home not in out and "/var/folders" not in out and "~/x.py" in out

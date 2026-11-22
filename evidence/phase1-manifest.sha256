@@ -1,0 +1,8 @@
+a6547ca8bc1f7a965514fc04d7e638071fb691101e2c36abbf65d8af35b081f7  evidence/runs/20261122T163926Z/results.json
+df5874f1a43c8277df9ca9385de092484dcdcd7bc8d74db250a261e59e877445  evidence/runs/20261122T164124Z/results.json
+37444a0e88b0ae4841753779c7639b9ee3e38b25104e86e5d0a6077e01563d33  evidence/runs/20261122T164133Z/results.json
+387249a77d450aa3363b2bc7323c3eb74fe90b8f7dfd1af56e224190750719a2  evidence/runs/20261122T163926Z/summary.md
+7e0cf95787f3ea1ff484c49af9acc7a100b9af1de792b7d400266cac52446f99  evidence/runs/20261122T164124Z/summary.md
+648acddc4cb6b9f30dc56b24dfe483b7082e3e14f73827ea3292cfae4162bf5d  evidence/runs/20261122T164133Z/summary.md
+# ledger prefix: first 28 lines (Phase 1) must hash to:
+b955fc45ed25989d9ac4a3e3cd150ea5670641152e26d25aa4b92ca0033ee474  evidence/request-ledger.jsonl[lines 1-28]

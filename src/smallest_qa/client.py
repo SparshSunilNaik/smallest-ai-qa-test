@@ -55,6 +55,9 @@ class Exchange:
     duration_ms: float | None = None
     error: str | None = None
     extra_timings: dict[str, float] = field(default_factory=dict)
+    cancelled_by_client: bool = False
+    fresh_connection: bool = False
+    chunk_timeline: list[tuple[float, int]] = field(default_factory=list)  # (t_ms, bytes) per body chunk
 
     @property
     def content_type(self) -> str | None:
@@ -105,7 +108,20 @@ class Exchange:
             "response_headers": redact_headers(self.headers, secrets),
             "body_excerpt": safe_excerpt(self.body, secrets) if (is_textual and self.body) else None,
             "transport_error": redact_text(self.error, secrets) if self.error else None,
+            "cancelled_by_client": self.cancelled_by_client,
+            "fresh_connection": self.fresh_connection,
+            "body_chunks": len(self.chunk_timeline),
         }
+
+
+def _audio_seconds(content: bytes) -> float:
+    """Best-effort audio duration for spend estimates (WAV header, else 16 kHz 16-bit assumption)."""
+    from .audio import AudioFormatError, parse_wav
+
+    try:
+        return parse_wav(content).duration_s
+    except AudioFormatError:
+        return len(content) / 32000
 
 
 def _r(v: float | None) -> float | None:
@@ -152,21 +168,53 @@ class QAClient:
         run_id: str,
         transport: httpx.BaseTransport | None = None,
         sleep: Callable[[float], None] = time.sleep,
+        phase: int = 1,
+        batch: str = "",
     ):
         self.settings = settings
         self.ledger = ledger
         self.run_id = run_id
+        self.phase = phase
+        self.batch = batch
+        self._transport = transport
         self.guard = SafetyGuard()
         self._sleep = sleep
         self._last_request_end: float | None = None
-        self._http = httpx.Client(
-            base_url=settings.base_url,
-            timeout=httpx.Timeout(settings.read_timeout_s, connect=settings.connect_timeout_s),
-            transport=transport,
-            follow_redirects=False,
-            headers={"User-Agent": "smallest-qa-harness/0.1 (+httpx)"},
-        )
+        self._http = self._new_http()
         self.exchanges: list[Exchange] = []
+
+    def _new_http(self) -> httpx.Client:
+        return httpx.Client(
+            base_url=self.settings.base_url,
+            timeout=httpx.Timeout(self.settings.read_timeout_s, connect=self.settings.connect_timeout_s),
+            transport=self._transport,
+            follow_redirects=False,
+            headers={"User-Agent": "smallest-qa-harness/0.2 (+httpx)"},
+        )
+
+    def reserve(self, case_id: str, method: str, path: str, *, protocol: str = "http", est_tts_chars: int = 0,
+                est_stt_seconds: float = 0.0, auth: str = "valid") -> int:
+        """Ledger reservation + safety checks shared by HTTP, WebSocket and SDK transports."""
+        self.guard.check()
+        if auth == "valid" and not self.settings.key_configured:
+            raise HaltRun("SMALLEST_API_KEY is not configured; refusing authenticated request")
+        return self.ledger.reserve(run_id=self.run_id, case_id=case_id, method=method, path=path, phase=self.phase,
+                                   batch=self.batch, protocol=protocol, est_tts_chars=est_tts_chars,
+                                   est_stt_seconds=est_stt_seconds)
+
+    def pace(self, delay_s: float | None = None) -> None:
+        """Wait so consecutive requests never overlap. `delay_s` overrides the default gap (used only by the
+        cancellation probe, which deliberately follows a cancelled stream quickly; still strictly sequential)."""
+        gap = self.settings.inter_request_delay_s if delay_s is None else delay_s
+        if self._last_request_end is not None:
+            wait = gap - (time.perf_counter() - self._last_request_end)
+            if wait > 0:
+                self._sleep(wait)
+
+    def finished(self, ex: Exchange, expect_auth_ok: bool) -> None:
+        self._last_request_end = time.perf_counter()
+        self.exchanges.append(ex)
+        self.guard.observe(ex, expect_auth_ok=expect_auth_ok)
 
     @property
     def secrets(self) -> tuple[str, ...]:
@@ -202,17 +250,17 @@ class QAClient:
         expect_auth_ok: bool = True,
         on_chunk: Callable[[bytes, float], None] | None = None,
         max_bytes: int | None = None,
+        stop_when: Callable[[], bool] | None = None,
+        fresh_connection: bool = False,
+        delay_s: float | None = None,
     ) -> Exchange:
-        self.guard.check()
-        if auth == "valid" and not self.settings.key_configured:
-            raise HaltRun("SMALLEST_API_KEY is not configured; refusing authenticated request")
-        seq = self.ledger.reserve(run_id=self.run_id, case_id=case_id, method=method, path=path)
+        est_chars = len(json_body["text"]) if (json_body and isinstance(json_body.get("text"), str)
+                                               and auth == "valid") else 0
+        est_stt = _audio_seconds(content) if (content and auth == "valid") else 0.0
+        seq = self.reserve(case_id, method, path, est_tts_chars=est_chars, est_stt_seconds=est_stt, auth=auth)
 
         # Sequential pacing (documented TTS concurrency: 1 request in flight per account).
-        if self._last_request_end is not None:
-            wait = self.settings.inter_request_delay_s - (time.perf_counter() - self._last_request_end)
-            if wait > 0:
-                self._sleep(wait)
+        self.pace(delay_s)
 
         summary: dict[str, Any] = {}
         if json_body is not None:
@@ -233,14 +281,16 @@ class QAClient:
             request_summary=summary,
             auth_mode=auth,
             started=stamp_pair(),
+            fresh_connection=fresh_connection,
         )
         cap = max_bytes or self.settings.max_response_bytes
+        http = self._new_http() if fresh_connection else self._http
         t0 = time.perf_counter()
         try:
-            request = self._http.build_request(
+            request = http.build_request(
                 method, path, params=params, json=json_body, content=content, headers=req_headers
             )
-            response = self._http.send(request, stream=True)
+            response = http.send(request, stream=True)
             try:
                 ex.time_to_headers_ms = (time.perf_counter() - t0) * 1000
                 ex.status = response.status_code
@@ -252,6 +302,7 @@ class QAClient:
                     t_ms = (time.perf_counter() - t0) * 1000
                     if ex.ttfb_ms is None:
                         ex.ttfb_ms = t_ms
+                    ex.chunk_timeline.append((round(t_ms, 1), len(chunk)))
                     if on_chunk is not None:
                         on_chunk(chunk, t_ms)
                     room = cap - len(buf)
@@ -260,6 +311,9 @@ class QAClient:
                         ex.truncated = True
                         break
                     buf.extend(chunk)
+                    if stop_when is not None and stop_when():
+                        ex.cancelled_by_client = True  # deliberate client-side cancellation
+                        break
                 ex.body = bytes(buf)
             finally:
                 response.close()
@@ -269,8 +323,9 @@ class QAClient:
             ex.error = f"transport: {type(exc).__name__}: {exc}"
         except Exception as exc:  # unexpected client-side failure: record, never mask as backend defect
             ex.error = f"client: {type(exc).__name__}: {exc}"
+        finally:
+            if fresh_connection:
+                http.close()
         ex.duration_ms = (time.perf_counter() - t0) * 1000
-        self._last_request_end = time.perf_counter()
-        self.exchanges.append(ex)
-        self.guard.observe(ex, expect_auth_ok=expect_auth_ok and auth == "valid")
+        self.finished(ex, expect_auth_ok=expect_auth_ok and auth == "valid")
         return ex

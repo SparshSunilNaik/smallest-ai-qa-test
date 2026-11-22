@@ -55,3 +55,18 @@ def safe_excerpt(body: bytes | str, secrets: tuple[str, ...] = (), limit: int = 
     if len(text) > limit:
         text = text[:limit] + "...[truncated]"
     return text
+
+
+def scrub_paths(text: str) -> str:
+    """Replace local absolute paths (which reveal the OS username) with neutral placeholders."""
+    import os
+    import tempfile
+
+    from .config import REPO_ROOT
+
+    text = text.replace(str(REPO_ROOT), "<repo>")
+    home = os.path.expanduser("~")
+    for tmp in {tempfile.gettempdir(), os.path.realpath(tempfile.gettempdir())}:
+        text = text.replace(tmp, "<tmp>")
+    text = re.sub(r"/(?:private/)?var/folders/[^\s\"']+", "<tmp>", text)
+    return text.replace(home, "~")
