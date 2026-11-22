@@ -40,10 +40,10 @@ Provenance: **documented** deviations can become defects after reproduction; **q
 | P2-ERR-16 | P1 | Error contract | STT: Content-Type audio/wav (used in a docs example) | exploratory | spec lists only application/octet-stream; language-detection page uses audio/wav | api-reference/models/speech-to-text/transcribe<br>models/speech-to-text/features/language-detection | 1 |
 | P2-ERR-17 | P1 | Error contract | get_voices: invalid API key | documented | 401 | api-reference/authentication | 1 |
 | P2-ERR-18 | P1 | Error contract | STT: language omitted | exploratory | 'optional' but 'Always pass language'; default not stated | api-reference/models/speech-to-text/transcribe | 1 |
-| P2-STR-01 | P0 | Streaming | SSE pcm 250 chars: chunk alignment, gaps, playback stall analysis | documented | documented framing; 16-bit aligned chunks; no playback stall | models/text-to-speech/streaming | 1 |
+| P2-STR-01 | P0 | Streaming | SSE pcm 236 chars: chunk alignment, gaps, playback stall analysis | documented | documented framing; 16-bit aligned chunks; no playback stall | models/text-to-speech/streaming | 1 |
 | P2-STR-02 | P1 | Streaming | SSE mp3 framing | documented | MPEG frames ('mp3 streams MP3 frames') | models/text-to-speech/streaming<br>changelog/models/2026/11/5 | 1 |
 | P2-STR-03 | P1 | Streaming | SSE ulaw 8 kHz | documented | raw 8-bit samples, decodable | changelog/models/2026/11/5 | 1 |
-| P2-STR-04 | P1 | Streaming | Sync vs SSE duration parity (same 250-char text) | exploratory | durations within 20% | api-reference/models/text-to-speech/synthesize-speech<br>models/text-to-speech/streaming | 1 |
+| P2-STR-04 | P1 | Streaming | Sync vs SSE duration parity (same 236-char text) | exploratory | durations within 20% | api-reference/models/text-to-speech/synthesize-speech<br>models/text-to-speech/streaming | 1 |
 | P2-STR-08 | P1 | Streaming | SSE 880-character stream completes 🎧 | documented | single terminal frame; full-length audio | models/text-to-speech/streaming | 1 |
 | P2-WS-01 | P0 | Streaming | WebSocket TTS with word_timestamps (meher) | documented | chunk frames, one complete, server close; word events for meher (docs conflict on meher) | api-reference/models/text-to-speech/tts<br>models/text-to-speech/streaming<br>model-cards/text-to-speech/lightning-v-3-1 | 1 |
 | P2-WS-02 | P1 | Streaming | WebSocket unknown voice | exploratory | error frame, no audio, no hang (error frame schema not documented) | api-reference/models/text-to-speech/tts | 1 |

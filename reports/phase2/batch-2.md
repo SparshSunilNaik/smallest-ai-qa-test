@@ -28,7 +28,7 @@
 | P2-ERR-16 STT `Content-Type: audio/wav` | 200; WER 0.0 | `0ca5d450-f8ab-4081-8309-683191f2eac0` | 762 ms | **Passed**. The spec lists only `application/octet-stream`, so the reference is incomplete (DOC). |
 | P2-ERR-17 get_voices with invalid key | **200**, catalogue byte-identical to the valid-key response | `ae436ac6-d785-470c-b21a-9836d12f3038`; reproduction `b188f0dd-4c7e-4cd5-83a6-63f83bc7c81f` | 263 / 466 ms | **Confirmed, reproduced: F5** |
 | P2-ERR-18 STT `language` omitted | 400 `LANGUAGE_NOT_ENABLED_IN_REGION`: "Language 'multi' has not been enabled in this region", `region: ap-south-1` | `60f87a73-029a-4fc6-8654-a189192ba919` | 241 ms | **Documentation ambiguity** (D-1). The body conforms to the documented schema. |
-| P2-STR-01 SSE pcm, 250 characters | 72 chunks, all 16-bit aligned; 11.16 s of audio; **0 ms playback stall**; delivered at 5.96× real time | `fb1afe68-c7a5-4f9b-8777-0b9f58fe6097` | TTFB 248.5 ms; first voiced audio 288.5 ms; done 2147 ms; closed 0.7 ms later | **Passed** |
+| P2-STR-01 SSE pcm, 236 characters (originally mislabelled "250") | 72 chunks, all 16-bit aligned; 11.16 s of audio; **0 ms playback stall**; delivered at 5.96× real time | `fb1afe68-c7a5-4f9b-8777-0b9f58fe6097` | TTFB 248.5 ms; first voiced audio 288.5 ms; done 2147 ms; closed 0.7 ms later | **Passed** |
 | P2-STR-02 SSE mp3 | 202 chunks; only 2 start on an MP3 frame boundary; the concatenated stream is valid MP3 (`afinfo`: 24 kHz mono, 128 kbit/s, 4.99 s) | `07305cf8-9c33-4482-9572-dff9f3bd0973` | TTFB 275 ms | **Passed** (integrity). Exploratory note: SSE events are byte slices, not whole frames (D-2). |
 | P2-STR-03 SSE μ-law, 8 kHz | Raw 8-bit samples, no header; decodes to 5.6 s of non-silent audio | `ba4f359b-f984-4e99-83d7-251b7834aeda` | TTFB 267 ms | **Passed** |
 | P2-STR-04 sync vs SSE, same text | Sync pcm 12.23 s vs SSE 11.16 s (ratio 0.913). Voiced speech: 11.89 s vs 10.88 s. Sync pcm `Content-Type: application/octet-stream`. | `96292ed3-5f5f-4199-8080-3ee4e7e12c86` | Sync total 2499 ms; TTFB 2430 ms | **Passed** (within 20%). Observation: the two endpoints produce different-length speech for identical text. |
@@ -122,3 +122,5 @@ The 2026-11-05 changelog says "`mp3` streams MP3 frames". Events are not frame-a
 ## Correction (2026-11-22, during Batch 5 preparation)
 
 The "1000-character" text used by P2-STR-08 and by the cancellation case P2-STR-05 is actually **880 characters**. All the measurements above are unchanged. Only the label was wrong.
+
+A second label was also wrong, found during Batch 6. The "250-character" text used by P2-STR-01 and P2-STR-04 is actually **236 characters**. Again, the measurements are unchanged.

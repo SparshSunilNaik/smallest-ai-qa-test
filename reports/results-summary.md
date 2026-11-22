@@ -1,11 +1,11 @@
 # Results summary (auto-generated from evidence/runs)
 
-- Runs: 10; cumulative API requests (ledger): 108/128
+- Runs: 11; cumulative API requests (ledger): 121/128
 - Counts are per test case. Several cases can share one root cause; consolidated findings, severity and interpretation are in `reports/qa-report-draft.md`.
 
 ## Classification counts
 
-- Passed: 60
+- Passed: 64
 - Confirmed defect: 6
 - Candidate finding requiring reproduction: 19
 - Expected behavior: 0
@@ -50,6 +50,10 @@
 | P2-HUM-03 | Human: numbers, currency, dates (replaces synthetic P2-STT-04) | Passed | 1 | 20261122T174926Z | 200 |
 | P2-HUM-04 | Human: Hinglish, language=hi (replaces TTS-generated P2-STT-12) | Candidate finding requiring reproduction | 1 | 20261122T174926Z | 200 |
 | P2-HUM-05 | Human: spontaneous speech (replaces synthetic P2-STT-08) | Passed | 1 | 20261122T174926Z | 200 |
+| P2-LAT-01 | SSE TTFB, 19-char text, n=3 | Passed | 1 | 20261122T181852Z | 200, 200, 200 |
+| P2-LAT-02 | SSE TTFB, 110-char text, n=5 | Passed | 1 | 20261122T181852Z | 200, 200, 200, 200, 200 |
+| P2-LAT-03 | SSE TTFB, 492-char text, n=3 | Passed | 1 | 20261122T181852Z | 200, 200, 200 |
+| P2-LAT-04 | SSE TTFB on a fresh TCP/TLS connection, 110-char text, n=2 | Passed | 1 | 20261122T181852Z | 200, 200 |
 | P2-PAR-00 | speed=1.0 baseline (140 chars) | Passed | 1 | 20261122T180703Z | 200 |
 | P2-PAR-01 | speed=0.5 | Passed | 1 | 20261122T180703Z | 200 |
 | P2-PAR-02 | speed=2.0 | Candidate finding requiring reproduction | 1 | 20261122T180703Z | 200 |

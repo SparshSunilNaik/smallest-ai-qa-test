@@ -370,3 +370,13 @@ def test_transliteration_aware_wer_is_zero_for_identical_devanagari(settings, fi
     cases, _, _ = _run_batch(settings, fixture_wav, FakeP2(), "5", tmp_path)
     sa = cases["P2-TTS-N07"]["metrics"]["roundtrip"]["script_aware"]
     assert sa["transliteration_aware_wer_vs_input"] == 0.0
+
+
+def test_case_titles_state_true_text_lengths():
+    """Regression for the 880-char and 236-char mislabels: titles must quote the actual length."""
+    from smallest_qa import cases_p2 as c
+
+    expect = {"P2-STR-01": c.T_250, "P2-STR-04": c.T_250, "P2-STR-08": c.T_1000, "P2-TTS-L01": c.T_1000,
+              "P2-LAT-01": c.T_20, "P2-LAT-02": c.T_140, "P2-LAT-03": c.T_500, "P2-LAT-04": c.T_140}
+    for cid, text in expect.items():
+        assert str(len(text)) in c.P2_BY_ID[cid].title, (cid, len(text), c.P2_BY_ID[cid].title)

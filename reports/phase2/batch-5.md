@@ -64,7 +64,7 @@ Round-trip STT request IDs:
 ## Long-text completeness (case 6 in the brief)
 
 - **Identical text, two endpoints:** the sync synthesis ran 46.15 s. The SSE stream of the same text in Batch 2 (P2-STR-08) ran 46.78 s. The ratio is 0.987, so the two endpoints agree closely on this text.
-- **Contrast with a shorter text:** in Batch 2 (P2-STR-04), the 250-character text differed by 9% between sync and SSE.
+- **Contrast with a shorter text:** in Batch 2 (P2-STR-04), the 236-character text (originally mislabelled 250) differed by 9% between sync and SSE.
 - **Truncation:** none is indicated, by duration, by internal-silence analysis (max 580 ms), or by tail coverage (20/20).
 - **Latency:**
   - The sync endpoint returned its first byte after **7.1 s**, because it generates the whole file first.
