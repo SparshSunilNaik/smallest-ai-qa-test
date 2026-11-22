@@ -1,0 +1,2526 @@
+{
+  "run_id": "20261122T172801Z",
+  "phase": 2,
+  "batch": "2",
+  "started": {
+    "utc": "2026-11-22T17:28:01.510+00:00",
+    "ist": "2026-11-22T22:58:01.510+05:30"
+  },
+  "finished": {
+    "utc": "2026-11-22T17:29:30.734+00:00",
+    "ist": "2026-11-22T22:59:30.734+05:30"
+  },
+  "harness_version": "0.1.0",
+  "environment": {
+    "python": "3.13.13",
+    "httpx": "0.28.1",
+    "platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
+    "base_url": "https://api.smallest.ai"
+  },
+  "api_key_configured": true,
+  "halted": null,
+  "requests_this_run": 18,
+  "ledger_used_after_run": 66,
+  "ledger_cap": 128,
+  "fixture": {
+    "path": "fixtures/audio/stt_en_16k.wav",
+    "generator": "macOS say -v Samantha --file-format=WAVE --data-format=LEI16@16000",
+    "reference_text": "The quick brown fox jumps over the lazy dog. Speech recognition quality is measured by comparing the words.",
+    "sha256": "cc3d3e75a72ca66f64fba9607342328861d6c3171eba0d8fe2dea5a7aa357f01",
+    "bytes": 205846,
+    "duration_s": 6.305,
+    "sample_rate": 16000
+  },
+  "p2_fixtures": {},
+  "phase_est_usd_after_run": 0.3783,
+  "listening_queue": [
+    {
+      "clip": "P2-STR-08.wav",
+      "case_id": "P2-STR-08",
+      "text": "Thank you for calling Horizon Bank. Your recent payment has been received, and your account is now up to date. If you would like to hear your balance, please stay on the line, and an agent will help you shortly with any other questions. We also wanted to let you know about our new savings plan, which offers a higher interest rate for customers who keep a minimum balance for twelve months. You can sign up through the mobile app or at any branch, and there are no extra fees to get started. Our branches are open from nine in the morning until five in the evening on weekdays, and from ten until two on Saturdays. For security reasons, we will never ask for your password or one time code over the phone, so please do not share them with anyone. If you notice any unusual activity, contact our support team immediately. The final sentence mentions a purple elephant named Gopal.",
+      "focus": "complete through the final sentence (purple elephant named Gopal)"
+    }
+  ],
+  "cases": [
+    {
+      "case_id": "P2-ERR-10",
+      "title": "SSE: unknown voice",
+      "area": "Error contract",
+      "expected_behavior": "4xx before streaming; error shape consistent with sync TTS (no SSE error schema documented)",
+      "doc_refs": [
+        "https://docs.smallest.ai/models/text-to-speech/streaming",
+        "https://docs.smallest.ai/api-reference/models/text-to-speech/synthesize-speech"
+      ],
+      "classification": "Candidate finding requiring reproduction",
+      "checks": [
+        {
+          "name": "invalid voice on SSE rejected before streaming (4xx, no audio frames)",
+          "passed": true,
+          "expected": "4xx, 0 frames",
+          "actual": "400, 0 audio frames",
+          "requirement": "quality",
+          "doc_ref": "https://docs.smallest.ai/models/text-to-speech/streaming"
+        },
+        {
+          "name": "error body conforms to the documented TTS error schema",
+          "passed": false,
+          "expected": "documented field types + a human-readable message string",
+          "actual": "`error` is list[object{code,message,path}]; documented as str; no human-readable `error`/`message` string",
+          "requirement": "quality",
+          "doc_ref": "https://docs.smallest.ai/api-reference/models/text-to-speech/synthesize-speech"
+        }
+      ],
+      "metrics": {
+        "sse_frames": 0,
+        "error_contract": [
+          {
+            "status": 400,
+            "signature": "{error:list[object{code,message,path}]}",
+            "undocumented_fields": [],
+            "human_message": "Voice 'qa_nonexistent_voice_zz9' is not available on the lightning_v3.1_pro model"
+          }
+        ]
+      },
+      "notes": [
+        "No SSE error schema is documented; compared against the sync TTS schema for consistency."
+      ],
+      "requests": [
+        {
+          "case_id": "P2-ERR-10",
+          "ledger_seq": 49,
+          "timestamp_utc": "2026-11-22T17:28:01.524+00:00",
+          "timestamp_ist": "2026-11-22T22:58:01.524+05:30",
+          "method": "POST",
+          "endpoint": "/waves/v1/tts/live",
+          "query_params": {},
+          "request": {
+            "json": {
+              "text": "Hello from the Smallest AI QA harness. This is a short synthesis test.",
+              "voice_id": "qa_nonexistent_voice_zz9",
+              "model": "lightning_v3.1_pro",
+              "language": "en",
+              "sample_rate": 24000,
+              "output_format": "pcm"
+            },
+            "text_chars": 70,
+            "headers": {
+              "Content-Type": "application/json",
+              "Accept": "text/event-stream",
+              "Authorization": "[REDACTED]"
+            }
+          },
+          "auth_mode": "valid",
+          "status": 400,
+          "content_type": "application/json; charset=utf-8",
+          "response_bytes": 143,
+          "response_truncated_at_cap": false,
+          "response_sha256": "3f0dfcac00dcaff3ca098d8dd420cec9eff36d0187a87f56c164c2f04f6b503f",
+          "time_to_headers_ms": 427.9,
+          "ttfb_ms": 428.2,
+          "duration_ms": 428.5,
+          "extra_timings_ms": {},
+          "request_ids": {
+            "x-request-id": "1d111a8a-d695-4739-9ae7-b7488b2f881e"
+          },
+          "response_headers": {
+            "date": "Sun, 22 Nov 2026 17:28:01 GMT",
+            "content-type": "application/json; charset=utf-8",
+            "content-length": "143",
+            "connection": "keep-alive",
+            "set-cookie": "[REDACTED]",
+            "x-request-id": "1d111a8a-d695-4739-9ae7-b7488b2f881e",
+            "cache-control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+            "pragma": "no-cache",
+            "expires": "0",
+            "strict-transport-security": "max-age=31536000; includeSubDomains",
+            "content-security-policy": "default-src 'self';script-src 'self';style-src 'self' 'unsafe-inline';img-src 'self' data: https://d1o0umtiv0iuvd.cloudfront.net https://d4a5s42qh2351.cloudfront.net https://waves-history.s3.ap-south-1.amazonaws.com https://waves-history-dev.s3.ap-south-1.amazonaws.com https://db2izkvf1oocn.cloudfront.net https://media.plivo.com https://dlw9ti8dmuxc7.cloudfront.net;connect-src 'self';frame-ancestors 'none';upgrade-insecure-requests;base-uri 'self';font-src 'self' https: data:;form-action 'self';object-src 'none';script-src-attr 'none'",
+            "cross-origin-opener-policy": "same-origin",
+            "cross-origin-resource-policy": "same-origin",
+            "origin-agent-cluster": "?1",
+            "referrer-policy": "no-referrer",
+            "x-content-type-options": "nosniff",
+            "x-dns-prefetch-control": "off",
+            "x-download-options": "noopen",
+            "x-frame-options": "SAMEORIGIN",
+            "x-permitted-cross-domain-policies": "none",
+            "x-xss-protection": "0",
+            "vary": "Origin",
+            "access-control-allow-credentials": "true",
+            "access-control-expose-headers": "Set-Cookie,X-Smallest-Prompt-Guard,X-Request-Id,Content-Disposition",
+            "etag": "W/\"8f-MvgreDwupkKtMxipljeqRGjYbvs\""
+          },
+          "body_excerpt": "{\"error\":[{\"code\":\"custom\",\"path\":[\"voice_id\"],\"message\":\"Voice 'qa_nonexistent_voice_zz9' is not available on the lightning_v3.1_pro model\"}]}",
+          "transport_error": null,
+          "cancelled_by_client": false,
+          "fresh_connection": false,
+          "body_chunks": 1
+        }
+      ]
+    },
+    {
+      "case_id": "P2-ERR-11",
+      "title": "SSE: missing Authorization",
+      "area": "Error contract",
+      "expected_behavior": "401",
+      "doc_refs": [
+        "https://docs.smallest.ai/api-reference/authentication"
+      ],
+      "classification": "Passed",
+      "checks": [
+        {
+          "name": "HTTP 401",
+          "passed": true,
+          "expected": "401",
+          "actual": "401",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/api-reference/authentication"
+        },
+        {
+          "name": "error body conforms to the documented TTS error schema",
+          "passed": true,
+          "expected": "documented field types + a human-readable message string",
+          "actual": "conforms",
+          "requirement": "quality",
+          "doc_ref": "https://docs.smallest.ai/api-reference/models/text-to-speech/synthesize-speech"
+        }
+      ],
+      "metrics": {
+        "error_contract": [
+          {
+            "status": 401,
+            "signature": "{message:string}",
+            "undocumented_fields": [],
+            "human_message": "Unauthorized: No tokens provided"
+          }
+        ]
+      },
+      "notes": [],
+      "requests": [
+        {
+          "case_id": "P2-ERR-11",
+          "ledger_seq": 50,
+          "timestamp_utc": "2026-11-22T17:28:03.457+00:00",
+          "timestamp_ist": "2026-11-22T22:58:03.457+05:30",
+          "method": "POST",
+          "endpoint": "/waves/v1/tts/live",
+          "query_params": {},
+          "request": {
+            "json": {
+              "text": "Hello from the Smallest AI QA harness. This is a short synthesis test.",
+              "voice_id": "meher",
+              "model": "lightning_v3.1_pro",
+              "language": "en",
+              "sample_rate": 24000,
+              "output_format": "wav"
+            },
+            "text_chars": 70,
+            "headers": {
+              "Accept": "text/event-stream"
+            }
+          },
+          "auth_mode": "none",
+          "status": 401,
+          "content_type": "application/json; charset=utf-8",
+          "response_bytes": 46,
+          "response_truncated_at_cap": false,
+          "response_sha256": "88bf95bf6465c1eb9e412d9223e3f9ebbfc7be805613fdbe7ed82865f89200b5",
+          "time_to_headers_ms": 137.4,
+          "ttfb_ms": 137.8,
+          "duration_ms": 138.0,
+          "extra_timings_ms": {},
+          "request_ids": {
+            "x-request-id": "2389e7f7-dfc7-43db-9b40-d724f040f6d6"
+          },
+          "response_headers": {
+            "date": "Sun, 22 Nov 2026 17:28:03 GMT",
+            "content-type": "application/json; charset=utf-8",
+            "content-length": "46",
+            "connection": "keep-alive",
+            "set-cookie": "[REDACTED]",
+            "x-request-id": "2389e7f7-dfc7-43db-9b40-d724f040f6d6",
+            "cache-control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+            "pragma": "no-cache",
+            "expires": "0",
+            "strict-transport-security": "max-age=31536000; includeSubDomains",
+            "content-security-policy": "default-src 'self';script-src 'self';style-src 'self' 'unsafe-inline';img-src 'self' data: https://d1o0umtiv0iuvd.cloudfront.net https://d4a5s42qh2351.cloudfront.net https://waves-history.s3.ap-south-1.amazonaws.com https://waves-history-dev.s3.ap-south-1.amazonaws.com https://db2izkvf1oocn.cloudfront.net https://media.plivo.com https://dlw9ti8dmuxc7.cloudfront.net;connect-src 'self';frame-ancestors 'none';upgrade-insecure-requests;base-uri 'self';font-src 'self' https: data:;form-action 'self';object-src 'none';script-src-attr 'none'",
+            "cross-origin-opener-policy": "same-origin",
+            "cross-origin-resource-policy": "same-origin",
+            "origin-agent-cluster": "?1",
+            "referrer-policy": "no-referrer",
+            "x-content-type-options": "nosniff",
+            "x-dns-prefetch-control": "off",
+            "x-download-options": "noopen",
+            "x-frame-options": "SAMEORIGIN",
+            "x-permitted-cross-domain-policies": "none",
+            "x-xss-protection": "0",
+            "vary": "Origin",
+            "access-control-allow-credentials": "true",
+            "access-control-expose-headers": "Set-Cookie,X-Smallest-Prompt-Guard,X-Request-Id,Content-Disposition",
+            "etag": "W/\"2e-VIo3OKMCbrQJGN2mS3294g2kvyk\""
+          },
+          "body_excerpt": "{\"message\":\"Unauthorized: No tokens provided\"}",
+          "transport_error": null,
+          "cancelled_by_client": false,
+          "fresh_connection": false,
+          "body_chunks": 1
+        }
+      ]
+    },
+    {
+      "case_id": "P2-ERR-12",
+      "title": "SSE: empty text",
+      "area": "Error contract",
+      "expected_behavior": "4xx (not documented for SSE)",
+      "doc_refs": [
+        "https://docs.smallest.ai/models/text-to-speech/streaming"
+      ],
+      "classification": "Candidate finding requiring reproduction",
+      "checks": [
+        {
+          "name": "empty text on SSE rejected (4xx, no audio)",
+          "passed": true,
+          "expected": "4xx",
+          "actual": "400",
+          "requirement": "exploratory",
+          "doc_ref": "https://docs.smallest.ai/models/text-to-speech/streaming"
+        },
+        {
+          "name": "error body conforms to the documented TTS error schema",
+          "passed": false,
+          "expected": "documented field types + a human-readable message string",
+          "actual": "`error` is list[object{code,exact,inclusive,message,minimum,path,type}]; documented as str; no human-readable `error`/`message` string",
+          "requirement": "quality",
+          "doc_ref": "https://docs.smallest.ai/api-reference/models/text-to-speech/synthesize-speech"
+        }
+      ],
+      "metrics": {
+        "error_contract": [
+          {
+            "status": 400,
+            "signature": "{error:list[object{code,exact,inclusive,message,minimum,path,type}]}",
+            "undocumented_fields": [],
+            "human_message": "Text cannot be empty"
+          }
+        ]
+      },
+      "notes": [],
+      "requests": [
+        {
+          "case_id": "P2-ERR-12",
+          "ledger_seq": 51,
+          "timestamp_utc": "2026-11-22T17:28:05.098+00:00",
+          "timestamp_ist": "2026-11-22T22:58:05.098+05:30",
+          "method": "POST",
+          "endpoint": "/waves/v1/tts/live",
+          "query_params": {},
+          "request": {
+            "json": {
+              "text": "",
+              "voice_id": "meher",
+              "model": "lightning_v3.1_pro",
+              "language": "en",
+              "sample_rate": 24000,
+              "output_format": "pcm"
+            },
+            "text_chars": 0,
+            "headers": {
+              "Content-Type": "application/json",
+              "Accept": "text/event-stream",
+              "Authorization": "[REDACTED]"
+            }
+          },
+          "auth_mode": "valid",
+          "status": 400,
+          "content_type": "application/json; charset=utf-8",
+          "response_bytes": 140,
+          "response_truncated_at_cap": false,
+          "response_sha256": "33bafe50f42aceb6d9c14cb88fc0c49d61de0312e6e7c4d2a66719933f4472cd",
+          "time_to_headers_ms": 133.5,
+          "ttfb_ms": 133.6,
+          "duration_ms": 133.8,
+          "extra_timings_ms": {},
+          "request_ids": {
+            "x-request-id": "f7c78c46-14c4-4882-8142-56068c3e5d96"
+          },
+          "response_headers": {
+            "date": "Sun, 22 Nov 2026 17:28:05 GMT",
+            "content-type": "application/json; charset=utf-8",
+            "content-length": "140",
+            "connection": "keep-alive",
+            "set-cookie": "[REDACTED]",
+            "x-request-id": "f7c78c46-14c4-4882-8142-56068c3e5d96",
+            "cache-control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+            "pragma": "no-cache",
+            "expires": "0",
+            "strict-transport-security": "max-age=31536000; includeSubDomains",
+            "content-security-policy": "default-src 'self';script-src 'self';style-src 'self' 'unsafe-inline';img-src 'self' data: https://d1o0umtiv0iuvd.cloudfront.net https://d4a5s42qh2351.cloudfront.net https://waves-history.s3.ap-south-1.amazonaws.com https://waves-history-dev.s3.ap-south-1.amazonaws.com https://db2izkvf1oocn.cloudfront.net https://media.plivo.com https://dlw9ti8dmuxc7.cloudfront.net;connect-src 'self';frame-ancestors 'none';upgrade-insecure-requests;base-uri 'self';font-src 'self' https: data:;form-action 'self';object-src 'none';script-src-attr 'none'",
+            "cross-origin-opener-policy": "same-origin",
+            "cross-origin-resource-policy": "same-origin",
+            "origin-agent-cluster": "?1",
+            "referrer-policy": "no-referrer",
+            "x-content-type-options": "nosniff",
+            "x-dns-prefetch-control": "off",
+            "x-download-options": "noopen",
+            "x-frame-options": "SAMEORIGIN",
+            "x-permitted-cross-domain-policies": "none",
+            "x-xss-protection": "0",
+            "vary": "Origin",
+            "access-control-allow-credentials": "true",
+            "access-control-expose-headers": "Set-Cookie,X-Smallest-Prompt-Guard,X-Request-Id,Content-Disposition",
+            "etag": "W/\"8c-M9tTbyifN581gdLzKFuduDmpn9A\""
+          },
+          "body_excerpt": "{\"error\":[{\"code\":\"too_small\",\"minimum\":1,\"type\":\"string\",\"inclusive\":true,\"exact\":false,\"message\":\"Text cannot be empty\",\"path\":[\"text\"]}]}",
+          "transport_error": null,
+          "cancelled_by_client": false,
+          "fresh_connection": false,
+          "body_chunks": 1
+        }
+      ]
+    },
+    {
+      "case_id": "P2-ERR-13",
+      "title": "STT: pulse-pro with language=hi",
+      "area": "Error contract",
+      "expected_behavior": "400 ('only en is accepted; any other value returns HTTP 400') + STT schema",
+      "doc_refs": [
+        "https://docs.smallest.ai/api-reference/models/speech-to-text/transcribe"
+      ],
+      "classification": "Passed",
+      "checks": [
+        {
+          "name": "rejected with a 4xx client error",
+          "passed": true,
+          "expected": "4xx",
+          "actual": "400",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/api-reference/models/speech-to-text/transcribe"
+        },
+        {
+          "name": "status is the documented 400",
+          "passed": true,
+          "expected": "400",
+          "actual": "400",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/api-reference/models/speech-to-text/transcribe"
+        },
+        {
+          "name": "error body conforms to the documented STT error schema",
+          "passed": true,
+          "expected": "documented field types + a human-readable message string",
+          "actual": "conforms",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/api-reference/models/speech-to-text/transcribe"
+        },
+        {
+          "name": "no audio payload returned on rejection",
+          "passed": true,
+          "expected": "no audio bytes",
+          "actual": "no audio",
+          "requirement": "quality",
+          "doc_ref": null
+        }
+      ],
+      "metrics": {
+        "error_contract": [
+          {
+            "status": 400,
+            "signature": "{errors:list[object{code,message,options,path,received}],message:string,status:string}",
+            "undocumented_fields": [],
+            "human_message": "Invalid query parameters"
+          }
+        ]
+      },
+      "notes": [],
+      "requests": [
+        {
+          "case_id": "P2-ERR-13",
+          "ledger_seq": 52,
+          "timestamp_utc": "2026-11-22T17:28:06.737+00:00",
+          "timestamp_ist": "2026-11-22T22:58:06.737+05:30",
+          "method": "POST",
+          "endpoint": "/waves/v1/stt/",
+          "query_params": {
+            "model": "pulse-pro",
+            "language": "hi"
+          },
+          "request": {
+            "binary_body": {
+              "bytes": 205846,
+              "sha256": "cc3d3e75a72ca66f64fba9607342328861d6c3171eba0d8fe2dea5a7aa357f01"
+            },
+            "headers": {
+              "Content-Type": "application/octet-stream",
+              "Authorization": "[REDACTED]"
+            }
+          },
+          "auth_mode": "valid",
+          "status": 400,
+          "content_type": "application/json; charset=utf-8",
+          "response_bytes": 210,
+          "response_truncated_at_cap": false,
+          "response_sha256": "20c3e211a3efdc6e3bcd688464d6d3ac267f56751416b189a7b07210a7bfc526",
+          "time_to_headers_ms": 152.2,
+          "ttfb_ms": 152.4,
+          "duration_ms": 152.7,
+          "extra_timings_ms": {},
+          "request_ids": {
+            "x-request-id": "0582b4dd-18c2-4faf-99bb-3e828fb5bea5"
+          },
+          "response_headers": {
+            "date": "Sun, 22 Nov 2026 17:28:06 GMT",
+            "content-type": "application/json; charset=utf-8",
+            "content-length": "210",
+            "connection": "keep-alive",
+            "set-cookie": "[REDACTED]",
+            "x-request-id": "0582b4dd-18c2-4faf-99bb-3e828fb5bea5",
+            "cache-control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+            "pragma": "no-cache",
+            "expires": "0",
+            "strict-transport-security": "max-age=31536000; includeSubDomains",
+            "content-security-policy": "default-src 'self';script-src 'self';style-src 'self' 'unsafe-inline';img-src 'self' data: https://d1o0umtiv0iuvd.cloudfront.net https://d4a5s42qh2351.cloudfront.net https://waves-history.s3.ap-south-1.amazonaws.com https://waves-history-dev.s3.ap-south-1.amazonaws.com https://db2izkvf1oocn.cloudfront.net https://media.plivo.com https://dlw9ti8dmuxc7.cloudfront.net;connect-src 'self';frame-ancestors 'none';upgrade-insecure-requests;base-uri 'self';font-src 'self' https: data:;form-action 'self';object-src 'none';script-src-attr 'none'",
+            "cross-origin-opener-policy": "same-origin",
+            "cross-origin-resource-policy": "same-origin",
+            "origin-agent-cluster": "?1",
+            "referrer-policy": "no-referrer",
+            "x-content-type-options": "nosniff",
+            "x-dns-prefetch-control": "off",
+            "x-download-options": "noopen",
+            "x-frame-options": "SAMEORIGIN",
+            "x-permitted-cross-domain-policies": "none",
+            "x-xss-protection": "0",
+            "vary": "Origin",
+            "access-control-allow-credentials": "true",
+            "access-control-expose-headers": "Set-Cookie,X-Smallest-Prompt-Guard,X-Request-Id,Content-Disposition",
+            "etag": "W/\"d2-FXbYpNIFLWmZrtV/e6GTeP8Pqz4\""
+          },
+          "body_excerpt": "{\"status\":\"error\",\"message\":\"Invalid query parameters\",\"errors\":[{\"received\":\"hi\",\"code\":\"invalid_enum_value\",\"options\":[\"en\"],\"path\":[\"language\"],\"message\":\"Invalid enum value. Expected 'en', received 'hi'\"}]}",
+          "transport_error": null,
+          "cancelled_by_client": false,
+          "fresh_connection": false,
+          "body_chunks": 1
+        }
+      ]
+    },
+    {
+      "case_id": "P2-ERR-14",
+      "title": "STT: undecodable audio bytes",
+      "area": "Error contract",
+      "expected_behavior": "4xx with documented code AudioDecodeError (status not documented)",
+      "doc_refs": [
+        "https://docs.smallest.ai/api-reference/models/speech-to-text/transcribe"
+      ],
+      "classification": "Passed",
+      "checks": [
+        {
+          "name": "rejected with a 4xx client error",
+          "passed": true,
+          "expected": "4xx",
+          "actual": "400",
+          "requirement": "quality",
+          "doc_ref": "https://docs.smallest.ai/api-reference/models/speech-to-text/transcribe"
+        },
+        {
+          "name": "error body conforms to the documented STT error schema",
+          "passed": true,
+          "expected": "documented field types + a human-readable message string",
+          "actual": "conforms",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/api-reference/models/speech-to-text/transcribe"
+        },
+        {
+          "name": "no audio payload returned on rejection",
+          "passed": true,
+          "expected": "no audio bytes",
+          "actual": "no audio",
+          "requirement": "quality",
+          "doc_ref": null
+        },
+        {
+          "name": "documented `code` value AudioDecodeError",
+          "passed": true,
+          "expected": "AudioDecodeError",
+          "actual": "AudioDecodeError",
+          "requirement": "quality",
+          "doc_ref": "https://docs.smallest.ai/api-reference/models/speech-to-text/transcribe"
+        }
+      ],
+      "metrics": {
+        "error_contract": [
+          {
+            "status": 400,
+            "signature": "{code:string,message:string,status:string}",
+            "undocumented_fields": [],
+            "human_message": "Failed to decode audio."
+          }
+        ]
+      },
+      "notes": [],
+      "requests": [
+        {
+          "case_id": "P2-ERR-14",
+          "ledger_seq": 53,
+          "timestamp_utc": "2026-11-22T17:28:08.391+00:00",
+          "timestamp_ist": "2026-11-22T22:58:08.391+05:30",
+          "method": "POST",
+          "endpoint": "/waves/v1/stt/",
+          "query_params": {
+            "model": "pulse",
+            "language": "en"
+          },
+          "request": {
+            "binary_body": {
+              "bytes": 32768,
+              "sha256": "81906631f48f7b05eec9ca67edff6d02da82613ce5604271440577511fd7ac7c"
+            },
+            "headers": {
+              "Content-Type": "application/octet-stream",
+              "Authorization": "[REDACTED]"
+            }
+          },
+          "auth_mode": "valid",
+          "status": 400,
+          "content_type": "application/json; charset=utf-8",
+          "response_bytes": 80,
+          "response_truncated_at_cap": false,
+          "response_sha256": "a80edd615fd6630febc6839e57b5714ef8122c7c2b9b5d4298a0a39473a12f6c",
+          "time_to_headers_ms": 621.7,
+          "ttfb_ms": 622.0,
+          "duration_ms": 622.2,
+          "extra_timings_ms": {},
+          "request_ids": {
+            "x-request-id": "f2ac0823-bb8a-469c-864f-dc12580e3c29"
+          },
+          "response_headers": {
+            "date": "Sun, 22 Nov 2026 17:28:08 GMT",
+            "content-type": "application/json; charset=utf-8",
+            "content-length": "80",
+            "connection": "keep-alive",
+            "set-cookie": "[REDACTED]",
+            "x-request-id": "f2ac0823-bb8a-469c-864f-dc12580e3c29",
+            "cache-control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+            "pragma": "no-cache",
+            "expires": "0",
+            "strict-transport-security": "max-age=31536000; includeSubDomains",
+            "content-security-policy": "default-src 'self';script-src 'self';style-src 'self' 'unsafe-inline';img-src 'self' data: https://d1o0umtiv0iuvd.cloudfront.net https://d4a5s42qh2351.cloudfront.net https://waves-history.s3.ap-south-1.amazonaws.com https://waves-history-dev.s3.ap-south-1.amazonaws.com https://db2izkvf1oocn.cloudfront.net https://media.plivo.com https://dlw9ti8dmuxc7.cloudfront.net;connect-src 'self';frame-ancestors 'none';upgrade-insecure-requests;base-uri 'self';font-src 'self' https: data:;form-action 'self';object-src 'none';script-src-attr 'none'",
+            "cross-origin-opener-policy": "same-origin",
+            "cross-origin-resource-policy": "same-origin",
+            "origin-agent-cluster": "?1",
+            "referrer-policy": "no-referrer",
+            "x-content-type-options": "nosniff",
+            "x-dns-prefetch-control": "off",
+            "x-download-options": "noopen",
+            "x-frame-options": "SAMEORIGIN",
+            "x-permitted-cross-domain-policies": "none",
+            "x-xss-protection": "0",
+            "vary": "Origin",
+            "access-control-allow-credentials": "true",
+            "access-control-expose-headers": "Set-Cookie,X-Smallest-Prompt-Guard,X-Request-Id,Content-Disposition",
+            "etag": "W/\"50-fs0NXKYMVODytVS/Nohr5VE+UCs\""
+          },
+          "body_excerpt": "{\"status\":\"error\",\"code\":\"AudioDecodeError\",\"message\":\"Failed to decode audio.\"}",
+          "transport_error": null,
+          "cancelled_by_client": false,
+          "fresh_connection": false,
+          "body_chunks": 1
+        }
+      ]
+    },
+    {
+      "case_id": "P2-ERR-15",
+      "title": "STT: invalid API key",
+      "area": "Error contract",
+      "expected_behavior": "401 + STT schema (`error` string for auth errors)",
+      "doc_refs": [
+        "https://docs.smallest.ai/api-reference/models/speech-to-text/transcribe",
+        "https://docs.smallest.ai/api-reference/authentication"
+      ],
+      "classification": "Passed",
+      "checks": [
+        {
+          "name": "HTTP 401",
+          "passed": true,
+          "expected": 401,
+          "actual": "401",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/api-reference/models/speech-to-text/transcribe"
+        },
+        {
+          "name": "error body conforms to the documented STT error schema",
+          "passed": true,
+          "expected": "documented field types + a human-readable message string",
+          "actual": "conforms",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/api-reference/models/speech-to-text/transcribe"
+        }
+      ],
+      "metrics": {
+        "error_contract": [
+          {
+            "status": 401,
+            "signature": "{error:string}",
+            "undocumented_fields": [],
+            "human_message": "unauthorized"
+          }
+        ]
+      },
+      "notes": [],
+      "requests": [
+        {
+          "case_id": "P2-ERR-15",
+          "ledger_seq": 54,
+          "timestamp_utc": "2026-11-22T17:28:10.517+00:00",
+          "timestamp_ist": "2026-11-22T22:58:10.517+05:30",
+          "method": "POST",
+          "endpoint": "/waves/v1/stt/",
+          "query_params": {
+            "model": "pulse",
+            "language": "en"
+          },
+          "request": {
+            "binary_body": {
+              "bytes": 205846,
+              "sha256": "cc3d3e75a72ca66f64fba9607342328861d6c3171eba0d8fe2dea5a7aa357f01"
+            },
+            "headers": {
+              "Content-Type": "application/octet-stream",
+              "Authorization": "[REDACTED]"
+            }
+          },
+          "auth_mode": "invalid",
+          "status": 401,
+          "content_type": "application/json; charset=utf-8",
+          "response_bytes": 24,
+          "response_truncated_at_cap": false,
+          "response_sha256": "782eeaa7f1915f6783146f8180751785584f0f24bd4e503165c7fc4a597da600",
+          "time_to_headers_ms": 180.2,
+          "ttfb_ms": 180.3,
+          "duration_ms": 180.6,
+          "extra_timings_ms": {},
+          "request_ids": {
+            "x-request-id": "4f73d805-cbea-46ce-90fc-873c40e1c44a"
+          },
+          "response_headers": {
+            "date": "Sun, 22 Nov 2026 17:28:10 GMT",
+            "content-type": "application/json; charset=utf-8",
+            "content-length": "24",
+            "connection": "keep-alive",
+            "set-cookie": "[REDACTED]",
+            "x-request-id": "4f73d805-cbea-46ce-90fc-873c40e1c44a",
+            "cache-control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+            "pragma": "no-cache",
+            "expires": "0",
+            "strict-transport-security": "max-age=31536000; includeSubDomains",
+            "content-security-policy": "default-src 'self';script-src 'self';style-src 'self' 'unsafe-inline';img-src 'self' data: https://d1o0umtiv0iuvd.cloudfront.net https://d4a5s42qh2351.cloudfront.net https://waves-history.s3.ap-south-1.amazonaws.com https://waves-history-dev.s3.ap-south-1.amazonaws.com https://db2izkvf1oocn.cloudfront.net https://media.plivo.com https://dlw9ti8dmuxc7.cloudfront.net;connect-src 'self';frame-ancestors 'none';upgrade-insecure-requests;base-uri 'self';font-src 'self' https: data:;form-action 'self';object-src 'none';script-src-attr 'none'",
+            "cross-origin-opener-policy": "same-origin",
+            "cross-origin-resource-policy": "same-origin",
+            "origin-agent-cluster": "?1",
+            "referrer-policy": "no-referrer",
+            "x-content-type-options": "nosniff",
+            "x-dns-prefetch-control": "off",
+            "x-download-options": "noopen",
+            "x-frame-options": "SAMEORIGIN",
+            "x-permitted-cross-domain-policies": "none",
+            "x-xss-protection": "0",
+            "vary": "Origin",
+            "access-control-allow-credentials": "true",
+            "access-control-expose-headers": "Set-Cookie,X-Smallest-Prompt-Guard,X-Request-Id,Content-Disposition",
+            "etag": "W/\"18-gH7/fIZxPCVRh6TuPVNAgHt/40I\""
+          },
+          "body_excerpt": "{\"error\":\"unauthorized\"}",
+          "transport_error": null,
+          "cancelled_by_client": false,
+          "fresh_connection": false,
+          "body_chunks": 1
+        }
+      ]
+    },
+    {
+      "case_id": "P2-ERR-16",
+      "title": "STT: Content-Type audio/wav (used in a docs example)",
+      "area": "Error contract",
+      "expected_behavior": "spec lists only application/octet-stream; language-detection page uses audio/wav",
+      "doc_refs": [
+        "https://docs.smallest.ai/api-reference/models/speech-to-text/transcribe",
+        "https://docs.smallest.ai/models/speech-to-text/features/language-detection"
+      ],
+      "classification": "Passed",
+      "checks": [
+        {
+          "name": "accepted and transcribed",
+          "passed": true,
+          "expected": "200 + transcription (behaviour not documented)",
+          "actual": "200",
+          "requirement": "exploratory",
+          "doc_ref": null
+        }
+      ],
+      "metrics": {
+        "status": 200,
+        "signature": "{metadata:object{duration,fileSize},status:string,transcription:string,utterances:list[empty],words:list[empty]}",
+        "wer": 0.0
+      },
+      "notes": [
+        "Probes a documentation inconsistency."
+      ],
+      "requests": [
+        {
+          "case_id": "P2-ERR-16",
+          "ledger_seq": 55,
+          "timestamp_utc": "2026-11-22T17:28:12.203+00:00",
+          "timestamp_ist": "2026-11-22T22:58:12.203+05:30",
+          "method": "POST",
+          "endpoint": "/waves/v1/stt/",
+          "query_params": {
+            "model": "pulse",
+            "language": "en"
+          },
+          "request": {
+            "binary_body": {
+              "bytes": 205846,
+              "sha256": "cc3d3e75a72ca66f64fba9607342328861d6c3171eba0d8fe2dea5a7aa357f01"
+            },
+            "headers": {
+              "Content-Type": "audio/wav",
+              "Authorization": "[REDACTED]"
+            }
+          },
+          "auth_mode": "valid",
+          "status": 200,
+          "content_type": "application/json; charset=utf-8",
+          "response_bytes": 221,
+          "response_truncated_at_cap": false,
+          "response_sha256": "cc4936f45407d817753cf4053d0427bfa49071a0bd63db7f2e0e70863b94ceb1",
+          "time_to_headers_ms": 761.6,
+          "ttfb_ms": 761.8,
+          "duration_ms": 762.0,
+          "extra_timings_ms": {},
+          "request_ids": {
+            "x-request-id": "0ca5d450-f8ab-4081-8309-683191f2eac0"
+          },
+          "response_headers": {
+            "date": "Sun, 22 Nov 2026 17:28:12 GMT",
+            "content-type": "application/json; charset=utf-8",
+            "content-length": "221",
+            "connection": "keep-alive",
+            "set-cookie": "[REDACTED]",
+            "x-request-id": "0ca5d450-f8ab-4081-8309-683191f2eac0",
+            "cache-control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+            "pragma": "no-cache",
+            "expires": "0",
+            "strict-transport-security": "max-age=31536000; includeSubDomains",
+            "content-security-policy": "default-src 'self';script-src 'self';style-src 'self' 'unsafe-inline';img-src 'self' data: https://d1o0umtiv0iuvd.cloudfront.net https://d4a5s42qh2351.cloudfront.net https://waves-history.s3.ap-south-1.amazonaws.com https://waves-history-dev.s3.ap-south-1.amazonaws.com https://db2izkvf1oocn.cloudfront.net https://media.plivo.com https://dlw9ti8dmuxc7.cloudfront.net;connect-src 'self';frame-ancestors 'none';upgrade-insecure-requests;base-uri 'self';font-src 'self' https: data:;form-action 'self';object-src 'none';script-src-attr 'none'",
+            "cross-origin-opener-policy": "same-origin",
+            "cross-origin-resource-policy": "same-origin",
+            "origin-agent-cluster": "?1",
+            "referrer-policy": "no-referrer",
+            "x-content-type-options": "nosniff",
+            "x-dns-prefetch-control": "off",
+            "x-download-options": "noopen",
+            "x-frame-options": "SAMEORIGIN",
+            "x-permitted-cross-domain-policies": "none",
+            "x-xss-protection": "0",
+            "vary": "Origin",
+            "access-control-allow-credentials": "true",
+            "access-control-expose-headers": "Set-Cookie,X-Smallest-Prompt-Guard,X-Request-Id,Content-Disposition",
+            "etag": "W/\"dd-ujM7hbb57MBa91hkZQAkRZXkUHw\""
+          },
+          "body_excerpt": "{\"status\":\"success\",\"transcription\":\"The quick brown fox jumps over the lazy dog. Speech recognition quality is measured by comparing the words.\",\"words\":[],\"utterances\":[],\"metadata\":{\"duration\":6.305,\"fileSize\":205846}}",
+          "transport_error": null,
+          "cancelled_by_client": false,
+          "fresh_connection": false,
+          "body_chunks": 1
+        }
+      ]
+    },
+    {
+      "case_id": "P2-ERR-17",
+      "title": "get_voices: invalid API key",
+      "area": "Error contract",
+      "expected_behavior": "401",
+      "doc_refs": [
+        "https://docs.smallest.ai/api-reference/authentication"
+      ],
+      "classification": "Candidate finding requiring reproduction",
+      "checks": [
+        {
+          "name": "HTTP 401",
+          "passed": false,
+          "expected": "401",
+          "actual": "200",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/api-reference/authentication"
+        }
+      ],
+      "metrics": {
+        "error_contract": [
+          {
+            "status": 200,
+            "signature": "{voices:list[object{displayName,tags,voiceId}]}",
+            "human_message": null
+          }
+        ]
+      },
+      "notes": [],
+      "requests": [
+        {
+          "case_id": "P2-ERR-17",
+          "ledger_seq": 56,
+          "timestamp_utc": "2026-11-22T17:28:14.470+00:00",
+          "timestamp_ist": "2026-11-22T22:58:14.470+05:30",
+          "method": "GET",
+          "endpoint": "/waves/v1/lightning-v3.1-pro/get_voices",
+          "query_params": {},
+          "request": {
+            "headers": {
+              "Authorization": "[REDACTED]"
+            }
+          },
+          "auth_mode": "invalid",
+          "status": 200,
+          "content_type": "application/json; charset=utf-8",
+          "response_bytes": 89175,
+          "response_truncated_at_cap": false,
+          "response_sha256": "76dd8a5a751f8c20046bb608bc2bc51365409687e57a61e6bd26c8e497d33849",
+          "time_to_headers_ms": 206.2,
+          "ttfb_ms": 206.5,
+          "duration_ms": 263.1,
+          "extra_timings_ms": {},
+          "request_ids": {
+            "x-request-id": "ae436ac6-d785-470c-b21a-9836d12f3038"
+          },
+          "response_headers": {
+            "date": "Sun, 22 Nov 2026 17:28:14 GMT",
+            "content-type": "application/json; charset=utf-8",
+            "content-length": "89175",
+            "connection": "keep-alive",
+            "set-cookie": "[REDACTED]",
+            "x-request-id": "ae436ac6-d785-470c-b21a-9836d12f3038",
+            "cache-control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+            "pragma": "no-cache",
+            "expires": "0",
+            "strict-transport-security": "max-age=31536000; includeSubDomains",
+            "content-security-policy": "default-src 'self';script-src 'self';style-src 'self' 'unsafe-inline';img-src 'self' data: https://d1o0umtiv0iuvd.cloudfront.net https://d4a5s42qh2351.cloudfront.net https://waves-history.s3.ap-south-1.amazonaws.com https://waves-history-dev.s3.ap-south-1.amazonaws.com https://db2izkvf1oocn.cloudfront.net https://media.plivo.com https://dlw9ti8dmuxc7.cloudfront.net;connect-src 'self';frame-ancestors 'none';upgrade-insecure-requests;base-uri 'self';font-src 'self' https: data:;form-action 'self';object-src 'none';script-src-attr 'none'",
+            "cross-origin-opener-policy": "same-origin",
+            "cross-origin-resource-policy": "same-origin",
+            "origin-agent-cluster": "?1",
+            "referrer-policy": "no-referrer",
+            "x-content-type-options": "nosniff",
+            "x-dns-prefetch-control": "off",
+            "x-download-options": "noopen",
+            "x-frame-options": "SAMEORIGIN",
+            "x-permitted-cross-domain-policies": "none",
+            "x-xss-protection": "0",
+            "vary": "Origin",
+            "access-control-allow-credentials": "true",
+            "access-control-expose-headers": "Set-Cookie,X-Smallest-Prompt-Guard,X-Request-Id,Content-Disposition",
+            "etag": "W/\"15c57-y8qNYRS6X3eLRBIWSwsua9GMmzY\""
+          },
+          "body_excerpt": "{\"voices\":[{\"voiceId\":\"ben\",\"displayName\":\"Ben\",\"tags\":{\"accent\":\"german\",\"language\":[\"english\",\"spanish\",\"french\",\"german\",\"italian\",\"dutch\",\"swedish\",\"portuguese\",\"polish\",\"russian\",\"greek\",\"finnish\",\"norwegian\"],\"gender\":\"male\",\"age\":\"young\",\"usecases\":[\"Customer support agent\",\"Narration\",\"Educational\"],\"emotions\":[],\"recommendedLanguages\":[\"german\"]}},{\"voiceId\":\"kristian\",\"displayName\":\"Kristian\",\"tags\":{\"accent\":\"norwegian\",\"language\":[\"english\",\"spanish\",\"french\",\"german\",\"italian\",\"dutch\",\"swedish\",\"portuguese\",\"polish\",\"russian\",\"greek\",\"finnish\",\"norwegian\"],\"gender\":\"male\",\"age\":\"y...[truncated]",
+          "transport_error": null,
+          "cancelled_by_client": false,
+          "fresh_connection": false,
+          "body_chunks": 8
+        }
+      ]
+    },
+    {
+      "case_id": "P2-ERR-18",
+      "title": "STT: language omitted",
+      "area": "Error contract",
+      "expected_behavior": "'optional' but 'Always pass language'; default not stated",
+      "doc_refs": [
+        "https://docs.smallest.ai/api-reference/models/speech-to-text/transcribe"
+      ],
+      "classification": "Candidate finding requiring reproduction",
+      "checks": [
+        {
+          "name": "accepted and transcribed",
+          "passed": false,
+          "expected": "200 + transcription (behaviour not documented)",
+          "actual": "400",
+          "requirement": "exploratory",
+          "doc_ref": null
+        },
+        {
+          "name": "error body conforms to the documented STT error schema",
+          "passed": true,
+          "expected": "documented field types + a human-readable message string",
+          "actual": "conforms",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/api-reference/models/speech-to-text/transcribe"
+        }
+      ],
+      "metrics": {
+        "status": 400,
+        "signature": "{error_code:string,language:string,message:string,region:string,status:string}",
+        "error_contract": [
+          {
+            "status": 400,
+            "signature": "{error_code:string,language:string,message:string,region:string,status:string}",
+            "undocumented_fields": [],
+            "human_message": "Language 'multi' has not been enabled in this region. Please contact support to request access."
+          }
+        ]
+      },
+      "notes": [
+        "Default language is not documented."
+      ],
+      "requests": [
+        {
+          "case_id": "P2-ERR-18",
+          "ledger_seq": 57,
+          "timestamp_utc": "2026-11-22T17:28:16.239+00:00",
+          "timestamp_ist": "2026-11-22T22:58:16.239+05:30",
+          "method": "POST",
+          "endpoint": "/waves/v1/stt/",
+          "query_params": {
+            "model": "pulse"
+          },
+          "request": {
+            "binary_body": {
+              "bytes": 205846,
+              "sha256": "cc3d3e75a72ca66f64fba9607342328861d6c3171eba0d8fe2dea5a7aa357f01"
+            },
+            "headers": {
+              "Content-Type": "application/octet-stream",
+              "Authorization": "[REDACTED]"
+            }
+          },
+          "auth_mode": "valid",
+          "status": 400,
+          "content_type": "application/json; charset=utf-8",
+          "response_bytes": 213,
+          "response_truncated_at_cap": false,
+          "response_sha256": "04bde1b9c1e4ef85fb6af0d37bfb4b88a22cce2241c1a86aa6fa9c5eab2530bd",
+          "time_to_headers_ms": 240.5,
+          "ttfb_ms": 240.8,
+          "duration_ms": 241.0,
+          "extra_timings_ms": {},
+          "request_ids": {
+            "x-request-id": "60f87a73-029a-4fc6-8654-a189192ba919"
+          },
+          "response_headers": {
+            "date": "Sun, 22 Nov 2026 17:28:16 GMT",
+            "content-type": "application/json; charset=utf-8",
+            "content-length": "213",
+            "connection": "keep-alive",
+            "set-cookie": "[REDACTED]",
+            "x-request-id": "60f87a73-029a-4fc6-8654-a189192ba919",
+            "cache-control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+            "pragma": "no-cache",
+            "expires": "0",
+            "strict-transport-security": "max-age=31536000; includeSubDomains",
+            "content-security-policy": "default-src 'self';script-src 'self';style-src 'self' 'unsafe-inline';img-src 'self' data: https://d1o0umtiv0iuvd.cloudfront.net https://d4a5s42qh2351.cloudfront.net https://waves-history.s3.ap-south-1.amazonaws.com https://waves-history-dev.s3.ap-south-1.amazonaws.com https://db2izkvf1oocn.cloudfront.net https://media.plivo.com https://dlw9ti8dmuxc7.cloudfront.net;connect-src 'self';frame-ancestors 'none';upgrade-insecure-requests;base-uri 'self';font-src 'self' https: data:;form-action 'self';object-src 'none';script-src-attr 'none'",
+            "cross-origin-opener-policy": "same-origin",
+            "cross-origin-resource-policy": "same-origin",
+            "origin-agent-cluster": "?1",
+            "referrer-policy": "no-referrer",
+            "x-content-type-options": "nosniff",
+            "x-dns-prefetch-control": "off",
+            "x-download-options": "noopen",
+            "x-frame-options": "SAMEORIGIN",
+            "x-permitted-cross-domain-policies": "none",
+            "x-xss-protection": "0",
+            "vary": "Origin",
+            "access-control-allow-credentials": "true",
+            "access-control-expose-headers": "Set-Cookie,X-Smallest-Prompt-Guard,X-Request-Id,Content-Disposition",
+            "etag": "W/\"d5-4z6h5MUaq8m+rOgGrTZdHW5PhvQ\""
+          },
+          "body_excerpt": "{\"status\":\"error\",\"error_code\":\"LANGUAGE_NOT_ENABLED_IN_REGION\",\"message\":\"Language 'multi' has not been enabled in this region. Please contact support to request access.\",\"language\":\"multi\",\"region\":\"ap-south-1\"}",
+          "transport_error": null,
+          "cancelled_by_client": false,
+          "fresh_connection": false,
+          "body_chunks": 1
+        }
+      ]
+    },
+    {
+      "case_id": "P2-STR-01",
+      "title": "SSE pcm 250 chars: chunk alignment, gaps, playback stall analysis",
+      "area": "Streaming",
+      "expected_behavior": "documented framing; 16-bit aligned chunks; no playback stall",
+      "doc_refs": [
+        "https://docs.smallest.ai/models/text-to-speech/streaming"
+      ],
+      "classification": "Passed",
+      "checks": [
+        {
+          "name": "HTTP 200",
+          "passed": true,
+          "expected": "200",
+          "actual": "200",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/models/text-to-speech/streaming"
+        },
+        {
+          "name": "Content-Type is text/event-stream",
+          "passed": true,
+          "expected": "text/event-stream",
+          "actual": "text/event-stream",
+          "requirement": "quality",
+          "doc_ref": null
+        },
+        {
+          "name": "all frames carry JSON data",
+          "passed": true,
+          "expected": "0 invalid frames",
+          "actual": "0 invalid / 73 total",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/models/text-to-speech/streaming"
+        },
+        {
+          "name": ">= 1 audio chunk before completion",
+          "passed": true,
+          "expected": ">= 1",
+          "actual": "72",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/models/text-to-speech/streaming"
+        },
+        {
+          "name": "all audio chunks are valid base64",
+          "passed": true,
+          "expected": 0,
+          "actual": "0",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/models/text-to-speech/streaming"
+        },
+        {
+          "name": "every frame has a `done` field",
+          "passed": true,
+          "expected": true,
+          "actual": "True",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/models/text-to-speech/streaming"
+        },
+        {
+          "name": "exactly one done:true frame and it is last",
+          "passed": true,
+          "expected": "1 terminal frame, last",
+          "actual": "terminal indices [72] of 73",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/models/text-to-speech/streaming"
+        },
+        {
+          "name": "terminal frame status == '200'",
+          "passed": true,
+          "expected": "200",
+          "actual": "200",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/models/text-to-speech/streaming"
+        },
+        {
+          "name": "no frames after terminal / no unterminated trailing data",
+          "passed": true,
+          "expected": "0 / 0",
+          "actual": "0 / 0",
+          "requirement": "quality",
+          "doc_ref": null
+        },
+        {
+          "name": "every PCM chunk is 16-bit sample aligned",
+          "passed": true,
+          "expected": "0 odd-length chunks",
+          "actual": "0 odd",
+          "requirement": "quality",
+          "doc_ref": null
+        },
+        {
+          "name": "real-time playback would not stall (this network path)",
+          "passed": true,
+          "expected": "0 ms stall",
+          "actual": "0.0",
+          "requirement": "exploratory",
+          "doc_ref": null
+        }
+      ],
+      "metrics": {
+        "frames": 73,
+        "audio_chunks": 72,
+        "audio_bytes": 535680,
+        "ttfb_ms": 248.5,
+        "first_audio_event_ms": 248.5,
+        "done_event_ms": 2146.7,
+        "stream_closed_ms": 2147.4,
+        "close_after_done_ms": 0.7,
+        "underrun": {
+          "max_playback_stall_ms": 0.0,
+          "audio_received_s": 11.16,
+          "max_inter_chunk_gap_ms": 75.6,
+          "median_inter_chunk_gap_ms": 25.4,
+          "realtime_factor": 5.96
+        },
+        "time_to_first_voiced_audio_ms": 288.5,
+        "pcm_analysis": {
+          "samples": 267840,
+          "duration_s": 11.16,
+          "rms_dbfs": -12.0,
+          "peak": 32263,
+          "clipped_fraction": 0.0,
+          "leading_silence_ms": 40,
+          "trailing_silence_ms": 240,
+          "longest_internal_silence_ms": 480,
+          "all_silent": false
+        }
+      },
+      "notes": [],
+      "requests": [
+        {
+          "case_id": "P2-STR-01",
+          "ledger_seq": 58,
+          "timestamp_utc": "2026-11-22T17:28:17.985+00:00",
+          "timestamp_ist": "2026-11-22T22:58:17.985+05:30",
+          "method": "POST",
+          "endpoint": "/waves/v1/tts/live",
+          "query_params": {},
+          "request": {
+            "json": {
+              "text": "Thank you for calling Horizon Bank. Your recent payment has been received, and your account is now up to date. If you would like to hear your balance, please stay on the line, and an agent will help you shortly with any other questions.",
+              "voice_id": "meher",
+              "model": "lightning_v3.1_pro",
+              "language": "en",
+              "sample_rate": 24000,
+              "output_format": "pcm"
+            },
+            "text_chars": 236,
+            "headers": {
+              "Content-Type": "application/json",
+              "Accept": "text/event-stream",
+              "Authorization": "[REDACTED]"
+            }
+          },
+          "auth_mode": "valid",
+          "status": 200,
+          "content_type": "text/event-stream",
+          "response_bytes": 718676,
+          "response_truncated_at_cap": false,
+          "response_sha256": "189a4cd42145dfa8c24e736a4217459637147e9d679b6b84709c1ee91bc72b18",
+          "time_to_headers_ms": 248.4,
+          "ttfb_ms": 248.5,
+          "duration_ms": 2147.4,
+          "extra_timings_ms": {
+            "first_audio_event": 248.5,
+            "done_event": 2146.7
+          },
+          "request_ids": {
+            "x-request-id": "fb1afe68-c7a5-4f9b-8777-0b9f58fe6097",
+            "x-session-id": "fb1afe68-c7a5-4f9b-8777-0b9f58fe6097",
+            "x-external-session-id": "",
+            "x-external-request-id": ""
+          },
+          "response_headers": {
+            "date": "Sun, 22 Nov 2026 17:28:18 GMT",
+            "content-type": "text/event-stream",
+            "transfer-encoding": "chunked",
+            "connection": "keep-alive",
+            "set-cookie": "[REDACTED]",
+            "x-request-id": "fb1afe68-c7a5-4f9b-8777-0b9f58fe6097",
+            "cache-control": "no-cache",
+            "pragma": "no-cache",
+            "expires": "0",
+            "strict-transport-security": "max-age=31536000; includeSubDomains",
+            "content-security-policy": "default-src 'self';script-src 'self';style-src 'self' 'unsafe-inline';img-src 'self' data: https://d1o0umtiv0iuvd.cloudfront.net https://d4a5s42qh2351.cloudfront.net https://waves-history.s3.ap-south-1.amazonaws.com https://waves-history-dev.s3.ap-south-1.amazonaws.com https://db2izkvf1oocn.cloudfront.net https://media.plivo.com https://dlw9ti8dmuxc7.cloudfront.net;connect-src 'self';frame-ancestors 'none';upgrade-insecure-requests;base-uri 'self';font-src 'self' https: data:;form-action 'self';object-src 'none';script-src-attr 'none'",
+            "cross-origin-opener-policy": "same-origin",
+            "cross-origin-resource-policy": "same-origin",
+            "origin-agent-cluster": "?1",
+            "referrer-policy": "no-referrer",
+            "x-content-type-options": "nosniff",
+            "x-dns-prefetch-control": "off",
+            "x-download-options": "noopen",
+            "x-frame-options": "SAMEORIGIN",
+            "x-permitted-cross-domain-policies": "none",
+            "x-xss-protection": "0",
+            "vary": "Origin",
+            "access-control-allow-credentials": "true",
+            "access-control-expose-headers": "Set-Cookie,X-Smallest-Prompt-Guard,X-Request-Id,Content-Disposition",
+            "x-session-id": "fb1afe68-c7a5-4f9b-8777-0b9f58fe6097",
+            "x-external-session-id": "",
+            "x-external-request-id": ""
+          },
+          "body_excerpt": "event: audio\ndata: {\"audio\":\"<2371 base64 chars omitted>",
+          "transport_error": null,
+          "cancelled_by_client": false,
+          "fresh_connection": false,
+          "body_chunks": 73
+        }
+      ]
+    },
+    {
+      "case_id": "P2-STR-02",
+      "title": "SSE mp3 framing",
+      "area": "Streaming",
+      "expected_behavior": "MPEG frames ('mp3 streams MP3 frames')",
+      "doc_refs": [
+        "https://docs.smallest.ai/models/text-to-speech/streaming",
+        "https://docs.smallest.ai/changelog/models/2026/11/5"
+      ],
+      "classification": "Candidate finding requiring reproduction",
+      "checks": [
+        {
+          "name": "HTTP 200",
+          "passed": true,
+          "expected": "200",
+          "actual": "200",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/models/text-to-speech/streaming"
+        },
+        {
+          "name": "Content-Type is text/event-stream",
+          "passed": true,
+          "expected": "text/event-stream",
+          "actual": "text/event-stream",
+          "requirement": "quality",
+          "doc_ref": null
+        },
+        {
+          "name": "all frames carry JSON data",
+          "passed": true,
+          "expected": "0 invalid frames",
+          "actual": "0 invalid / 203 total",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/models/text-to-speech/streaming"
+        },
+        {
+          "name": ">= 1 audio chunk before completion",
+          "passed": true,
+          "expected": ">= 1",
+          "actual": "202",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/models/text-to-speech/streaming"
+        },
+        {
+          "name": "all audio chunks are valid base64",
+          "passed": true,
+          "expected": 0,
+          "actual": "0",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/models/text-to-speech/streaming"
+        },
+        {
+          "name": "every frame has a `done` field",
+          "passed": true,
+          "expected": true,
+          "actual": "True",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/models/text-to-speech/streaming"
+        },
+        {
+          "name": "exactly one done:true frame and it is last",
+          "passed": true,
+          "expected": "1 terminal frame, last",
+          "actual": "terminal indices [202] of 203",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/models/text-to-speech/streaming"
+        },
+        {
+          "name": "terminal frame status == '200'",
+          "passed": true,
+          "expected": "200",
+          "actual": "200",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/models/text-to-speech/streaming"
+        },
+        {
+          "name": "no frames after terminal / no unterminated trailing data",
+          "passed": true,
+          "expected": "0 / 0",
+          "actual": "0 / 0",
+          "requirement": "quality",
+          "doc_ref": null
+        },
+        {
+          "name": "first chunk is MPEG audio",
+          "passed": true,
+          "expected": "ID3/frame sync",
+          "actual": "fff3c4c4",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/changelog/models/2026/11/5"
+        },
+        {
+          "name": "each chunk starts on an MP3 frame boundary",
+          "passed": false,
+          "expected": "202",
+          "actual": "2",
+          "requirement": "exploratory",
+          "doc_ref": null
+        }
+      ],
+      "metrics": {
+        "frames": 203,
+        "audio_chunks": 202,
+        "audio_bytes": 79872,
+        "ttfb_ms": 274.7,
+        "first_audio_event_ms": 274.7,
+        "done_event_ms": 1163.3,
+        "stream_closed_ms": 1163.7,
+        "close_after_done_ms": 0.3,
+        "chunks_starting_on_frame_sync": 2,
+        "chunks": 202
+      },
+      "notes": [],
+      "requests": [
+        {
+          "case_id": "P2-STR-02",
+          "ledger_seq": 59,
+          "timestamp_utc": "2026-11-22T17:28:21.638+00:00",
+          "timestamp_ist": "2026-11-22T22:58:21.638+05:30",
+          "method": "POST",
+          "endpoint": "/waves/v1/tts/live",
+          "query_params": {},
+          "request": {
+            "json": {
+              "text": "Your order has shipped and should arrive by Thursday. Reply to this message if you need to change the address.",
+              "voice_id": "meher",
+              "model": "lightning_v3.1_pro",
+              "language": "en",
+              "sample_rate": 24000,
+              "output_format": "mp3"
+            },
+            "text_chars": 110,
+            "headers": {
+              "Content-Type": "application/json",
+              "Accept": "text/event-stream",
+              "Authorization": "[REDACTED]"
+            }
+          },
+          "auth_mode": "valid",
+          "status": 200,
+          "content_type": "text/event-stream",
+          "response_bytes": 119074,
+          "response_truncated_at_cap": false,
+          "response_sha256": "3dd9b41bb6d62820215a653531cbe56e9bc0e1fc03fd2fd7ef5e44be8b8d8789",
+          "time_to_headers_ms": 274.4,
+          "ttfb_ms": 274.7,
+          "duration_ms": 1163.7,
+          "extra_timings_ms": {
+            "first_audio_event": 274.7,
+            "done_event": 1163.3
+          },
+          "request_ids": {
+            "x-request-id": "07305cf8-9c33-4482-9572-dff9f3bd0973",
+            "x-session-id": "07305cf8-9c33-4482-9572-dff9f3bd0973",
+            "x-external-session-id": "",
+            "x-external-request-id": ""
+          },
+          "response_headers": {
+            "date": "Sun, 22 Nov 2026 17:28:21 GMT",
+            "content-type": "text/event-stream",
+            "transfer-encoding": "chunked",
+            "connection": "keep-alive",
+            "set-cookie": "[REDACTED]",
+            "x-request-id": "07305cf8-9c33-4482-9572-dff9f3bd0973",
+            "cache-control": "no-cache",
+            "pragma": "no-cache",
+            "expires": "0",
+            "strict-transport-security": "max-age=31536000; includeSubDomains",
+            "content-security-policy": "default-src 'self';script-src 'self';style-src 'self' 'unsafe-inline';img-src 'self' data: https://d1o0umtiv0iuvd.cloudfront.net https://d4a5s42qh2351.cloudfront.net https://waves-history.s3.ap-south-1.amazonaws.com https://waves-history-dev.s3.ap-south-1.amazonaws.com https://db2izkvf1oocn.cloudfront.net https://media.plivo.com https://dlw9ti8dmuxc7.cloudfront.net;connect-src 'self';frame-ancestors 'none';upgrade-insecure-requests;base-uri 'self';font-src 'self' https: data:;form-action 'self';object-src 'none';script-src-attr 'none'",
+            "cross-origin-opener-policy": "same-origin",
+            "cross-origin-resource-policy": "same-origin",
+            "origin-agent-cluster": "?1",
+            "referrer-policy": "no-referrer",
+            "x-content-type-options": "nosniff",
+            "x-dns-prefetch-control": "off",
+            "x-download-options": "noopen",
+            "x-frame-options": "SAMEORIGIN",
+            "x-permitted-cross-domain-policies": "none",
+            "x-xss-protection": "0",
+            "vary": "Origin",
+            "access-control-allow-credentials": "true",
+            "access-control-expose-headers": "Set-Cookie,X-Smallest-Prompt-Guard,X-Request-Id,Content-Disposition",
+            "x-session-id": "07305cf8-9c33-4482-9572-dff9f3bd0973",
+            "x-external-session-id": "",
+            "x-external-request-id": ""
+          },
+          "body_excerpt": "event: audio\ndata: {\"audio\":\"<172 base64 chars omitted>\",\"done\":false,\"status\":\"206\"}\n\nevent: audio\ndata: {\"audio\":\"<520 base64 chars omitted>\",\"done\":false,\"status\":\"206\"}\n\nevent: audio\ndata: {\"audio\":\"<656 base64 chars omitted>\",\"done\":false,\"status\":\"206\"}\n\nevent: audio\ndata: {\"audio\":\"<632 base64 chars omitted>\",\"done\":false,\"status\":\"206\"}\n\nevent: audio\ndata: {\"audio\":\"<147 base64 chars omitted>",
+          "transport_error": null,
+          "cancelled_by_client": false,
+          "fresh_connection": false,
+          "body_chunks": 203
+        }
+      ]
+    },
+    {
+      "case_id": "P2-STR-03",
+      "title": "SSE ulaw 8 kHz",
+      "area": "Streaming",
+      "expected_behavior": "raw 8-bit samples, decodable",
+      "doc_refs": [
+        "https://docs.smallest.ai/changelog/models/2026/11/5"
+      ],
+      "classification": "Passed",
+      "checks": [
+        {
+          "name": "HTTP 200",
+          "passed": true,
+          "expected": "200",
+          "actual": "200",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/models/text-to-speech/streaming"
+        },
+        {
+          "name": "Content-Type is text/event-stream",
+          "passed": true,
+          "expected": "text/event-stream",
+          "actual": "text/event-stream",
+          "requirement": "quality",
+          "doc_ref": null
+        },
+        {
+          "name": "all frames carry JSON data",
+          "passed": true,
+          "expected": "0 invalid frames",
+          "actual": "0 invalid / 37 total",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/models/text-to-speech/streaming"
+        },
+        {
+          "name": ">= 1 audio chunk before completion",
+          "passed": true,
+          "expected": ">= 1",
+          "actual": "36",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/models/text-to-speech/streaming"
+        },
+        {
+          "name": "all audio chunks are valid base64",
+          "passed": true,
+          "expected": 0,
+          "actual": "0",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/models/text-to-speech/streaming"
+        },
+        {
+          "name": "every frame has a `done` field",
+          "passed": true,
+          "expected": true,
+          "actual": "True",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/models/text-to-speech/streaming"
+        },
+        {
+          "name": "exactly one done:true frame and it is last",
+          "passed": true,
+          "expected": "1 terminal frame, last",
+          "actual": "terminal indices [36] of 37",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/models/text-to-speech/streaming"
+        },
+        {
+          "name": "terminal frame status == '200'",
+          "passed": true,
+          "expected": "200",
+          "actual": "200",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/models/text-to-speech/streaming"
+        },
+        {
+          "name": "no frames after terminal / no unterminated trailing data",
+          "passed": true,
+          "expected": "0 / 0",
+          "actual": "0 / 0",
+          "requirement": "quality",
+          "doc_ref": null
+        },
+        {
+          "name": "no RIFF header on ulaw stream (raw 8-bit samples)",
+          "passed": true,
+          "expected": "raw samples",
+          "actual": "ffffffff",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/changelog/models/2026/11/5"
+        },
+        {
+          "name": "mu-law decodes to non-silent speech-rate audio",
+          "passed": true,
+          "expected": "non-silent, 5-30 chars/s",
+          "actual": "silent=False, cps=19.628836545324766",
+          "requirement": "quality",
+          "doc_ref": null
+        }
+      ],
+      "metrics": {
+        "frames": 37,
+        "audio_chunks": 36,
+        "audio_bytes": 44835,
+        "ttfb_ms": 267.2,
+        "first_audio_event_ms": 267.2,
+        "done_event_ms": 1194.3,
+        "stream_closed_ms": 1194.7,
+        "close_after_done_ms": 0.4,
+        "first_bytes_hex": "ffffffff",
+        "decoded": {
+          "samples": 44835,
+          "duration_s": 5.604,
+          "rms_dbfs": -15.2,
+          "peak": 25980,
+          "clipped_fraction": 0.0,
+          "leading_silence_ms": 40,
+          "trailing_silence_ms": 440,
+          "longest_internal_silence_ms": 480,
+          "all_silent": false
+        },
+        "chars_per_s": 19.63
+      },
+      "notes": [],
+      "requests": [
+        {
+          "case_id": "P2-STR-03",
+          "ledger_seq": 60,
+          "timestamp_utc": "2026-11-22T17:28:24.303+00:00",
+          "timestamp_ist": "2026-11-22T22:58:24.303+05:30",
+          "method": "POST",
+          "endpoint": "/waves/v1/tts/live",
+          "query_params": {},
+          "request": {
+            "json": {
+              "text": "Your order has shipped and should arrive by Thursday. Reply to this message if you need to change the address.",
+              "voice_id": "meher",
+              "model": "lightning_v3.1_pro",
+              "language": "en",
+              "sample_rate": 8000,
+              "output_format": "ulaw"
+            },
+            "text_chars": 110,
+            "headers": {
+              "Content-Type": "application/json",
+              "Accept": "text/event-stream",
+              "Authorization": "[REDACTED]"
+            }
+          },
+          "auth_mode": "valid",
+          "status": 200,
+          "content_type": "text/event-stream",
+          "response_bytes": 62016,
+          "response_truncated_at_cap": false,
+          "response_sha256": "fc7c42f4c00a6e6b81939eee155a71350ee5679ea1611a0d7a477fe16f31068d",
+          "time_to_headers_ms": 266.9,
+          "ttfb_ms": 267.2,
+          "duration_ms": 1194.7,
+          "extra_timings_ms": {
+            "first_audio_event": 267.2,
+            "done_event": 1194.3
+          },
+          "request_ids": {
+            "x-request-id": "ba4f359b-f984-4e99-83d7-251b7834aeda",
+            "x-session-id": "ba4f359b-f984-4e99-83d7-251b7834aeda",
+            "x-external-session-id": "",
+            "x-external-request-id": ""
+          },
+          "response_headers": {
+            "date": "Sun, 22 Nov 2026 17:28:24 GMT",
+            "content-type": "text/event-stream",
+            "transfer-encoding": "chunked",
+            "connection": "keep-alive",
+            "set-cookie": "[REDACTED]",
+            "x-request-id": "ba4f359b-f984-4e99-83d7-251b7834aeda",
+            "cache-control": "no-cache",
+            "pragma": "no-cache",
+            "expires": "0",
+            "strict-transport-security": "max-age=31536000; includeSubDomains",
+            "content-security-policy": "default-src 'self';script-src 'self';style-src 'self' 'unsafe-inline';img-src 'self' data: https://d1o0umtiv0iuvd.cloudfront.net https://d4a5s42qh2351.cloudfront.net https://waves-history.s3.ap-south-1.amazonaws.com https://waves-history-dev.s3.ap-south-1.amazonaws.com https://db2izkvf1oocn.cloudfront.net https://media.plivo.com https://dlw9ti8dmuxc7.cloudfront.net;connect-src 'self';frame-ancestors 'none';upgrade-insecure-requests;base-uri 'self';font-src 'self' https: data:;form-action 'self';object-src 'none';script-src-attr 'none'",
+            "cross-origin-opener-policy": "same-origin",
+            "cross-origin-resource-policy": "same-origin",
+            "origin-agent-cluster": "?1",
+            "referrer-policy": "no-referrer",
+            "x-content-type-options": "nosniff",
+            "x-dns-prefetch-control": "off",
+            "x-download-options": "noopen",
+            "x-frame-options": "SAMEORIGIN",
+            "x-permitted-cross-domain-policies": "none",
+            "x-xss-protection": "0",
+            "vary": "Origin",
+            "access-control-allow-credentials": "true",
+            "access-control-expose-headers": "Set-Cookie,X-Smallest-Prompt-Guard,X-Request-Id,Content-Disposition",
+            "x-session-id": "ba4f359b-f984-4e99-83d7-251b7834aeda",
+            "x-external-session-id": "",
+            "x-external-request-id": ""
+          },
+          "body_excerpt": "event: audio\ndata: {\"audio\":\"<1680 base64 chars omitted>\",\"done\":false,\"status\":\"206\"}\n\nevent: audio\ndata: {\"audio\":\"<630 base64 chars omitted>",
+          "transport_error": null,
+          "cancelled_by_client": false,
+          "fresh_connection": false,
+          "body_chunks": 37
+        }
+      ]
+    },
+    {
+      "case_id": "P2-STR-04",
+      "title": "Sync vs SSE duration parity (same 250-char text)",
+      "area": "Streaming",
+      "expected_behavior": "durations within 20%",
+      "doc_refs": [
+        "https://docs.smallest.ai/api-reference/models/text-to-speech/synthesize-speech",
+        "https://docs.smallest.ai/models/text-to-speech/streaming"
+      ],
+      "classification": "Passed",
+      "checks": [
+        {
+          "name": "HTTP 200",
+          "passed": true,
+          "expected": "200",
+          "actual": "200",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/api-reference/models/text-to-speech/synthesize-speech"
+        },
+        {
+          "name": "SSE and sync durations within 20% for identical text",
+          "passed": true,
+          "expected": "0.8-1.25",
+          "actual": "0.913",
+          "requirement": "exploratory",
+          "doc_ref": null
+        }
+      ],
+      "metrics": {
+        "sync_pcm_duration_s": 12.23,
+        "sse_pcm_duration_s": 11.16,
+        "content_type": "application/octet-stream",
+        "ratio_sse_over_sync": 0.913
+      },
+      "notes": [],
+      "requests": [
+        {
+          "case_id": "P2-STR-04",
+          "ledger_seq": 61,
+          "timestamp_utc": "2026-11-22T17:28:27.003+00:00",
+          "timestamp_ist": "2026-11-22T22:58:27.003+05:30",
+          "method": "POST",
+          "endpoint": "/waves/v1/tts",
+          "query_params": {},
+          "request": {
+            "json": {
+              "text": "Thank you for calling Horizon Bank. Your recent payment has been received, and your account is now up to date. If you would like to hear your balance, please stay on the line, and an agent will help you shortly with any other questions.",
+              "voice_id": "meher",
+              "model": "lightning_v3.1_pro",
+              "language": "en",
+              "sample_rate": 24000,
+              "output_format": "pcm"
+            },
+            "text_chars": 236,
+            "headers": {
+              "Content-Type": "application/json",
+              "Authorization": "[REDACTED]"
+            }
+          },
+          "auth_mode": "valid",
+          "status": 200,
+          "content_type": "application/octet-stream",
+          "response_bytes": 587040,
+          "response_truncated_at_cap": false,
+          "response_sha256": "223f8e296e8564617296cd102b8ae827fabe9b3ddb0f88d306f9fd0805870295",
+          "time_to_headers_ms": 2429.8,
+          "ttfb_ms": 2430.1,
+          "duration_ms": 2499.0,
+          "extra_timings_ms": {},
+          "request_ids": {
+            "x-request-id": "96292ed3-5f5f-4199-8080-3ee4e7e12c86",
+            "x-session-id": "96292ed3-5f5f-4199-8080-3ee4e7e12c86",
+            "x-external-session-id": "",
+            "x-external-request-id": ""
+          },
+          "response_headers": {
+            "date": "Sun, 22 Nov 2026 17:28:29 GMT",
+            "content-type": "application/octet-stream",
+            "content-length": "587040",
+            "connection": "keep-alive",
+            "set-cookie": "[REDACTED]",
+            "x-request-id": "96292ed3-5f5f-4199-8080-3ee4e7e12c86",
+            "cache-control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+            "pragma": "no-cache",
+            "expires": "0",
+            "strict-transport-security": "max-age=31536000; includeSubDomains",
+            "content-security-policy": "default-src 'self';script-src 'self';style-src 'self' 'unsafe-inline';img-src 'self' data: https://d1o0umtiv0iuvd.cloudfront.net https://d4a5s42qh2351.cloudfront.net https://waves-history.s3.ap-south-1.amazonaws.com https://waves-history-dev.s3.ap-south-1.amazonaws.com https://db2izkvf1oocn.cloudfront.net https://media.plivo.com https://dlw9ti8dmuxc7.cloudfront.net;connect-src 'self';frame-ancestors 'none';upgrade-insecure-requests;base-uri 'self';font-src 'self' https: data:;form-action 'self';object-src 'none';script-src-attr 'none'",
+            "cross-origin-opener-policy": "same-origin",
+            "cross-origin-resource-policy": "same-origin",
+            "origin-agent-cluster": "?1",
+            "referrer-policy": "no-referrer",
+            "x-content-type-options": "nosniff",
+            "x-dns-prefetch-control": "off",
+            "x-download-options": "noopen",
+            "x-frame-options": "SAMEORIGIN",
+            "x-permitted-cross-domain-policies": "none",
+            "x-xss-protection": "0",
+            "vary": "Origin",
+            "access-control-allow-credentials": "true",
+            "access-control-expose-headers": "Set-Cookie,X-Smallest-Prompt-Guard,X-Request-Id,Content-Disposition",
+            "x-session-id": "96292ed3-5f5f-4199-8080-3ee4e7e12c86",
+            "x-external-session-id": "",
+            "x-external-request-id": "",
+            "etag": "W/\"8f520-9QnmpwljGDoJAW/ZbjHDMKtE6fE\""
+          },
+          "body_excerpt": null,
+          "transport_error": null,
+          "cancelled_by_client": false,
+          "fresh_connection": false,
+          "body_chunks": 39
+        }
+      ]
+    },
+    {
+      "case_id": "P2-STR-08",
+      "title": "SSE 1000-char stream completes",
+      "area": "Streaming",
+      "expected_behavior": "single terminal frame; full-length audio",
+      "doc_refs": [
+        "https://docs.smallest.ai/models/text-to-speech/streaming"
+      ],
+      "classification": "Passed",
+      "checks": [
+        {
+          "name": "HTTP 200",
+          "passed": true,
+          "expected": "200",
+          "actual": "200",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/models/text-to-speech/streaming"
+        },
+        {
+          "name": "Content-Type is text/event-stream",
+          "passed": true,
+          "expected": "text/event-stream",
+          "actual": "text/event-stream",
+          "requirement": "quality",
+          "doc_ref": null
+        },
+        {
+          "name": "all frames carry JSON data",
+          "passed": true,
+          "expected": "0 invalid frames",
+          "actual": "0 invalid / 300 total",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/models/text-to-speech/streaming"
+        },
+        {
+          "name": ">= 1 audio chunk before completion",
+          "passed": true,
+          "expected": ">= 1",
+          "actual": "299",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/models/text-to-speech/streaming"
+        },
+        {
+          "name": "all audio chunks are valid base64",
+          "passed": true,
+          "expected": 0,
+          "actual": "0",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/models/text-to-speech/streaming"
+        },
+        {
+          "name": "every frame has a `done` field",
+          "passed": true,
+          "expected": true,
+          "actual": "True",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/models/text-to-speech/streaming"
+        },
+        {
+          "name": "exactly one done:true frame and it is last",
+          "passed": true,
+          "expected": "1 terminal frame, last",
+          "actual": "terminal indices [299] of 300",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/models/text-to-speech/streaming"
+        },
+        {
+          "name": "terminal frame status == '200'",
+          "passed": true,
+          "expected": "200",
+          "actual": "200",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/models/text-to-speech/streaming"
+        },
+        {
+          "name": "no frames after terminal / no unterminated trailing data",
+          "passed": true,
+          "expected": "0 / 0",
+          "actual": "0 / 0",
+          "requirement": "quality",
+          "doc_ref": null
+        },
+        {
+          "name": "long stream: speaking rate plausible (5-30 chars/s)",
+          "passed": true,
+          "expected": "5-30",
+          "actual": "18.810251587114976",
+          "requirement": "quality",
+          "doc_ref": null
+        }
+      ],
+      "metrics": {
+        "frames": 300,
+        "audio_chunks": 299,
+        "audio_bytes": 2245596,
+        "ttfb_ms": 259.1,
+        "first_audio_event_ms": 259.1,
+        "done_event_ms": 8288.6,
+        "stream_closed_ms": 8289.7,
+        "close_after_done_ms": 1.1,
+        "pcm_analysis": {
+          "samples": 1122798,
+          "duration_s": 46.783,
+          "rms_dbfs": -13.1,
+          "peak": 32601,
+          "clipped_fraction": 0.0,
+          "leading_silence_ms": 60,
+          "trailing_silence_ms": 320,
+          "longest_internal_silence_ms": 800,
+          "all_silent": false
+        },
+        "chars_per_s": 18.81,
+        "underrun": {
+          "max_playback_stall_ms": 0.0,
+          "audio_received_s": 46.783,
+          "max_inter_chunk_gap_ms": 86.3,
+          "median_inter_chunk_gap_ms": 25.8,
+          "realtime_factor": 5.84
+        }
+      },
+      "notes": [],
+      "requests": [
+        {
+          "case_id": "P2-STR-08",
+          "ledger_seq": 62,
+          "timestamp_utc": "2026-11-22T17:28:31.007+00:00",
+          "timestamp_ist": "2026-11-22T22:58:31.007+05:30",
+          "method": "POST",
+          "endpoint": "/waves/v1/tts/live",
+          "query_params": {},
+          "request": {
+            "json": {
+              "text": "Thank you for calling Horizon Bank. Your recent payment has been received, and your account is now up to date. If you would like to hear your balance, please stay on the line, and an agent will help you shortly with any other questions. We also wanted to let you know about our new savings plan, which offers a higher interest rate for customers who keep a minimum balance for twelve months. You can sign up through the mobile app or at any branch, and there are no extra fees to get started. Our branches are open from nine in the morning until five in the evening on weekdays, and from ten until two on Saturdays. For security reasons, we will never ask for your password or one time code over the phone, so please do not share them with anyone. If you notice any unusual activity, contact our support team immediately. The final sentence mentions a purple elephant named Gopal.",
+              "voice_id": "meher",
+              "model": "lightning_v3.1_pro",
+              "language": "en",
+              "sample_rate": 24000,
+              "output_format": "pcm"
+            },
+            "text_chars": 880,
+            "headers": {
+              "Content-Type": "application/json",
+              "Accept": "text/event-stream",
+              "Authorization": "[REDACTED]"
+            }
+          },
+          "auth_mode": "valid",
+          "status": 200,
+          "content_type": "text/event-stream",
+          "response_bytes": 3012427,
+          "response_truncated_at_cap": false,
+          "response_sha256": "63ada49ecc314880ad9b5547d4b260e247900dcb3cf0fd1585b0beeedb7424ae",
+          "time_to_headers_ms": 258.7,
+          "ttfb_ms": 259.1,
+          "duration_ms": 8289.7,
+          "extra_timings_ms": {
+            "first_audio_event": 259.1,
+            "done_event": 8288.6
+          },
+          "request_ids": {
+            "x-request-id": "2070e82c-2854-42e7-ae8e-e271543dc5f5",
+            "x-session-id": "2070e82c-2854-42e7-ae8e-e271543dc5f5",
+            "x-external-session-id": "",
+            "x-external-request-id": ""
+          },
+          "response_headers": {
+            "date": "Sun, 22 Nov 2026 17:28:31 GMT",
+            "content-type": "text/event-stream",
+            "transfer-encoding": "chunked",
+            "connection": "keep-alive",
+            "set-cookie": "[REDACTED]",
+            "x-request-id": "2070e82c-2854-42e7-ae8e-e271543dc5f5",
+            "cache-control": "no-cache",
+            "pragma": "no-cache",
+            "expires": "0",
+            "strict-transport-security": "max-age=31536000; includeSubDomains",
+            "content-security-policy": "default-src 'self';script-src 'self';style-src 'self' 'unsafe-inline';img-src 'self' data: https://d1o0umtiv0iuvd.cloudfront.net https://d4a5s42qh2351.cloudfront.net https://waves-history.s3.ap-south-1.amazonaws.com https://waves-history-dev.s3.ap-south-1.amazonaws.com https://db2izkvf1oocn.cloudfront.net https://media.plivo.com https://dlw9ti8dmuxc7.cloudfront.net;connect-src 'self';frame-ancestors 'none';upgrade-insecure-requests;base-uri 'self';font-src 'self' https: data:;form-action 'self';object-src 'none';script-src-attr 'none'",
+            "cross-origin-opener-policy": "same-origin",
+            "cross-origin-resource-policy": "same-origin",
+            "origin-agent-cluster": "?1",
+            "referrer-policy": "no-referrer",
+            "x-content-type-options": "nosniff",
+            "x-dns-prefetch-control": "off",
+            "x-download-options": "noopen",
+            "x-frame-options": "SAMEORIGIN",
+            "x-permitted-cross-domain-policies": "none",
+            "x-xss-protection": "0",
+            "vary": "Origin",
+            "access-control-allow-credentials": "true",
+            "access-control-expose-headers": "Set-Cookie,X-Smallest-Prompt-Guard,X-Request-Id,Content-Disposition",
+            "x-session-id": "2070e82c-2854-42e7-ae8e-e271543dc5f5",
+            "x-external-session-id": "",
+            "x-external-request-id": ""
+          },
+          "body_excerpt": "event: audio\ndata: {\"audio\":\"<2371 base64 chars omitted>",
+          "transport_error": null,
+          "cancelled_by_client": false,
+          "fresh_connection": false,
+          "body_chunks": 300
+        }
+      ]
+    },
+    {
+      "case_id": "P2-WS-01",
+      "title": "WebSocket TTS with word_timestamps (meher)",
+      "area": "Streaming",
+      "expected_behavior": "chunk frames, one complete, server close; word events for meher (docs conflict on meher)",
+      "doc_refs": [
+        "https://docs.smallest.ai/api-reference/models/text-to-speech/tts",
+        "https://docs.smallest.ai/models/text-to-speech/streaming",
+        "https://docs.smallest.ai/model-cards/text-to-speech/lightning-v-3-1"
+      ],
+      "classification": "Candidate finding requiring reproduction",
+      "checks": [
+        {
+          "name": "WebSocket handshake succeeded",
+          "passed": true,
+          "expected": "101",
+          "actual": "101",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/api-reference/models/text-to-speech/tts"
+        },
+        {
+          "name": ">= 1 `chunk` frame with audio",
+          "passed": true,
+          "expected": ">= 1",
+          "actual": "34",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/models/text-to-speech/streaming"
+        },
+        {
+          "name": "exactly one `complete` frame",
+          "passed": true,
+          "expected": 1,
+          "actual": "1",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/models/text-to-speech/streaming"
+        },
+        {
+          "name": "server closes the socket after `complete`",
+          "passed": false,
+          "expected": "closed by server",
+          "actual": "closed=False timed_out=True",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/models/text-to-speech/streaming"
+        },
+        {
+          "name": "all frames are valid JSON",
+          "passed": true,
+          "expected": 0,
+          "actual": "0",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/models/text-to-speech/streaming"
+        },
+        {
+          "name": "word_timestamp events emitted for `meher` (WS reference lists meher)",
+          "passed": true,
+          "expected": "> 0",
+          "actual": "20",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/api-reference/models/text-to-speech/tts"
+        },
+        {
+          "name": "word timestamps monotonic with start <= end",
+          "passed": true,
+          "expected": true,
+          "actual": "True/True",
+          "requirement": "quality",
+          "doc_ref": null
+        }
+      ],
+      "metrics": {
+        "frame_status_counts": {
+          "word_timestamp": 20,
+          "complete": 1,
+          "chunk": 34
+        },
+        "close_code": null,
+        "closed_by_server": false,
+        "timed_out": true,
+        "word_events": [
+          {
+            "id": 0,
+            "word": "Your",
+            "start": 0.04,
+            "end": 0.2
+          },
+          {
+            "id": 1,
+            "word": "order",
+            "start": 0.25,
+            "end": 0.44
+          },
+          {
+            "id": 2,
+            "word": "has",
+            "start": 0.48,
+            "end": 0.6
+          },
+          {
+            "id": 3,
+            "word": "shipped",
+            "start": 0.65,
+            "end": 0.96
+          },
+          {
+            "id": 4,
+            "word": "and",
+            "start": 0.96,
+            "end": 1.09
+          },
+          {
+            "id": 5,
+            "word": "should",
+            "start": 1.12,
+            "end": 1.37
+          },
+          {
+            "id": 6,
+            "word": "arrive",
+            "start": 1.41,
+            "end": 1.73
+          },
+          {
+            "id": 7,
+            "word": "by",
+            "start": 1.77,
+            "end": 1.85
+          },
+          {
+            "id": 8,
+            "word": "Thursday.",
+            "start": 1.93,
+            "end": 2.25
+          },
+          {
+            "id": 9,
+            "word": "Reply",
+            "start": 2.65,
+            "end": 2.88
+          },
+          {
+            "id": 10,
+            "word": "to",
+            "start": 2.96,
+            "end": 3.04
+          },
+          {
+            "id": 11,
+            "word": "this",
+            "start": 3.08,
+            "end": 3.25
+          },
+          {
+            "id": 12,
+            "word": "message",
+            "start": 3.29,
+            "end": 3.56
+          },
+          {
+            "id": 13,
+            "word": "if",
+            "start": 3.6,
+            "end": 3.69
+          },
+          {
+            "id": 14,
+            "word": "you",
+            "start": 3.73,
+            "end": 3.84
+          },
+          {
+            "id": 15,
+            "word": "need",
+            "start": 3.88,
+            "end": 4.04
+          },
+          {
+            "id": 16,
+            "word": "to",
+            "start": 4.08,
+            "end": 4.17
+          },
+          {
+            "id": 17,
+            "word": "change",
+            "start": 4.21,
+            "end": 4.45
+          },
+          {
+            "id": 18,
+            "word": "the",
+            "start": 4.49,
+            "end": 4.6
+          },
+          {
+            "id": 19,
+            "word": "address.",
+            "start": 4.64,
+            "end": 4.88
+          }
+        ],
+        "handshake_ms": 404.5,
+        "first_audio_frame_ms": 689.4,
+        "complete_ms": 6718.0,
+        "word_recall_vs_text": {
+          "hit": 20,
+          "total": 20,
+          "missing": []
+        }
+      },
+      "notes": [],
+      "requests": [
+        {
+          "case_id": "P2-WS-01",
+          "ledger_seq": 63,
+          "timestamp_utc": "2026-11-22T17:28:40.802+00:00",
+          "timestamp_ist": "2026-11-22T22:58:40.802+05:30",
+          "method": "WS",
+          "endpoint": "/waves/v1/tts/live",
+          "query_params": {},
+          "request": {
+            "first_message": {
+              "text": "Your order has shipped and should arrive by Thursday. Reply to this message if you need to change the address.",
+              "voice_id": "meher",
+              "model": "lightning_v3.1_pro",
+              "sample_rate": 24000,
+              "word_timestamps": true
+            },
+            "headers": {
+              "Authorization": "[REDACTED]"
+            }
+          },
+          "auth_mode": "valid",
+          "status": 101,
+          "content_type": "application/x-ws-frames+json",
+          "response_bytes": 9017,
+          "response_truncated_at_cap": false,
+          "response_sha256": "9d7919cbc3c79f9785a5dd3700532eea0b664d15600f8ae03455bd49f1912b33",
+          "time_to_headers_ms": null,
+          "ttfb_ms": 689.4,
+          "duration_ms": 30123.0,
+          "extra_timings_ms": {
+            "handshake": 404.5,
+            "first_audio_frame": 689.4,
+            "complete_frame": 6718.0,
+            "closed": 30004.7
+          },
+          "request_ids": {},
+          "response_headers": {
+            "Date": "Sun, 22 Nov 2026 17:28:41 GMT",
+            "Connection": "upgrade",
+            "Set-Cookie": "[REDACTED]",
+            "Upgrade": "websocket",
+            "Sec-WebSocket-Accept": "il1VcxM+KDHkLIuTXurtc1SqlSg=",
+            "content-type": "application/x-ws-frames+json"
+          },
+          "body_excerpt": "[{\"session_id\": \"a976913b-4d5d-458b-98d0-1afd4817f3ad\", \"request_id\": \"385e0c43-3b26-4664-8d29-c45053d780a0\", \"status\": \"chunk\", \"data_keys\": [\"audio\"], \"audio_b64_chars\": 7832}, {\"session_id\": \"a976913b-4d5d-458b-98d0-1afd4817f3ad\", \"request_id\": \"385e0c43-3b26-4664-8d29-c45053d780a0\", \"status\": \"word_timestamp\", \"data_keys\": [\"end\", \"id\", \"start\", \"word\"]}, {\"session_id\": \"a976913b-4d5d-458b-98d0-1afd4817f3ad\", \"request_id\": \"385e0c43-3b26-4664-8d29-c45053d780a0\", \"status\": \"chunk\", \"data_keys\": [\"audio\"], \"audio_b64_chars\": 10240}, {\"session_id\": \"a976913b-4d5d-458b-98d0-1afd4817f3ad\", \"req...[truncated]",
+          "transport_error": null,
+          "cancelled_by_client": false,
+          "fresh_connection": false,
+          "body_chunks": 0
+        }
+      ]
+    },
+    {
+      "case_id": "P2-WS-02",
+      "title": "WebSocket unknown voice",
+      "area": "Streaming",
+      "expected_behavior": "error frame, no audio, no hang (error frame schema not documented)",
+      "doc_refs": [
+        "https://docs.smallest.ai/api-reference/models/text-to-speech/tts"
+      ],
+      "classification": "Candidate finding requiring reproduction",
+      "checks": [
+        {
+          "name": "invalid voice produces an error frame (no audio)",
+          "passed": true,
+          "expected": "status=error frame",
+          "actual": "1 error frames, 0 audio",
+          "requirement": "exploratory",
+          "doc_ref": "https://docs.smallest.ai/models/text-to-speech/streaming"
+        },
+        {
+          "name": "connection does not hang until the client deadline",
+          "passed": false,
+          "expected": "server closes/answers",
+          "actual": "timed_out=True",
+          "requirement": "quality",
+          "doc_ref": null
+        }
+      ],
+      "metrics": {
+        "frames": [
+          {
+            "request_id": "3358f10d-1232-4e42-af8a-a3d64ffa6d9d",
+            "status": "error",
+            "message": "Invalid input data",
+            "errors": [
+              {
+                "code": "custom",
+                "path": [
+                  "voice_id"
+                ],
+                "message": "Voice 'qa_nonexistent_voice_zz9' is not available on the lightning_v3.1_pro model"
+              }
+            ]
+          }
+        ],
+        "close_code": null,
+        "timed_out": true,
+        "error_frame_signature": "{errors:list[object{code,message,path}],message:string,request_id:string,status:string}"
+      },
+      "notes": [],
+      "requests": [
+        {
+          "case_id": "P2-WS-02",
+          "ledger_seq": 64,
+          "timestamp_utc": "2026-11-22T17:29:12.430+00:00",
+          "timestamp_ist": "2026-11-22T22:59:12.430+05:30",
+          "method": "WS",
+          "endpoint": "/waves/v1/tts/live",
+          "query_params": {},
+          "request": {
+            "first_message": {
+              "text": "Hello from the Smallest AI QA harness. This is a short synthesis test.",
+              "voice_id": "qa_nonexistent_voice_zz9",
+              "model": "lightning_v3.1_pro",
+              "sample_rate": 24000
+            },
+            "headers": {
+              "Authorization": "[REDACTED]"
+            }
+          },
+          "auth_mode": "valid",
+          "status": 101,
+          "content_type": "application/x-ws-frames+json",
+          "response_bytes": 258,
+          "response_truncated_at_cap": false,
+          "response_sha256": "ccb765209f32a00d1cf7a35f42f2ad384acfb0acf7b8d3282af4ad99489db4cf",
+          "time_to_headers_ms": null,
+          "ttfb_ms": 550.7,
+          "duration_ms": 15129.0,
+          "extra_timings_ms": {
+            "handshake": 413.7,
+            "closed": 15002.3
+          },
+          "request_ids": {},
+          "response_headers": {
+            "Date": "Sun, 22 Nov 2026 17:29:12 GMT",
+            "Connection": "upgrade",
+            "Set-Cookie": "[REDACTED]",
+            "Upgrade": "websocket",
+            "Sec-WebSocket-Accept": "JOh0Lfj5eF9jStunntkgndWcWGE=",
+            "content-type": "application/x-ws-frames+json"
+          },
+          "body_excerpt": "[{\"request_id\": \"3358f10d-1232-4e42-af8a-a3d64ffa6d9d\", \"status\": \"error\", \"message\": \"Invalid input data\", \"errors\": [{\"code\": \"custom\", \"path\": [\"voice_id\"], \"message\": \"Voice 'qa_nonexistent_voice_zz9' is not available on the lightning_v3.1_pro model\"}]}]",
+          "transport_error": null,
+          "cancelled_by_client": false,
+          "fresh_connection": false,
+          "body_chunks": 0
+        }
+      ]
+    },
+    {
+      "case_id": "P2-STR-05",
+      "title": "Client cancellation then immediate follow-up request",
+      "area": "Streaming",
+      "expected_behavior": "clean cancel; observe whether the concurrency slot is released (up to 2 follow-up probes)",
+      "doc_refs": [
+        "https://docs.smallest.ai/api-reference/concurrency-and-limits",
+        "https://docs.smallest.ai/models/text-to-speech/streaming"
+      ],
+      "classification": "Passed",
+      "checks": [
+        {
+          "name": "client cancelled mid-stream cleanly (no client error)",
+          "passed": true,
+          "expected": "cancelled, no exception",
+          "actual": "True",
+          "requirement": "quality",
+          "doc_ref": null
+        },
+        {
+          "name": "next request after cancellation is served (slot released)",
+          "passed": true,
+          "expected": "200",
+          "actual": "200",
+          "requirement": "exploratory",
+          "doc_ref": "https://docs.smallest.ai/api-reference/concurrency-and-limits"
+        }
+      ],
+      "metrics": {
+        "cancelled_stream": {
+          "status": 200,
+          "cancelled_by_client": true,
+          "audio_chunks_read": 2,
+          "duration_ms": 522.5,
+          "done_seen": false
+        },
+        "follow_up_probes": [
+          {
+            "probe": 1,
+            "delay_after_previous_s": 0.3,
+            "status": 200,
+            "duration_ms": 841.0
+          }
+        ]
+      },
+      "notes": [
+        "Docs: the slot is freed 'once the request completes and returns a response'; behaviour on client disconnect is not documented. Billing of the cancelled stream is not documented."
+      ],
+      "requests": [
+        {
+          "case_id": "P2-STR-05",
+          "ledger_seq": 65,
+          "timestamp_utc": "2026-11-22T17:29:29.064+00:00",
+          "timestamp_ist": "2026-11-22T22:59:29.064+05:30",
+          "method": "POST",
+          "endpoint": "/waves/v1/tts/live",
+          "query_params": {},
+          "request": {
+            "json": {
+              "text": "Thank you for calling Horizon Bank. Your recent payment has been received, and your account is now up to date. If you would like to hear your balance, please stay on the line, and an agent will help you shortly with any other questions. We also wanted to let you know about our new savings plan, which offers a higher interest rate for customers who keep a minimum balance for twelve months. You can sign up through the mobile app or at any branch, and there are no extra fees to get started. Our branches are open from nine in the morning until five in the evening on weekdays, and from ten until two on Saturdays. For security reasons, we will never ask for your password or one time code over the phone, so please do not share them with anyone. If you notice any unusual activity, contact our support team immediately. The final sentence mentions a purple elephant named Gopal.",
+              "voice_id": "meher",
+              "model": "lightning_v3.1_pro",
+              "language": "en",
+              "sample_rate": 24000,
+              "output_format": "pcm"
+            },
+            "text_chars": 880,
+            "headers": {
+              "Content-Type": "application/json",
+              "Accept": "text/event-stream",
+              "Authorization": "[REDACTED]"
+            }
+          },
+          "auth_mode": "valid",
+          "status": 200,
+          "content_type": "text/event-stream",
+          "response_bytes": 14674,
+          "response_truncated_at_cap": false,
+          "response_sha256": "40801da14fdd4417aae91a67cf04ec95af05cb96fb8043ca4fa5512b9c32fa05",
+          "time_to_headers_ms": 493.9,
+          "ttfb_ms": 494.2,
+          "duration_ms": 522.5,
+          "extra_timings_ms": {
+            "first_audio_event": 494.2
+          },
+          "request_ids": {
+            "x-request-id": "1e89c5ba-9b76-4328-8a73-8cee66e13622",
+            "x-session-id": "1e89c5ba-9b76-4328-8a73-8cee66e13622",
+            "x-external-session-id": "",
+            "x-external-request-id": ""
+          },
+          "response_headers": {
+            "date": "Sun, 22 Nov 2026 17:29:29 GMT",
+            "content-type": "text/event-stream",
+            "transfer-encoding": "chunked",
+            "connection": "keep-alive",
+            "set-cookie": "[REDACTED]",
+            "x-request-id": "1e89c5ba-9b76-4328-8a73-8cee66e13622",
+            "cache-control": "no-cache",
+            "pragma": "no-cache",
+            "expires": "0",
+            "strict-transport-security": "max-age=31536000; includeSubDomains",
+            "content-security-policy": "default-src 'self';script-src 'self';style-src 'self' 'unsafe-inline';img-src 'self' data: https://d1o0umtiv0iuvd.cloudfront.net https://d4a5s42qh2351.cloudfront.net https://waves-history.s3.ap-south-1.amazonaws.com https://waves-history-dev.s3.ap-south-1.amazonaws.com https://db2izkvf1oocn.cloudfront.net https://media.plivo.com https://dlw9ti8dmuxc7.cloudfront.net;connect-src 'self';frame-ancestors 'none';upgrade-insecure-requests;base-uri 'self';font-src 'self' https: data:;form-action 'self';object-src 'none';script-src-attr 'none'",
+            "cross-origin-opener-policy": "same-origin",
+            "cross-origin-resource-policy": "same-origin",
+            "origin-agent-cluster": "?1",
+            "referrer-policy": "no-referrer",
+            "x-content-type-options": "nosniff",
+            "x-dns-prefetch-control": "off",
+            "x-download-options": "noopen",
+            "x-frame-options": "SAMEORIGIN",
+            "x-permitted-cross-domain-policies": "none",
+            "x-xss-protection": "0",
+            "vary": "Origin",
+            "access-control-allow-credentials": "true",
+            "access-control-expose-headers": "Set-Cookie,X-Smallest-Prompt-Guard,X-Request-Id,Content-Disposition",
+            "x-session-id": "1e89c5ba-9b76-4328-8a73-8cee66e13622",
+            "x-external-session-id": "",
+            "x-external-request-id": ""
+          },
+          "body_excerpt": "event: audio\ndata: {\"audio\":\"<2371 base64 chars omitted>",
+          "transport_error": null,
+          "cancelled_by_client": true,
+          "fresh_connection": false,
+          "body_chunks": 2
+        },
+        {
+          "case_id": "P2-STR-05",
+          "ledger_seq": 66,
+          "timestamp_utc": "2026-11-22T17:29:29.892+00:00",
+          "timestamp_ist": "2026-11-22T22:59:29.892+05:30",
+          "method": "POST",
+          "endpoint": "/waves/v1/tts",
+          "query_params": {},
+          "request": {
+            "json": {
+              "text": "Hello, how are you?",
+              "voice_id": "meher",
+              "model": "lightning_v3.1_pro",
+              "language": "en",
+              "sample_rate": 24000,
+              "output_format": "wav"
+            },
+            "text_chars": 19,
+            "headers": {
+              "Content-Type": "application/json",
+              "Authorization": "[REDACTED]"
+            }
+          },
+          "auth_mode": "valid",
+          "status": 200,
+          "content_type": "audio/wav",
+          "response_bytes": 77564,
+          "response_truncated_at_cap": false,
+          "response_sha256": "3fb02b8ad96c52351d4c6a65ccc25e09ee5aac344bb7cadfbaa44c14b8d69fe0",
+          "time_to_headers_ms": 796.8,
+          "ttfb_ms": 797.0,
+          "duration_ms": 841.0,
+          "extra_timings_ms": {},
+          "request_ids": {
+            "x-request-id": "b1f68540-d3b1-4fe9-b93e-cb19e119d23c",
+            "x-session-id": "b1f68540-d3b1-4fe9-b93e-cb19e119d23c",
+            "x-external-session-id": "",
+            "x-external-request-id": ""
+          },
+          "response_headers": {
+            "date": "Sun, 22 Nov 2026 17:29:30 GMT",
+            "content-type": "audio/wav",
+            "content-length": "77564",
+            "connection": "keep-alive",
+            "set-cookie": "[REDACTED]",
+            "x-request-id": "b1f68540-d3b1-4fe9-b93e-cb19e119d23c",
+            "cache-control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+            "pragma": "no-cache",
+            "expires": "0",
+            "strict-transport-security": "max-age=31536000; includeSubDomains",
+            "content-security-policy": "default-src 'self';script-src 'self';style-src 'self' 'unsafe-inline';img-src 'self' data: https://d1o0umtiv0iuvd.cloudfront.net https://d4a5s42qh2351.cloudfront.net https://waves-history.s3.ap-south-1.amazonaws.com https://waves-history-dev.s3.ap-south-1.amazonaws.com https://db2izkvf1oocn.cloudfront.net https://media.plivo.com https://dlw9ti8dmuxc7.cloudfront.net;connect-src 'self';frame-ancestors 'none';upgrade-insecure-requests;base-uri 'self';font-src 'self' https: data:;form-action 'self';object-src 'none';script-src-attr 'none'",
+            "cross-origin-opener-policy": "same-origin",
+            "cross-origin-resource-policy": "same-origin",
+            "origin-agent-cluster": "?1",
+            "referrer-policy": "no-referrer",
+            "x-content-type-options": "nosniff",
+            "x-dns-prefetch-control": "off",
+            "x-download-options": "noopen",
+            "x-frame-options": "SAMEORIGIN",
+            "x-permitted-cross-domain-policies": "none",
+            "x-xss-protection": "0",
+            "vary": "Origin",
+            "access-control-allow-credentials": "true",
+            "access-control-expose-headers": "Set-Cookie,X-Smallest-Prompt-Guard,X-Request-Id,Content-Disposition",
+            "x-session-id": "b1f68540-d3b1-4fe9-b93e-cb19e119d23c",
+            "x-external-session-id": "",
+            "x-external-request-id": "",
+            "etag": "W/\"12efc-tM53zEqrPYj1NLrFBIJibUsLfLo\""
+          },
+          "body_excerpt": null,
+          "transport_error": null,
+          "cancelled_by_client": false,
+          "fresh_connection": false,
+          "body_chunks": 6
+        }
+      ]
+    }
+  ]
+}

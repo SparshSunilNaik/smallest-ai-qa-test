@@ -584,9 +584,21 @@ def ws_word_timestamps(ctx: Context, res: CaseResult) -> None:
 
     msg = {"text": T_140, "voice_id": "meher", "model": "lightning_v3.1_pro", "sample_rate": 24000,
            "word_timestamps": True}
-    ex, obs = run_ws_tts(ctx.client, res.case_id, msg)
+    # Observation window; the reproduction run uses 75 s to cover the documented 60 s idle timeout.
+    deadline = float(__import__("os").environ.get("SMALLEST_QA_WS_DEADLINE_S", "30"))
+    res.metrics["client_observation_window_s"] = deadline
+    ex, obs = run_ws_tts(ctx.client, res.case_id, msg, overall_timeout_s=deadline)
     res.exchanges.append(ex)
     statuses = [f.get("status") for f in obs.frames]
+    after_complete = [f for f, t in zip(obs.frames, obs.frame_times_ms)
+                      if obs.complete_ms is not None and t > obs.complete_ms]
+    res.metrics["frames_after_complete"] = after_complete[:5]
+    chunk_times = [t for f, t in zip(obs.frames, obs.frame_times_ms) if f.get("status") == "chunk"]
+    res.metrics["last_chunk_ms"] = chunk_times[-1] if chunk_times else None
+    if chunk_times and obs.complete_ms:  # docs: complete_backoff_ms default 4000 ms
+        res.metrics["complete_after_last_chunk_ms"] = round(obs.complete_ms - chunk_times[-1], 1)
+    res.metrics["closed_after_complete_ms"] = (round(obs.closed_ms - obs.complete_ms, 1)
+                                               if obs.closed_by_server and obs.complete_ms else None)
     res.metrics.update({"frame_status_counts": {s: statuses.count(s) for s in set(statuses)},
                         "close_code": obs.close_code, "closed_by_server": obs.closed_by_server,
                         "timed_out": obs.timed_out, "word_events": obs.word_events[:40],
@@ -598,9 +610,16 @@ def ws_word_timestamps(ctx: Context, res: CaseResult) -> None:
               statuses.count("chunk"), DOCUMENTED, D.TTS_STREAMING)
     res.check("exactly one `complete` frame", statuses.count("complete") == 1, 1, statuses.count("complete"),
               DOCUMENTED, D.TTS_STREAMING)
-    res.check("server closes the socket after `complete`", obs.closed_by_server and not obs.timed_out,
-              "closed by server", f"closed={obs.closed_by_server} timed_out={obs.timed_out}", DOCUMENTED,
+    gap = res.metrics["closed_after_complete_ms"]
+    # Docs: "`complete` - terminal frame; the server closes the WebSocket after this." The 5 s bound is our
+    # operationalisation of "after this"; the documented idle timeout (60 s) is a different mechanism.
+    res.check("server closes the socket promptly after `complete` (<= 5 s)",
+              obs.closed_by_server and gap is not None and gap <= 5000, "server close within 5 s of complete",
+              f"closed_by_server={obs.closed_by_server} after={gap} ms timed_out={obs.timed_out}", DOCUMENTED,
               D.TTS_STREAMING)
+    res.check("no error frame after a successful `complete`",
+              not any(f.get("status") == "error" for f in after_complete), "none",
+              [f.get("message") for f in after_complete if f.get("status") == "error"] or "none", QUALITY)
     res.check("all frames are valid JSON", obs.invalid_frames == 0, 0, obs.invalid_frames, DOCUMENTED,
               D.TTS_STREAMING)
     words = obs.word_events
@@ -1028,3 +1047,77 @@ def batch_cases(batch: str) -> list[CaseSpec]:
 
 def planned(spec: CaseSpec) -> int:
     return spec.max_requests or spec.planned_requests
+
+
+# ============================================================================= Batch 3h: real-human STT (optional variant)
+
+def _human_case(prompt_id: str) -> Callable[[Context, CaseResult], None]:
+    def run(ctx: Context, res: CaseResult) -> None:
+        from .human import PROMPTS_BY_ID, load_approved_audio, load_clip
+
+        p = PROMPTS_BY_ID[prompt_id]
+        root = ctx.state.get("human_dir")
+        got = load_approved_audio(prompt_id, root) if root else load_approved_audio(prompt_id)
+        if got is None:
+            m = load_clip(prompt_id, root) if root else load_clip(prompt_id)
+            res.notes.append("Not sent: " + ("no recording" if not m else
+                                             "approval missing or stale (clip changed after approval)"))
+            res.classification = NOT_TESTED
+            return  # zero requests: unapproved audio never leaves the machine
+        wav, meta = got
+        share = bool(meta.get("share_transcript_in_evidence"))
+        res.metrics["clip"] = {k: meta.get(k) for k in ("clip_id", "category", "duration_s", "sample_rate",
+                                                        "sha256", "reference_edited", "language", "model")}
+        res.metrics["transcripts_shared_in_evidence"] = share
+        ex, body = _transcribe(ctx, res.case_id, wav, p.language, p.model)
+        res.exchanges.append(ex)
+        res.check("HTTP 200", ex.status == 200, "200", ex.status, DOCUMENTED, D.STT_TRANSCRIBE)
+        tx = (body or {}).get("transcription") if body else None
+        if not isinstance(tx, str):
+            return
+        ref = meta["reference_transcript"]
+        wer, cer = word_error_rate(ref, tx), char_error_rate(ref, tx)
+        res.metrics.update({"wer": round(wer, 3), "cer": round(cer, 3),
+                            "transcription_sha256": __import__("hashlib").sha256(tx.encode()).hexdigest()})
+        if share:
+            res.metrics.update({"transcription": tx, "reference": ref})
+        if p.key_tokens:
+            hits = key_token_hits(tx, [list(t) for t in p.key_tokens])
+            res.metrics["key_tokens"] = hits
+            res.check("expected key terms recognised", hits["hit"] == hits["total"], hits["total"],
+                      f"{hits['hit']} found; missing {hits['missing']}", EXPLORATORY)
+        if prompt_id == "H1":
+            res.check("WER <= 0.25 on natural read speech", wer <= 0.25, "<= 0.25", round(wer, 3), QUALITY)
+        # Evidence must not carry the speaker's words unless they opted in: strip the raw response body.
+        if not share:
+            for e in res.exchanges:
+                e.body = json.dumps({"withheld": "human transcript not shared (no --share-transcript)",
+                                     "status": (body or {}).get("status")}).encode()
+    return run
+
+
+_HUMAN_SPECS = [
+    ("H1", "Human: natural English (replaces synthetic P2-STT-02, pulse-pro)", "pulse-pro"),
+    ("H2", "Human: technical terminology (replaces synthetic P2-STT-03)", "pulse"),
+    ("H3", "Human: numbers, currency, dates (replaces synthetic P2-STT-04)", "pulse"),
+    ("H4", "Human: Hinglish, language=hi (replaces TTS-generated P2-STT-12)", "pulse"),
+    ("H5", "Human: spontaneous speech (replaces synthetic P2-STT-08)", "pulse"),
+]
+P2_CASES.extend(
+    _c(f"P2-HUM-0{i}", "3h", "P1", "STT accuracy (human)", title, QUALITY,
+       "200; WER/CER vs speaker-confirmed reference; key terms recognised (no documented accuracy threshold)",
+       (D.STT_TRANSCRIBE, D.STT_PULSE_CARD), 1, _human_case(pid), stt_audio_seconds=20.0)
+    for i, (pid, title, _m) in enumerate(_HUMAN_SPECS, start=1))
+P2_BY_ID.update({c.case_id: c for c in P2_CASES})
+
+# Batch 3h = Batch 3 with five synthetic clips swapped for five human recordings: same 15-request budget.
+BATCH_VARIANTS = {"3h": ["P2-STT-01", "P2-STT-05", "P2-STT-06", "P2-STT-07", "P2-STT-09", "P2-STT-10",
+                         "P2-STT-11", "P2-STT-13", "P2-STT-14", "P2-STT-15",
+                         "P2-HUM-01", "P2-HUM-02", "P2-HUM-03", "P2-HUM-04", "P2-HUM-05"]}
+BATCHES = sorted({c.batch for c in P2_CASES if c.batch != "3h"}) + ["3h"]
+
+
+def batch_cases(batch: str) -> list[CaseSpec]:  # noqa: F811 - extends the earlier definition with variants
+    if batch in BATCH_VARIANTS:
+        return [P2_BY_ID[i] for i in BATCH_VARIANTS[batch]]
+    return [c for c in P2_CASES if c.batch == batch]

@@ -23,8 +23,13 @@ sdk = [
     "websockets>=12",
 ]
 
+# Local microphone capture for the human STT recording workflow (imported lazily; never used in CI).
+record = [
+    "sounddevice>=0.4.6",
+]
+
 [tool.uv]
-default-groups = ["dev", "sdk"]
+default-groups = ["dev", "sdk", "record"]
 
 [build-system]
 requires = ["hatchling"]

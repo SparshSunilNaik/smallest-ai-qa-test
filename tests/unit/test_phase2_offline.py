@@ -69,7 +69,9 @@ def test_phase2_request_and_spend_caps(tmp_path):
 
 def test_catalogue_batches_respect_limits():
     assert all(sum(planned(c) for c in batch_cases(b)) <= 20 for b in BATCHES)
-    assert sum(planned(c) for c in P2_CASES) <= 92  # leaves >= 8 of the 100 for reproduction
+    main = [b for b in BATCHES if b != "3h"]
+    assert sum(planned(c) for b in main for c in batch_cases(b)) <= 92  # >= 8 of 100 left for reproduction
+    assert sum(planned(c) for c in batch_cases("3h")) == sum(planned(c) for c in batch_cases("3"))
     assert len({c.case_id for c in P2_CASES}) == len(P2_CASES)
     assert all(c.doc_refs and c.expected for c in P2_CASES)
 
@@ -295,3 +297,27 @@ def test_batch1_live_evidence_is_sanitised():
     for rid in ("20261122T171937Z", "20261122T172115Z"):
         text = (REPO_ROOT / "evidence" / "runs" / rid / "results.json").read_text()
         assert "AAAAAAAAAA" not in text and "/Users/" not in text and "Bearer sk_" not in text
+
+
+def test_ws_idle_timeout_close_is_not_accepted_as_close_after_complete(settings, fixture_wav, tmp_path):
+    """Regression for the Batch 2 observation: a close that arrives only via the idle timeout (with an
+    error frame) must fail the documented 'closes after complete' check."""
+    import fake_api_p2
+
+    from smallest_qa.cases_p2 import P2_BY_ID
+
+    fake_api_p2.IDLE_CLOSE.update(enabled=True, seconds=5.6)
+    server, url = start_ws_server()
+    try:
+        s = Settings(**{**settings.__dict__, "max_requests": 128, "base_url": url})
+        run_dir = execute(s, [P2_BY_ID["P2-WS-01"]], transport=FakeP2().transport(), sleep=lambda x: None,
+                          log=lambda *a: None, fixture_provider=lambda: fixture_wav, phase=2, batch="t",
+                          doc_example_mode="skip")
+    finally:
+        fake_api_p2.IDLE_CLOSE.update(enabled=False, seconds=0.0)
+        server.shutdown()
+    case = json.loads((run_dir / "results.json").read_text())["cases"][0]
+    failed = {c["name"] for c in case["checks"] if c["passed"] is False}
+    assert "server closes the socket promptly after `complete` (<= 5 s)" in failed
+    assert "no error frame after a successful `complete`" in failed
+    assert case["classification"] == CANDIDATE

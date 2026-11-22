@@ -61,6 +61,11 @@ def cmd_plan_p2(args) -> int:
     batches = [args.batch] if args.batch else BATCHES
     grand_req = grand_usd = 0.0
     for b in batches:
+        if b == "3h" and not args.batch:
+            print("== Batch 3h (ALTERNATIVE to Batch 3, same 15 requests): 10 synthetic + 5 human recordings")
+            for s_ in batch_cases(b):
+                print(f"   {s_.case_id:<11} {s_.priority:<3} {planned(s_):>2}  {s_.requirement:<11} {s_.title}")
+            continue
         specs = batch_cases(b)
         req = sum(planned(s) for s in specs)
         chars = sum(s.synth_chars for s in specs)
@@ -178,6 +183,53 @@ def cmd_sdk_compat(_args) -> int:
     return 0
 
 
+def cmd_record(args) -> int:
+    from .human import record_session
+
+    ids = [i.strip().upper() for i in args.prompt.split(",")] if args.prompt else None
+    saved = record_session(ids)
+    print(f"\n{len(saved)} clip(s) saved locally. Nothing was uploaded. Review: uv run smallest-qa human list")
+    return 0
+
+
+def cmd_human(args) -> int:
+    from .human import PROMPTS_BY_ID, delete_clip, load_clip, set_approval, set_reference, summary_rows
+
+    ids = [i.strip().upper() for i in (args.ids or "").split(",") if i.strip()]
+    for i in ids:
+        if i not in PROMPTS_BY_ID:
+            raise SystemExit(f"unknown clip id {i}")
+    if args.action == "list":
+        for r in summary_rows():
+            print(f"{r['clip']}  {r['category']:<40} recorded={'yes' if r['recorded'] else 'no ':<3} "
+                  f"dur={r['duration_s'] or '-':<6} ref_edited={r['reference_edited'] or False!s:<5} "
+                  f"approved={'YES' if r['approved'] else 'no'}"
+                  f"{' (STALE: re-recorded after approval)' if r['stale_approval'] else ''}"
+                  f"{' share_transcript' if r['share_transcript'] else ''}")
+        return 0
+    if not ids:
+        raise SystemExit("give clip ids, e.g. H1,H2")
+    for i in ids:
+        if not load_clip(i):
+            raise SystemExit(f"{i} has not been recorded")
+        if args.action == "approve":
+            m = set_approval(i, True, args.share_transcript)
+            print(f"{i}: approved for sending to Smallest AI (bound to sha256 {m['approved_sha256'][:12]}...)"
+                  f"{'; transcript may appear in committed evidence' if args.share_transcript else ''}")
+        elif args.action == "revoke":
+            set_approval(i, False)
+            print(f"{i}: approval revoked")
+        elif args.action == "delete":
+            delete_clip(i)
+            print(f"{i}: deleted from disk")
+        elif args.action == "edit-reference":
+            text = input(f"New reference transcript for {i}: ").strip()
+            if text:
+                set_reference(i, text)
+                print(f"{i}: reference updated (approval unchanged; audio unchanged)")
+    return 0
+
+
 def cmd_sse_replay(args) -> int:
     import json
 
@@ -274,13 +326,20 @@ def main(argv: list[str] | None = None) -> int:
     sub.add_parser("fixtures-p2", help="offline: generate Phase 2 STT fixtures with macOS say")
     sub.add_parser("docs-offline", help="offline: run saved docs examples against recorded responses")
     sub.add_parser("matrix-p2", help="offline: regenerate docs/phase2-test-matrix.md from the catalogue")
+    rec = sub.add_parser("record", help="LOCAL ONLY: record human STT clips with your microphone")
+    rec.add_argument("--prompt", help="comma-separated prompt ids (default H1-H5)")
+    hp = sub.add_parser("human", help="manage local human clips (list/approve/revoke/delete/edit-reference)")
+    hp.add_argument("action", choices=("list", "approve", "revoke", "delete", "edit-reference"))
+    hp.add_argument("ids", nargs="?", help="comma-separated clip ids, e.g. H1,H3")
+    hp.add_argument("--share-transcript", action="store_true",
+                    help="with approve: allow the reference and Smallest's transcript in committed evidence")
     rp = sub.add_parser("sse-replay", help="offline: replay recorded live SSE wire bytes into the SDK")
     rp.add_argument("--run", required=True)
     args = parser.parse_args(argv)
     handlers = {"plan": cmd_plan, "run": cmd_run, "check-key": cmd_check_key, "make-fixtures": cmd_make_fixtures,
                 "report": cmd_report, "sdk-compat": cmd_sdk_compat, "fixtures-p2": cmd_fixtures_p2,
                 "docs-offline": cmd_docs_offline, "matrix-p2": cmd_matrix_p2,
-                "sse-replay": cmd_sse_replay}
+                "sse-replay": cmd_sse_replay, "record": cmd_record, "human": cmd_human}
     return handlers[args.cmd](args)
 
 

@@ -175,6 +175,9 @@ class FakeP2:
         return httpx.Response(200, json=body)
 
 
+IDLE_CLOSE = {"enabled": False, "seconds": 0.0}
+
+
 def start_ws_server():
     """Local WebSocket TTS double following the documented frame format. Returns (server, base_url)."""
     from websockets.sync.server import serve
@@ -197,6 +200,11 @@ def start_ws_server():
                 ws.send(json.dumps({"status": "word_timestamp", "data": {"id": i, "word": w, "start": i * 0.2,
                                                                          "end": i * 0.2 + 0.15}}))
         ws.send(json.dumps({"session_id": "ws_x", "request_id": "task_x", "status": "complete"}))
+        if IDLE_CLOSE["enabled"]:  # mimic the live behaviour seen in Batch 2: idle-timeout error, then close
+            import time as _t
+
+            _t.sleep(IDLE_CLOSE["seconds"])
+            ws.send(json.dumps({"status": "error", "message": "Connection timed out after 60 seconds of inactivity"}))
         ws.close()
 
     server = serve(handler, "127.0.0.1", 0)

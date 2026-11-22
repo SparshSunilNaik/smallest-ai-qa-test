@@ -103,3 +103,23 @@ Provenance: **documented** deviations can become defects after reproduction; **q
 | P2-LAT-02 | P2 | Latency | SSE TTFB, ~110-char text, n=5 | exploratory | measurement only | models/text-to-speech/streaming | 5 |
 | P2-LAT-03 | P2 | Latency | SSE TTFB, ~500-char text, n=3 | exploratory | measurement only | models/text-to-speech/streaming | 3 |
 | P2-LAT-04 | P2 | Latency | SSE TTFB on a fresh TCP/TLS connection, n=2 | exploratory | measurement only (cold vs warm) | models/text-to-speech/streaming | 2 |
+
+## Batch 3h (15 requests, est. $0.024)
+
+| ID | Pri | Area | Test | Provenance | Documented / expected behaviour | Source | Req |
+|---|---|---|---|---|---|---|---|
+| P2-STT-01 | P1 | STT accuracy | Indian English synthetic voice (Rishi), pulse | quality | WER <= 0.25 | model-cards/speech-to-text/pulse | 1 |
+| P2-STT-05 | P1 | STT accuracy | White noise, 10 dB SNR | quality | WER reported (no threshold) | model-cards/speech-to-text/pulse | 1 |
+| P2-STT-06 | P1 | STT accuracy | White noise, 0 dB SNR | quality | WER reported (no threshold) | model-cards/speech-to-text/pulse | 1 |
+| P2-STT-07 | P1 | STT accuracy | Single-word utterance 'Yes.' | quality | exact match | api-reference/models/speech-to-text/transcribe | 1 |
+| P2-STT-09 | P1 | STT accuracy | 3 s digital silence | quality | no 5xx; no hallucinated words (undocumented behaviour) | api-reference/models/speech-to-text/transcribe | 1 |
+| P2-STT-10 | P1 | STT accuracy | 3 s low-level noise, no speech | quality | no hallucinated words | api-reference/models/speech-to-text/transcribe | 1 |
+| P2-STT-11 | P1 | STT accuracy | Hindi (Devanagari) synthetic voice, language=hi | quality | CER <= 0.25 | model-cards/speech-to-text/pulse | 1 |
+| P2-STT-13 | P1 | STT accuracy | 8 kHz telephony-band audio (16 kHz recommended) | quality | WER reported | model-cards/speech-to-text/pulse | 1 |
+| P2-STT-14 | P1 | STT accuracy | Two speakers with diarize=true | quality | speaker on every word; 2 speakers | api-reference/models/speech-to-text/transcribe | 1 |
+| P2-STT-15 | P1 | STT accuracy | Word timestamps vs a known 1.5 s inserted pause | quality | gap edges within 0.3 s | api-reference/models/speech-to-text/transcribe | 1 |
+| P2-HUM-01 | P1 | STT accuracy (human) | Human: natural English (replaces synthetic P2-STT-02, pulse-pro) | quality | 200; WER/CER vs speaker-confirmed reference; key terms recognised (no documented accuracy threshold) | api-reference/models/speech-to-text/transcribe<br>model-cards/speech-to-text/pulse | 1 |
+| P2-HUM-02 | P1 | STT accuracy (human) | Human: technical terminology (replaces synthetic P2-STT-03) | quality | 200; WER/CER vs speaker-confirmed reference; key terms recognised (no documented accuracy threshold) | api-reference/models/speech-to-text/transcribe<br>model-cards/speech-to-text/pulse | 1 |
+| P2-HUM-03 | P1 | STT accuracy (human) | Human: numbers, currency, dates (replaces synthetic P2-STT-04) | quality | 200; WER/CER vs speaker-confirmed reference; key terms recognised (no documented accuracy threshold) | api-reference/models/speech-to-text/transcribe<br>model-cards/speech-to-text/pulse | 1 |
+| P2-HUM-04 | P1 | STT accuracy (human) | Human: Hinglish, language=hi (replaces TTS-generated P2-STT-12) | quality | 200; WER/CER vs speaker-confirmed reference; key terms recognised (no documented accuracy threshold) | api-reference/models/speech-to-text/transcribe<br>model-cards/speech-to-text/pulse | 1 |
+| P2-HUM-05 | P1 | STT accuracy (human) | Human: spontaneous speech (replaces synthetic P2-STT-08) | quality | 200; WER/CER vs speaker-confirmed reference; key terms recognised (no documented accuracy threshold) | api-reference/models/speech-to-text/transcribe<br>model-cards/speech-to-text/pulse | 1 |

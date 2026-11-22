@@ -1,13 +1,13 @@
 # Results summary (auto-generated from evidence/runs)
 
-- Runs: 5; cumulative API requests (ledger): 48/128
+- Runs: 7; cumulative API requests (ledger): 68/128
 - Counts are per test case. Several cases can share one root cause; consolidated findings, severity and interpretation are in `reports/qa-report-draft.md`.
 
 ## Classification counts
 
-- Passed: 23
-- Confirmed defect: 5
-- Candidate finding requiring reproduction: 9
+- Passed: 34
+- Confirmed defect: 6
+- Candidate finding requiring reproduction: 14
 - Expected behavior: 0
 - Documentation ambiguity: 1
 - Inconclusive: 0
@@ -30,6 +30,15 @@
 | P2-ERR-04 | TTS: sample_rate=22050 (not in enum) | Candidate finding requiring reproduction | 1 | 20261122T171937Z | 400 |
 | P2-ERR-05 | TTS: output_format=ogg (not in enum) | Candidate finding requiring reproduction | 1 | 20261122T171937Z | 400 |
 | P2-ERR-06 | TTS: language=xx (not in enum) | Candidate finding requiring reproduction | 1 | 20261122T171937Z | 400 |
+| P2-ERR-10 | SSE: unknown voice | Candidate finding requiring reproduction | 1 | 20261122T172801Z | 400 |
+| P2-ERR-11 | SSE: missing Authorization | Passed | 1 | 20261122T172801Z | 401 |
+| P2-ERR-12 | SSE: empty text | Candidate finding requiring reproduction | 1 | 20261122T172801Z | 400 |
+| P2-ERR-13 | STT: pulse-pro with language=hi | Passed | 1 | 20261122T172801Z | 400 |
+| P2-ERR-14 | STT: undecodable audio bytes | Passed | 1 | 20261122T172801Z | 400 |
+| P2-ERR-15 | STT: invalid API key | Passed | 1 | 20261122T172801Z | 401 |
+| P2-ERR-16 | STT: Content-Type audio/wav (used in a docs example) | Passed | 1 | 20261122T172801Z | 200 |
+| P2-ERR-17 | get_voices: invalid API key | Confirmed defect | 2 | 20261122T173129Z | 200 |
+| P2-ERR-18 | STT: language omitted | Candidate finding requiring reproduction | 1 | 20261122T172801Z | 400 |
 | P2-F2-01 | Pro voice catalogue (ids recorded) | Passed | 1 | 20261122T171937Z | 200 |
 | P2-F2-02 | Lightning v3.1 voice catalogue (legacy route, ids recorded) | Passed | 1 | 20261122T171937Z | 200 |
 | P2-F2-03 | v3.1-only voice on its own model (lightning_v3.1) | Passed | 1 | 20261122T171937Z | 200 |
@@ -39,6 +48,14 @@
 | P2-SDK-01 | smallestai 5.14.0 synthesize_tts (quickstart parameters) | Passed | 1 | 20261122T171937Z | 200 |
 | P2-SDK-02 | smallestai 5.14.0 synthesize_sse_tts yields audio | Confirmed defect | 2 | 20261122T172115Z | 200 |
 | P2-SDK-03 | smallestai 5.14.0 speech_to_text.transcribe | Passed | 1 | 20261122T171937Z | 200 |
+| P2-STR-01 | SSE pcm 250 chars: chunk alignment, gaps, playback stall analysis | Passed | 1 | 20261122T172801Z | 200 |
+| P2-STR-02 | SSE mp3 framing | Candidate finding requiring reproduction | 1 | 20261122T172801Z | 200 |
+| P2-STR-03 | SSE ulaw 8 kHz | Passed | 1 | 20261122T172801Z | 200 |
+| P2-STR-04 | Sync vs SSE duration parity (same 250-char text) | Passed | 1 | 20261122T172801Z | 200 |
+| P2-STR-05 | Client cancellation then immediate follow-up request | Passed | 1 | 20261122T172801Z | 200, 200 |
+| P2-STR-08 | SSE 1000-char stream completes | Passed | 1 | 20261122T172801Z | 200 |
+| P2-WS-01 | WebSocket TTS with word_timestamps (meher) | Passed | 2 | 20261122T173129Z | 101 |
+| P2-WS-02 | WebSocket unknown voice | Candidate finding requiring reproduction | 1 | 20261122T172801Z | 101 |
 | STR-01 | SSE streaming success, framing, completion, TTFB (pcm) | Passed | 1 | 20261122T163926Z | 200 |
 | STR-02 | SSE wav: single header on first chunk | Passed | 1 | 20261122T163926Z | 200 |
 | STT-01 | Pulse transcription of self-created 16 kHz WAV | Passed | 1 | 20261122T163926Z | 200 |

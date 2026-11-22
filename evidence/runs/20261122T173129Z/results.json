@@ -1,0 +1,407 @@
+{
+  "run_id": "20261122T173129Z",
+  "phase": 2,
+  "batch": "2-repro",
+  "started": {
+    "utc": "2026-11-22T17:31:29.634+00:00",
+    "ist": "2026-11-22T23:01:29.634+05:30"
+  },
+  "finished": {
+    "utc": "2026-11-22T17:32:32.165+00:00",
+    "ist": "2026-11-22T23:02:32.165+05:30"
+  },
+  "harness_version": "0.1.0",
+  "environment": {
+    "python": "3.13.13",
+    "httpx": "0.28.1",
+    "platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
+    "base_url": "https://api.smallest.ai"
+  },
+  "api_key_configured": true,
+  "halted": null,
+  "requests_this_run": 2,
+  "ledger_used_after_run": 68,
+  "ledger_cap": 128,
+  "fixture": {
+    "path": "fixtures/audio/stt_en_16k.wav",
+    "generator": "macOS say -v Samantha --file-format=WAVE --data-format=LEI16@16000",
+    "reference_text": "The quick brown fox jumps over the lazy dog. Speech recognition quality is measured by comparing the words.",
+    "sha256": "cc3d3e75a72ca66f64fba9607342328861d6c3171eba0d8fe2dea5a7aa357f01",
+    "bytes": 205846,
+    "duration_s": 6.305,
+    "sample_rate": 16000
+  },
+  "p2_fixtures": {},
+  "phase_est_usd_after_run": 0.3901,
+  "listening_queue": [],
+  "cases": [
+    {
+      "case_id": "P2-WS-01",
+      "title": "WebSocket TTS with word_timestamps (meher)",
+      "area": "Streaming",
+      "expected_behavior": "chunk frames, one complete, server close; word events for meher (docs conflict on meher)",
+      "doc_refs": [
+        "https://docs.smallest.ai/api-reference/models/text-to-speech/tts",
+        "https://docs.smallest.ai/models/text-to-speech/streaming",
+        "https://docs.smallest.ai/model-cards/text-to-speech/lightning-v-3-1"
+      ],
+      "classification": "Passed",
+      "checks": [
+        {
+          "name": "WebSocket handshake succeeded",
+          "passed": true,
+          "expected": "101",
+          "actual": "101",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/api-reference/models/text-to-speech/tts"
+        },
+        {
+          "name": ">= 1 `chunk` frame with audio",
+          "passed": true,
+          "expected": ">= 1",
+          "actual": "36",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/models/text-to-speech/streaming"
+        },
+        {
+          "name": "exactly one `complete` frame",
+          "passed": true,
+          "expected": 1,
+          "actual": "1",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/models/text-to-speech/streaming"
+        },
+        {
+          "name": "server closes the socket after `complete`",
+          "passed": true,
+          "expected": "closed by server",
+          "actual": "closed=True timed_out=False",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/models/text-to-speech/streaming"
+        },
+        {
+          "name": "all frames are valid JSON",
+          "passed": true,
+          "expected": 0,
+          "actual": "0",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/models/text-to-speech/streaming"
+        },
+        {
+          "name": "word_timestamp events emitted for `meher` (WS reference lists meher)",
+          "passed": true,
+          "expected": "> 0",
+          "actual": "20",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/api-reference/models/text-to-speech/tts"
+        },
+        {
+          "name": "word timestamps monotonic with start <= end",
+          "passed": true,
+          "expected": true,
+          "actual": "True/True",
+          "requirement": "quality",
+          "doc_ref": null
+        }
+      ],
+      "metrics": {
+        "client_observation_window_s": 75.0,
+        "frames_after_complete": [
+          {
+            "session_id": "e6c34ae5-1507-4034-9499-aa308c43f191",
+            "request_id": "6e992483-35c3-4169-a8bf-e894fc20c4f0",
+            "status": "complete"
+          },
+          {
+            "status": "error",
+            "message": "Connection timed out after 60 seconds of inactivity"
+          }
+        ],
+        "closed_after_complete_ms": 54661.9,
+        "frame_status_counts": {
+          "chunk": 36,
+          "error": 1,
+          "word_timestamp": 20,
+          "complete": 1
+        },
+        "close_code": null,
+        "closed_by_server": true,
+        "timed_out": false,
+        "word_events": [
+          {
+            "id": 0,
+            "word": "Your",
+            "start": 0.06,
+            "end": 0.21
+          },
+          {
+            "id": 1,
+            "word": "order",
+            "start": 0.3,
+            "end": 0.54
+          },
+          {
+            "id": 2,
+            "word": "has",
+            "start": 0.61,
+            "end": 0.78
+          },
+          {
+            "id": 3,
+            "word": "shipped",
+            "start": 0.81,
+            "end": 1.09
+          },
+          {
+            "id": 4,
+            "word": "and",
+            "start": 1.42,
+            "end": 3.38
+          },
+          {
+            "id": 5,
+            "word": "should",
+            "start": 3.38,
+            "end": 3.46
+          },
+          {
+            "id": 6,
+            "word": "arrive",
+            "start": 3.46,
+            "end": 3.54
+          },
+          {
+            "id": 7,
+            "word": "by",
+            "start": 3.54,
+            "end": 3.62
+          },
+          {
+            "id": 8,
+            "word": "Thursday.",
+            "start": 3.62,
+            "end": 3.69
+          },
+          {
+            "id": 9,
+            "word": "Reply",
+            "start": 3.66,
+            "end": 3.69
+          },
+          {
+            "id": 10,
+            "word": "to",
+            "start": 3.66,
+            "end": 3.69
+          },
+          {
+            "id": 11,
+            "word": "this",
+            "start": 3.66,
+            "end": 3.69
+          },
+          {
+            "id": 12,
+            "word": "message",
+            "start": 3.69,
+            "end": 3.81
+          },
+          {
+            "id": 13,
+            "word": "if",
+            "start": 3.85,
+            "end": 3.94
+          },
+          {
+            "id": 14,
+            "word": "you",
+            "start": 3.94,
+            "end": 4.02
+          },
+          {
+            "id": 15,
+            "word": "need",
+            "start": 4.02,
+            "end": 4.18
+          },
+          {
+            "id": 16,
+            "word": "to",
+            "start": 4.22,
+            "end": 4.3
+          },
+          {
+            "id": 17,
+            "word": "change",
+            "start": 4.34,
+            "end": 4.58
+          },
+          {
+            "id": 18,
+            "word": "the",
+            "start": 4.62,
+            "end": 4.74
+          },
+          {
+            "id": 19,
+            "word": "address.",
+            "start": 4.78,
+            "end": 5.02
+          }
+        ],
+        "handshake_ms": 418.8,
+        "first_audio_frame_ms": 665.7,
+        "complete_ms": 5874.4,
+        "word_recall_vs_text": {
+          "hit": 20,
+          "total": 20,
+          "missing": []
+        }
+      },
+      "notes": [],
+      "requests": [
+        {
+          "case_id": "P2-WS-01",
+          "ledger_seq": 67,
+          "timestamp_utc": "2026-11-22T17:31:29.654+00:00",
+          "timestamp_ist": "2026-11-22T23:01:29.654+05:30",
+          "method": "WS",
+          "endpoint": "/waves/v1/tts/live",
+          "query_params": {},
+          "request": {
+            "first_message": {
+              "text": "Your order has shipped and should arrive by Thursday. Reply to this message if you need to change the address.",
+              "voice_id": "meher",
+              "model": "lightning_v3.1_pro",
+              "sample_rate": 24000,
+              "word_timestamps": true
+            },
+            "headers": {
+              "Authorization": "[REDACTED]"
+            }
+          },
+          "auth_mode": "valid",
+          "status": 101,
+          "content_type": "application/x-ws-frames+json",
+          "response_bytes": 9008,
+          "response_truncated_at_cap": false,
+          "response_sha256": "3b5647c40458c8c41ed3be6ba9d8cb725cc9173713bacbe6d1d087ecd239a9d4",
+          "time_to_headers_ms": null,
+          "ttfb_ms": 665.7,
+          "duration_ms": 60536.4,
+          "extra_timings_ms": {
+            "handshake": 418.8,
+            "first_audio_frame": 665.7,
+            "complete_frame": 5874.4,
+            "closed": 60536.3
+          },
+          "request_ids": {},
+          "response_headers": {
+            "Date": "Sun, 22 Nov 2026 17:31:30 GMT",
+            "Connection": "upgrade",
+            "Set-Cookie": "[REDACTED]",
+            "Upgrade": "websocket",
+            "Sec-WebSocket-Accept": "MR5G/8dMi8qbhyVvd43lNO2idTM=",
+            "content-type": "application/x-ws-frames+json"
+          },
+          "body_excerpt": "[{\"session_id\": \"e6c34ae5-1507-4034-9499-aa308c43f191\", \"request_id\": \"6e992483-35c3-4169-a8bf-e894fc20c4f0\", \"status\": \"chunk\", \"data_keys\": [\"audio\"], \"audio_b64_chars\": 3200}, {\"session_id\": \"e6c34ae5-1507-4034-9499-aa308c43f191\", \"request_id\": \"6e992483-35c3-4169-a8bf-e894fc20c4f0\", \"status\": \"chunk\", \"data_keys\": [\"audio\"], \"audio_b64_chars\": 7832}, {\"session_id\": \"e6c34ae5-1507-4034-9499-aa308c43f191\", \"request_id\": \"6e992483-35c3-4169-a8bf-e894fc20c4f0\", \"status\": \"word_timestamp\", \"data_keys\": [\"end\", \"id\", \"start\", \"word\"]}, {\"session_id\": \"e6c34ae5-1507-4034-9499-aa308c43f191\", \"requ...[truncated]",
+          "transport_error": null,
+          "cancelled_by_client": false,
+          "fresh_connection": false,
+          "body_chunks": 0
+        }
+      ]
+    },
+    {
+      "case_id": "P2-ERR-17",
+      "title": "get_voices: invalid API key",
+      "area": "Error contract",
+      "expected_behavior": "401",
+      "doc_refs": [
+        "https://docs.smallest.ai/api-reference/authentication"
+      ],
+      "classification": "Candidate finding requiring reproduction",
+      "checks": [
+        {
+          "name": "HTTP 401",
+          "passed": false,
+          "expected": "401",
+          "actual": "200",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/api-reference/authentication"
+        }
+      ],
+      "metrics": {
+        "error_contract": [
+          {
+            "status": 200,
+            "signature": "{voices:list[object{displayName,tags,voiceId}]}",
+            "human_message": null
+          }
+        ]
+      },
+      "notes": [],
+      "requests": [
+        {
+          "case_id": "P2-ERR-17",
+          "ledger_seq": 68,
+          "timestamp_utc": "2026-11-22T17:32:31.694+00:00",
+          "timestamp_ist": "2026-11-22T23:02:31.694+05:30",
+          "method": "GET",
+          "endpoint": "/waves/v1/lightning-v3.1-pro/get_voices",
+          "query_params": {},
+          "request": {
+            "headers": {
+              "Authorization": "[REDACTED]"
+            }
+          },
+          "auth_mode": "invalid",
+          "status": 200,
+          "content_type": "application/json; charset=utf-8",
+          "response_bytes": 89175,
+          "response_truncated_at_cap": false,
+          "response_sha256": "76dd8a5a751f8c20046bb608bc2bc51365409687e57a61e6bd26c8e497d33849",
+          "time_to_headers_ms": 408.0,
+          "ttfb_ms": 408.2,
+          "duration_ms": 465.6,
+          "extra_timings_ms": {},
+          "request_ids": {
+            "x-request-id": "b188f0dd-4c7e-4cd5-83a6-63f83bc7c81f"
+          },
+          "response_headers": {
+            "date": "Sun, 22 Nov 2026 17:32:32 GMT",
+            "content-type": "application/json; charset=utf-8",
+            "content-length": "89175",
+            "connection": "keep-alive",
+            "set-cookie": "[REDACTED]",
+            "x-request-id": "b188f0dd-4c7e-4cd5-83a6-63f83bc7c81f",
+            "cache-control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+            "pragma": "no-cache",
+            "expires": "0",
+            "strict-transport-security": "max-age=31536000; includeSubDomains",
+            "content-security-policy": "default-src 'self';script-src 'self';style-src 'self' 'unsafe-inline';img-src 'self' data: https://d1o0umtiv0iuvd.cloudfront.net https://d4a5s42qh2351.cloudfront.net https://waves-history.s3.ap-south-1.amazonaws.com https://waves-history-dev.s3.ap-south-1.amazonaws.com https://db2izkvf1oocn.cloudfront.net https://media.plivo.com https://dlw9ti8dmuxc7.cloudfront.net;connect-src 'self';frame-ancestors 'none';upgrade-insecure-requests;base-uri 'self';font-src 'self' https: data:;form-action 'self';object-src 'none';script-src-attr 'none'",
+            "cross-origin-opener-policy": "same-origin",
+            "cross-origin-resource-policy": "same-origin",
+            "origin-agent-cluster": "?1",
+            "referrer-policy": "no-referrer",
+            "x-content-type-options": "nosniff",
+            "x-dns-prefetch-control": "off",
+            "x-download-options": "noopen",
+            "x-frame-options": "SAMEORIGIN",
+            "x-permitted-cross-domain-policies": "none",
+            "x-xss-protection": "0",
+            "vary": "Origin",
+            "access-control-allow-credentials": "true",
+            "access-control-expose-headers": "Set-Cookie,X-Smallest-Prompt-Guard,X-Request-Id,Content-Disposition",
+            "etag": "W/\"15c57-y8qNYRS6X3eLRBIWSwsua9GMmzY\""
+          },
+          "body_excerpt": "{\"voices\":[{\"voiceId\":\"ben\",\"displayName\":\"Ben\",\"tags\":{\"accent\":\"german\",\"language\":[\"english\",\"spanish\",\"french\",\"german\",\"italian\",\"dutch\",\"swedish\",\"portuguese\",\"polish\",\"russian\",\"greek\",\"finnish\",\"norwegian\"],\"gender\":\"male\",\"age\":\"young\",\"usecases\":[\"Customer support agent\",\"Narration\",\"Educational\"],\"emotions\":[],\"recommendedLanguages\":[\"german\"]}},{\"voiceId\":\"kristian\",\"displayName\":\"Kristian\",\"tags\":{\"accent\":\"norwegian\",\"language\":[\"english\",\"spanish\",\"french\",\"german\",\"italian\",\"dutch\",\"swedish\",\"portuguese\",\"polish\",\"russian\",\"greek\",\"finnish\",\"norwegian\"],\"gender\":\"male\",\"age\":\"y...[truncated]",
+          "transport_error": null,
+          "cancelled_by_client": false,
+          "fresh_connection": false,
+          "body_chunks": 7
+        }
+      ]
+    }
+  ]
+}
