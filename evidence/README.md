@@ -9,4 +9,6 @@
 - `runs/<run_id>/summary.md` is a human-readable table of the run.
 - `private/` is **git-ignored**. It holds the generated audio and raw bodies for local listening only.
 
-No live run has been executed until a run directory appears here.
+Live runs: `20261122T163926Z` (main suite, 25 requests), `20261122T164124Z` (F1 reproduction, 3 requests), and `20261122T164133Z`. The last was an intentional cap check: it sent 0 requests because the ledger was at 28/28.
+
+After the runs, the base64 audio inside the SSE `body_excerpt` fields of the main run was replaced with a length placeholder, so that no generated audio is committed. No other field was changed. Each affected file records this in its `post_processing` field.

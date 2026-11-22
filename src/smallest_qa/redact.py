@@ -37,13 +37,21 @@ def redact_headers(headers: Mapping[str, str], secrets: tuple[str, ...] = ()) ->
     return out
 
 
+_AUDIO_B64 = re.compile(r'("audio"\s*:\s*")([A-Za-z0-9+/=]+)("?)')  # closing quote optional: excerpts may be cut
+
+
+def strip_audio_payloads(text: str) -> str:
+    """Generated audio never goes into committed evidence, even as base64 inside SSE excerpts."""
+    return _AUDIO_B64.sub(lambda m: f"{m.group(1)}<{len(m.group(2))} base64 chars omitted>{m.group(3)}", text)
+
+
 def safe_excerpt(body: bytes | str, secrets: tuple[str, ...] = (), limit: int = 600) -> str:
     """Return a bounded, redacted, printable excerpt of a (probably textual) body."""
     if isinstance(body, bytes):
         text = body[: limit * 4].decode("utf-8", errors="replace")
     else:
         text = body
-    text = redact_text(text, secrets)
+    text = strip_audio_payloads(redact_text(text, secrets))
     if len(text) > limit:
         text = text[:limit] + "...[truncated]"
     return text

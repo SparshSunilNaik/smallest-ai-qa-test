@@ -25,6 +25,11 @@ def test_redact_headers_masks_authorization_case_insensitively():
     assert h == {"authorization": REDACTED, "X-Request-Id": "r1"}
 
 
+def test_safe_excerpt_omits_audio_payloads():
+    out = safe_excerpt('event: audio\ndata: {"audio":"QUJDREVGR0g=","done":false}\n\n')
+    assert "QUJDREVGR0g=" not in out and "<12 base64 chars omitted>" in out and '"done":false' in out
+
+
 def test_safe_excerpt_bounds_length():
     assert len(safe_excerpt(b"x" * 5000, limit=100)) < 130
 

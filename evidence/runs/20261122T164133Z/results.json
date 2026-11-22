@@ -1,0 +1,43 @@
+{
+  "run_id": "20261122T164133Z",
+  "started": {
+    "utc": "2026-11-22T16:41:33.568+00:00",
+    "ist": "2026-11-22T22:11:33.568+05:30"
+  },
+  "finished": {
+    "utc": "2026-11-22T16:41:33.582+00:00",
+    "ist": "2026-11-22T22:11:33.582+05:30"
+  },
+  "harness_version": "0.1.0",
+  "environment": {
+    "python": "3.13.13",
+    "httpx": "0.28.1",
+    "platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
+    "base_url": "https://api.smallest.ai"
+  },
+  "api_key_configured": true,
+  "halted": null,
+  "requests_this_run": 0,
+  "ledger_used_after_run": 28,
+  "ledger_cap": 28,
+  "fixture": null,
+  "cases": [
+    {
+      "case_id": "AUTH-01",
+      "title": "Valid credentials accepted (Pro voice catalogue)",
+      "area": "Authentication",
+      "expected_behavior": "200 with JSON voice catalogue containing documented voice 'meher'",
+      "doc_refs": [
+        "https://docs.smallest.ai/api-reference/authentication",
+        "https://docs.smallest.ai/api-reference/deprecations/models"
+      ],
+      "classification": "Not tested",
+      "checks": [],
+      "metrics": {},
+      "notes": [
+        "Not executed: needs 1 request(s), 0 left in cumulative budget"
+      ],
+      "requests": []
+    }
+  ]
+}

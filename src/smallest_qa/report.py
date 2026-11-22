@@ -51,7 +51,9 @@ def render(evidence_dir: Path, ledger_used: int, ledger_cap: int) -> str:
     for a in agg.values():
         counts[a["final"]] += 1
     lines = ["# Results summary (auto-generated from evidence/runs)", "",
-             f"- Runs: {len(runs)}; cumulative API requests (ledger): {ledger_used}/{ledger_cap}", "",
+             f"- Runs: {len(runs)}; cumulative API requests (ledger): {ledger_used}/{ledger_cap}",
+             "- Counts are per test case. Several cases can share one root cause; consolidated findings, "
+             "severity and interpretation are in `reports/qa-report-draft.md`.", "",
              "## Classification counts", ""]
     lines += [f"- {k}: {v}" for k, v in counts.items()]
     lines += ["", "## Per case (latest executed observation)", "",

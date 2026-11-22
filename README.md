@@ -9,7 +9,7 @@ Every live request is bounded, sequential and budgeted. Each request is recorded
 | Path | Contents |
 |---|---|
 | `src/smallest_qa/` | The harness: an instrumented client, budget ledger, redaction, SSE and WAV parsing, and case catalogue |
-| `tests/unit/` | 31 offline tests against an in-process fake of the documented contract |
+| `tests/unit/` | 32 offline tests against an in-process fake of the documented contract |
 | `docs/api-research.md` | Facts from the docs, and the documentation observations found while researching |
 | `docs/test-plan.md` | Methodology, classification rules, safety controls and the full traceability matrix |
 | `evidence/request-ledger.jsonl` | Cumulative ledger of every live request (sanitized and committed) |

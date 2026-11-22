@@ -124,6 +124,8 @@ These come from reading the docs, not from live tests. Each one should be re-che
 | DOC-4 | The sync TTS response `Content-Type` is undocumented. | synthesize-speech | TTS-01 and TTS-02 record it |
 | DOC-5 | The error reference lists only 401, 403, 429 and 500. The transcribe page adds 400, 413, 422 and 503. The two pages also word 401 and 403 differently. | error-reference, transcribe | Indirectly, by STT-03 to STT-05 |
 | DOC-6 | Pulse (non-Pro) size and duration limits are not documented. An `AudioTooLong` code exists, but no threshold is given. | transcribe, Pulse card | Not tested: avoids long-audio workloads |
-| DOC-7 | The STT quickstart's "Pulse API Reference" link reportedly opens the Create Access Token page. | quickstart | Manual check needed |
-| DOC-8 | The transcribe page's Python example reportedly uses an undefined `API_KEY`. | transcribe | Manual check needed |
+| DOC-7 | The STT quickstart's "Pulse API Reference" link (`/api-reference/models`) opens the Create Access Token page. | quickstart | Re-confirmed by a second fetch on 2026-11-22 |
+| DOC-8 | The transcribe page's Python example uses `API_KEY` without defining it. | transcribe | Re-confirmed by a second fetch on 2026-11-22 |
 | DOC-9 | Per-request or per-character billing for Lightning and Pulse is not on the pages reviewed. | pricing, model cards | Credits are observed via the dashboard (human step) |
+| DOC-10 | The live TTS model enum includes `lightning_v3.1_pro_07_26` (from the TTS-06 error `options`). It is not mentioned on the synthesize, deprecations, changelog or Pro model card pages. | live response plus those pages | TTS-06 |
+| DOC-11 | The TTS 400/401/500 body is documented as `error` (string) and `message` (string). The live API returns `error` as an array of issue objects. | synthesize-speech | TTS-03 to TTS-06 (finding F1) |
