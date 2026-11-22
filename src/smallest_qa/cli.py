@@ -178,6 +178,21 @@ def cmd_sdk_compat(_args) -> int:
     return 0
 
 
+def cmd_sse_replay(args) -> int:
+    import json
+
+    from .sdk_tools import replay_live_sse
+
+    settings = load_settings()
+    wire = (settings.evidence_dir / "private" / args.run / "P2-SDK-02-wire.sse").read_bytes()
+    res = {"source_run": args.run, "source_case": "P2-SDK-02", **replay_live_sse(wire)}
+    out = settings.evidence_dir / "offline" / f"sdk-sse-live-replay-{args.run}.json"
+    out.write_text(json.dumps(res, indent=2, default=str) + "\n", encoding="utf-8")
+    print(json.dumps({k: v for k, v in res.items() if k != "terminal_frames"}, indent=1, default=str))
+    print(f"Wrote {out.relative_to(REPO_ROOT)}")
+    return 0
+
+
 def cmd_docs_offline(_args) -> int:
     import json
     import tempfile
@@ -259,10 +274,13 @@ def main(argv: list[str] | None = None) -> int:
     sub.add_parser("fixtures-p2", help="offline: generate Phase 2 STT fixtures with macOS say")
     sub.add_parser("docs-offline", help="offline: run saved docs examples against recorded responses")
     sub.add_parser("matrix-p2", help="offline: regenerate docs/phase2-test-matrix.md from the catalogue")
+    rp = sub.add_parser("sse-replay", help="offline: replay recorded live SSE wire bytes into the SDK")
+    rp.add_argument("--run", required=True)
     args = parser.parse_args(argv)
     handlers = {"plan": cmd_plan, "run": cmd_run, "check-key": cmd_check_key, "make-fixtures": cmd_make_fixtures,
                 "report": cmd_report, "sdk-compat": cmd_sdk_compat, "fixtures-p2": cmd_fixtures_p2,
-                "docs-offline": cmd_docs_offline, "matrix-p2": cmd_matrix_p2}
+                "docs-offline": cmd_docs_offline, "matrix-p2": cmd_matrix_p2,
+                "sse-replay": cmd_sse_replay}
     return handlers[args.cmd](args)
 
 

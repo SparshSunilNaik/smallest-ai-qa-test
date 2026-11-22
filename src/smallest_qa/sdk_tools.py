@@ -210,3 +210,57 @@ def offline_checks(evidence_dir: Path) -> dict[str, Any]:
     cap["yielded"] = [str(i)[:80] for i in (items or [])][:4]
     results["protocol"]["sse_iterator_items"] = {"synthetic": True, **cap}
     return results
+
+
+def replay_live_sse(wire: bytes) -> dict[str, Any]:
+    """Feed *recorded live* SSE bytes (from P2-SDK-02) into the SDK and into the harness parser, and compare.
+    Output contains frame structure only (keys/types/lengths), never audio."""
+    import logging
+
+    from .sse import SSEParser
+
+    p = SSEParser()
+    p.feed(wire)
+    p.flush()
+    frames = []
+    for ev in p.events:
+        try:
+            obj = json.loads(ev.data)
+        except json.JSONDecodeError:
+            obj = None
+        frames.append({"event": ev.event, "data_json_type": type(obj).__name__,
+                       "keys": sorted(obj) if isinstance(obj, dict) else None,
+                       "done": obj.get("done") if isinstance(obj, dict) else None,
+                       "status": obj.get("status") if isinstance(obj, dict) else None,
+                       "audio_b64_chars": len(obj.get("audio", "")) if isinstance(obj, dict) else None})
+    warnings: list[str] = []
+
+    class H(logging.Handler):
+        def emit(self, record):
+            warnings.append(record.getMessage().split(", sse:")[0][:160])
+
+    h = H(level=logging.WARNING)
+    root = logging.getLogger()
+    root.addHandler(h)
+    was_disabled = logging.root.manager.disable
+    logging.disable(logging.NOTSET)
+    try:
+        transport, _ = _replay(200, wire, content_type="text/event-stream")
+        sdk = sdk_client(transport, "sk_test_offline_replay")
+        items = list(sdk.waves.synthesize_sse_tts(text="replay", voice_id="meher", model="lightning_v3.1_pro"))
+    finally:
+        root.removeHandler(h)
+        logging.disable(was_disabled)
+    summary = {
+        "wire_bytes": len(wire),
+        "frames_total": len(frames),
+        "frames_with_audio": sum(1 for f in frames if f["audio_b64_chars"]),
+        "data_json_types": sorted({f["data_json_type"] for f in frames}),
+        "distinct_key_sets": sorted({tuple(f["keys"] or ()) for f in frames}),
+        "terminal_frames": [f for f in frames if f["done"] is True],
+        "sdk_declared_event_type": "str  (raw_client.py: parse_sse_obj(sse=_sse, type_=str))",
+        "sdk_items_yielded": len(items),
+        "sdk_warnings": len(warnings),
+        "sdk_warning_example": warnings[0] if warnings else None,
+    }
+    return summary

@@ -13,6 +13,7 @@ from __future__ import annotations
 import json
 import logging
 import random
+import re
 import statistics
 from collections.abc import Callable
 from typing import Any
@@ -226,7 +227,8 @@ def _sdk_capture_warnings() -> tuple[logging.Handler, list[str]]:
 
     class H(logging.Handler):
         def emit(self, record: logging.LogRecord) -> None:
-            seen.append(record.getMessage()[:200])
+            msg = re.sub(r"'audio': '[^']*'?", "'audio': '<omitted>'", record.getMessage().split(", sse:")[0])
+            seen.append(msg[:200])
 
     h = H(level=logging.WARNING)
     logging.getLogger().addHandler(h)
@@ -274,6 +276,9 @@ def sdk_sse(ctx: Context, res: CaseResult) -> None:
     res.exchanges.extend(tr.exchanges)
     wire = tr.exchanges[-1] if tr.exchanges else None
     wire_audio_frames = wire.body.count(b'"audio"') if wire else 0
+    if wire is not None and wire.body:
+        ctx.save_private(f"{res.case_id}-wire.sse", wire.body)  # raw live SSE (contains audio) -> private only
+        res.metrics["wire_sha256"] = __import__("hashlib").sha256(wire.body).hexdigest()
     res.metrics.update({"sdk_items_yielded": len(items), "sdk_raised": raised,
                         "server_audio_frames_on_wire": wire_audio_frames,
                         "sdk_warnings_sample": warnings[:3], "sdk_warning_count": len(warnings),

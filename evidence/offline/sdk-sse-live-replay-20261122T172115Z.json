@@ -1,0 +1,38 @@
+{
+  "source_run": "20261122T172115Z",
+  "source_case": "P2-SDK-02",
+  "wire_bytes": 282769,
+  "frames_total": 30,
+  "frames_with_audio": 29,
+  "data_json_types": [
+    "dict"
+  ],
+  "distinct_key_sets": [
+    [
+      "audio",
+      "done",
+      "status"
+    ],
+    [
+      "done",
+      "status"
+    ]
+  ],
+  "terminal_frames": [
+    {
+      "event": "message",
+      "data_json_type": "dict",
+      "keys": [
+        "done",
+        "status"
+      ],
+      "done": true,
+      "status": "200",
+      "audio_b64_chars": 0
+    }
+  ],
+  "sdk_declared_event_type": "str  (raw_client.py: parse_sse_obj(sse=_sse, type_=str))",
+  "sdk_items_yielded": 0,
+  "sdk_warnings": 30,
+  "sdk_warning_example": "Skipping SSE event due to model construction error: ValidationError: 1 validation error for str\n  Input should be a valid string [type=string_type, input_value="
+}

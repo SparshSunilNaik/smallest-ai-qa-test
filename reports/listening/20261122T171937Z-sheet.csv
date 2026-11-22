@@ -1,0 +1,4 @@
+clip_id,case_id,text,listen_for,listener,date,playback_device,intelligible_1to5,matches_text_yes_no,mispronounced_words,naturalness_1to5,artifacts_none_click_cutoff_noise_robotic_other,notes
+L01,P2-SDK-01,Modern problems require modern solutions.,general intelligibility,,,,,,,,,
+L02,P2-F2-03,"Hello, this is a voice compatibility check.",voice identity matches catalogue entry,,,,,,,,,
+L03,P2-F2-05,"Hello, this is a voice compatibility check.",voice identity matches catalogue entry,,,,,,,,,

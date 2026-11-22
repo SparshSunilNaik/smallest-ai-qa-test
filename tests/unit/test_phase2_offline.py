@@ -255,3 +255,43 @@ def test_doc_examples_offline_reproduce_silent_failure_and_nameerror(tmp_path):
     r3 = run_example("tts_quickstart_requests.py", mode="offline", api_key="sk_test_doc", workdir=tmp_path / "d",
                      canned_responses={})  # nothing canned -> shim refuses, never touches the network
     assert r3.exit_code != 0 and r3.calls == []
+
+
+# ----------------------------------------------------------------------------- Batch 1 regressions
+def _documented_wire(n_audio: int = 3) -> bytes:
+    import base64
+
+    frames = [b'event: audio\ndata: ' + json.dumps({"audio": base64.b64encode(b"\x01\x00" * 50).decode(),
+                                                     "done": False, "status": "206"}).encode() + b"\n\n"
+              for _ in range(n_audio)]
+    return b"".join(frames) + b'event: audio\ndata: {"status":"200","done":true}\n\n'
+
+
+def test_sdk_5_14_0_drops_every_documented_sse_frame():
+    """Characterisation of P2-SDK-02 (reproduced live twice). If this fails after an SDK upgrade,
+    re-run P2-SDK-02 live: the defect may be fixed."""
+    from smallest_qa.sdk_tools import replay_live_sse
+
+    r = replay_live_sse(_documented_wire(3))
+    assert r["frames_total"] == 4 and r["frames_with_audio"] == 3 and r["data_json_types"] == ["dict"]
+    assert r["sdk_items_yielded"] == 0 and r["sdk_warnings"] == 4
+    assert "audio" not in (r["sdk_warning_example"] or "").split("input_value=")[-1][:20]
+
+
+def test_sdk_warning_samples_never_carry_audio():
+    import re
+
+    msg = "Skipping SSE event ... input_value={'audio': 'AAAAAAAAAAAAAA..., 'done': False}, sse: ServerSentEvent(...)"
+    cleaned = re.sub(r"'audio': '[^']*'?", "'audio': '<omitted>'", msg.split(", sse:")[0])
+    assert "AAAA" not in cleaned and "<omitted>" in cleaned
+
+
+def test_html_error_body_is_flagged_by_contract_check():
+    ok, problems = conformance(None, "tts")  # text/html body parses to None
+    assert not ok and "expected a JSON object" in problems[0]
+
+
+def test_batch1_live_evidence_is_sanitised():
+    for rid in ("20261122T171937Z", "20261122T172115Z"):
+        text = (REPO_ROOT / "evidence" / "runs" / rid / "results.json").read_text()
+        assert "AAAAAAAAAA" not in text and "/Users/" not in text and "Bearer sk_" not in text
