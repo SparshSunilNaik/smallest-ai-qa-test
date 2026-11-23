@@ -221,4 +221,42 @@ The engineering report's privacy row (§10, row 13) and privacy controls (§11) 
 
 ## 8. Remote update result
 
-*To be completed after the push.*
+### Pre-push checks (Task C), on a clean clone of `13612f9`
+
+| Check | Result |
+|---|---|
+| Offline tests | 79/79 |
+| Report references | `verify_reports.py` verified |
+| Evidence hashes | Phase 1 manifest 6/6 |
+| Evidence tree | identical to the original `0d1e316` |
+| Ledger | 124 entries (Phase 1: 28, Phase 2: 96), byte-identical to the original, so **no live API requests were made** |
+| Object scan | 370 objects, 0 unreachable; **no H3, H4, real-time, other human-text, key, token or audio hits** |
+| Authorship | one identity throughout; all 15 original commits present, plus 2 Gate A commits |
+| Files | 0 deletions vs the original |
+| Pre-commit hook | blocks genuine private H3 and H4 windows; allows public prompt text, as designed |
+| Remote `main` | at `0d1e316` before the push; no other remote branches or tags |
+
+**Probe incident, disclosed:** a first H3 probe used a window that is also public H3 *prompt* text. The scanner correctly allowed it, and a local probe commit was created. That commit was immediately reset, was never pushed, and is not reachable from any branch. The probe was repeated with genuinely private windows, which were blocked.
+
+### Push
+
+```text
+git push --force-with-lease=main:0d1e3168ced635afd304584cfb0b065c091501e5 origin gate-a-rewrite:main
+ + 0d1e316...13612f9 gate-a-rewrite -> main (forced update)
+```
+
+- Remote `main` then pointed to `13612f98ecbaf8cfeeff9217b149d1b0b606d920`, as expected.
+- Local `main` was moved to the pushed history and `origin/main` was refreshed. The temporary `gate-a-rewrite` branch was deleted after verification, as it was fully merged.
+- **No local garbage collection was run.** The old objects remain in the local object store, and the originals are preserved in the private backup.
+
+### Public views after the push
+
+The current `main` versions of `src/smallest_qa/wer.py`, `tests/unit/test_wer_eval.py` and `tests/unit/test_human_workflow.py` contain **0** private windows and are byte-identical to the pushed blobs.
+
+### Residual exposure (confirmed)
+
+- **Old commits by SHA:** `e08a017`, `1285b81` and `0d1e316` are still retrievable from GitHub by full SHA (HTTP 200), and still contain the H4 and H3 text. GitHub retains unreferenced objects until its own garbage collection.
+- **Actions runs:** the 15 earlier runs reference the old SHAs.
+- **Clones:** any clone made before the rewrite keeps the old history.
+- **Owner decision:** a GitHub Support purge request, and deletion of the old Actions runs, were deferred until after the assessment.
+- **Unverified at push time:** forks. The unauthenticated GitHub API was rate-limited; the count was 0 about an hour before the push.
