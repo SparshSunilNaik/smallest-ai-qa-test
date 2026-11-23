@@ -14,9 +14,10 @@ from .budget import BudgetExceeded, RequestLedger
 from .cases import CASES, CaseSpec, Context
 from .client import HaltRun, QAClient
 from .budget import estimate_usd
-from .config import MAX_BATCH_REQUESTS, PHASE_REQUEST_CAPS, PHASE_USD_CAPS, Settings
+from .config import (BATCH_REQUEST_CAPS, CLOSED_PHASES, MAX_BATCH_REQUESTS, PHASE_REQUEST_CAPS, PHASE_USD_CAPS,
+                     Settings)
 from .fixtures import ensure_stt_fixture
-from .redact import scrub_paths
+from .redact import redact_text, scrub_paths
 from .results import INCONCLUSIVE, NOT_TESTED, CaseResult, auto_classify
 from .timeutil import run_id as make_run_id
 from .timeutil import stamp_pair
@@ -38,7 +39,9 @@ def select_cases(only: list[str] | None, include_optional: bool) -> list[CaseSpe
 
 def ledger_for(settings: Settings) -> RequestLedger:
     return RequestLedger(settings.evidence_dir / "request-ledger.jsonl", settings.max_requests,
-                         phase_caps=PHASE_REQUEST_CAPS, phase_usd_caps=PHASE_USD_CAPS)
+                         phase_caps=PHASE_REQUEST_CAPS, phase_usd_caps=PHASE_USD_CAPS,
+                         closed_phases=CLOSED_PHASES if settings.enforce_closed_phases else frozenset(),
+                         batch_caps=BATCH_REQUEST_CAPS)
 
 
 def assert_no_secret(serialized: str, settings: Settings) -> None:
@@ -57,6 +60,16 @@ def check_batch(settings: Settings, specs: list[CaseSpec], phase: int) -> list[s
     need = sum(_planned(s) for s in specs)
     if phase >= 2 and need > MAX_BATCH_REQUESTS:
         problems.append(f"batch plans {need} requests; maximum per batch is {MAX_BATCH_REQUESTS}")
+    roots = {str(s.batch).split("-")[0] for s in specs}
+    for root in roots:
+        bcap = BATCH_REQUEST_CAPS.get((phase, root))
+        if bcap is not None:
+            used = sum(1 for e in ledger.entries() if ledger.phase_of(e) == phase
+                       and str(e.get("batch", "")).split("-")[0] == root)
+            if used + need > bcap:
+                problems.append(f"batch {root}: {used} used + {need} planned exceeds its cap of {bcap}")
+    if phase in ledger.closed_phases:
+        problems.append(f"phase {phase} is closed")
     if need > ledger.phase_remaining(phase):
         problems.append(f"batch plans {need} requests; phase {phase} has {ledger.phase_remaining(phase)} left")
     usd_cap = PHASE_USD_CAPS.get(phase)
@@ -142,6 +155,7 @@ def execute(settings: Settings, specs: list[CaseSpec], *, transport: httpx.BaseT
                 halted = client.guard.halt_reason
                 res.notes.append(f"Safety stop triggered after this case: {halted}")
             log(f"  {spec.case_id:<8} {res.classification:<42} requests={len(res.exchanges)}")
+            _checkpoint(run_dir, res, client.secrets, settings)
 
     secrets = client.secrets
     payload = {
@@ -162,7 +176,7 @@ def execute(settings: Settings, specs: list[CaseSpec], *, transport: httpx.BaseT
         "p2_fixtures": {k: (v.describe() if hasattr(v, "describe") else v) for k, v in p2_fixtures.items()},
         "phase_est_usd_after_run": round(ledger.phase_est_usd(phase), 4),
         "listening_queue": ctx.listening,
-        "cases": [r.to_dict(secrets) for r in results],
+        "cases": [_case_dict(r, secrets) for r in results],
     }
     serialized = scrub_paths(json.dumps(payload, indent=2, ensure_ascii=False, default=str))
     assert_no_secret(serialized, settings)
@@ -171,11 +185,39 @@ def execute(settings: Settings, specs: list[CaseSpec], *, transport: httpx.BaseT
     summary = render_run_summary(payload)
     assert_no_secret(summary, settings)
     (run_dir / "summary.md").write_text(summary, encoding="utf-8")
+    (run_dir / _CHECKPOINT).unlink(missing_ok=True)  # superseded by results.json
     if ctx.listening:
         from .listening import write_listening_pack
 
         write_listening_pack(rid, ctx.listening, private_dir, settings.evidence_dir.parent / "reports" / "listening")
     return run_dir
+
+
+_CHECKPOINT = "cases.checkpoint.jsonl"
+
+
+def _case_dict(res: CaseResult, secrets: tuple[str, ...]) -> dict:
+    """Serialize one case; a serialization bug must never discard the evidence of the other cases."""
+    try:
+        return res.to_dict(secrets)
+    except Exception as exc:  # noqa: BLE001 - fall back to a minimal, still-redacted record
+        return {"case_id": res.case_id, "title": res.title, "classification": res.classification,
+                "serialization_error": f"{type(exc).__name__}: {redact_text(str(exc), secrets)}",
+                "notes": [redact_text(str(n), secrets) for n in res.notes],
+                "metrics": json.loads(json.dumps(res.metrics, default=str)) if res.metrics else {},
+                "requests": [{"ledger_seq": ex.seq, "status": ex.status, "duration_ms": ex.duration_ms,
+                              "response_bytes": len(ex.body or b"")} for ex in res.exchanges]}
+
+
+def _checkpoint(run_dir: Path, res: CaseResult, secrets: tuple[str, ...], settings: Settings) -> None:
+    """Append each finished case to a redacted checkpoint immediately, so a later crash loses nothing."""
+    try:
+        line = scrub_paths(json.dumps(_case_dict(res, secrets), ensure_ascii=False, default=str))
+        assert_no_secret(line, settings)
+        with (run_dir / _CHECKPOINT).open("a", encoding="utf-8") as fh:
+            fh.write(line + "\n")
+    except Exception as exc:  # noqa: BLE001 - checkpointing is best-effort and must not abort the run
+        print(f"  warning: checkpoint failed for {res.case_id}: {type(exc).__name__}")
 
 
 def render_run_summary(payload: dict) -> str:

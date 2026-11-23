@@ -264,3 +264,77 @@ def replay_live_sse(wire: bytes) -> dict[str, Any]:
         "sdk_warning_example": warnings[0] if warnings else None,
     }
     return summary
+
+
+# ----------------------------------------------------------------------------- Gate B: unmodified default transport
+
+def observe_default_transport(fn, t0: float) -> dict[str, Any]:
+    """Run `fn` (an SDK call that uses the SDK's OWN default httpx client) while passively observing logs:
+    - root-logger warnings emitted by the SDK when it skips SSE events (counted/classified, never stored);
+    - httpx INFO "HTTP Request:" lines (number of HTTP attempts);
+    - httpcore DEBUG trace (status line, content-type, x-request-id, body start/complete timing).
+    Nothing about the transport is modified; raw log text is discarded after parsing."""
+    import logging
+    import re as _re
+
+    events: dict[str, Any] = {"sdk_skip_warnings": 0, "skipped_audio_events": 0, "skipped_terminal_events": 0,
+                              "http_attempts": 0, "status": None, "content_type": None, "x_request_id": None,
+                              "headers_ms": None, "body_started_ms": None, "body_complete_ms": None,
+                              "first_skip_warning_ms": None, "last_skip_warning_ms": None}
+
+    class Tap(logging.Handler):
+        def emit(self, record: logging.LogRecord) -> None:
+            msg = record.getMessage()
+            t_ms = round((time.perf_counter() - t0) * 1000, 1)
+            if record.name == "root" and msg.startswith("Skipping SSE event"):
+                events["sdk_skip_warnings"] += 1
+                body = msg.split(", sse:")[0]
+                events["skipped_audio_events"] += int("'audio':" in body)
+                events["skipped_terminal_events"] += int("'done': True" in body)
+                events["first_skip_warning_ms"] = events["first_skip_warning_ms"] or t_ms
+                events["last_skip_warning_ms"] = t_ms
+            elif record.name == "httpx" and msg.startswith("HTTP Request:"):
+                events["http_attempts"] += 1
+            elif record.name.startswith("httpcore"):
+                if "receive_response_headers.complete" in msg:
+                    events["headers_ms"] = t_ms
+                    m = _re.search(r"return_value=\(b'HTTP/[\d.]+', (\d{3})", msg)
+                    events["status"] = int(m.group(1)) if m else None
+                    for key, name in (("content_type", b"content-type"), ("x_request_id", b"x-request-id")):
+                        hm = _re.search(r"\(b'" + name.decode() + r"', b'([^']*)'\)", msg, _re.I)
+                        events[key] = hm.group(1) if hm else events[key]
+                elif "receive_response_body.started" in msg and events["body_started_ms"] is None:
+                    events["body_started_ms"] = t_ms
+                elif "receive_response_body.complete" in msg:
+                    events["body_complete_ms"] = t_ms
+
+    tap = Tap(level=logging.DEBUG)
+    # Attach to the ROOT logger only: httpx/httpcore records propagate up to it. (Attaching to child loggers as
+    # well double-counts every record - a harness bug found and fixed offline before any live request.)
+    root = logging.getLogger()
+    levels = {name: logging.getLogger(name).level for name in ("httpx", "httpcore")}
+    was_disabled = logging.root.manager.disable
+    logging.disable(logging.NOTSET)
+    root.addHandler(tap)
+    logging.getLogger("httpx").setLevel(logging.INFO)
+    logging.getLogger("httpcore").setLevel(logging.DEBUG)
+    try:
+        out = fn()
+    finally:
+        root.removeHandler(tap)
+        for name, lvl in levels.items():
+            logging.getLogger(name).setLevel(lvl)
+        logging.disable(was_disabled)
+    events["result"] = out
+    return events
+
+
+def default_sdk_client(api_key: str, environment=None, timeout: float = 60.0):
+    """The official client exactly as documented, with only max_retries=0 (no uncontrolled retries) and an
+    explicit timeout. No httpx_client is passed, so the SDK builds its own default transport."""
+    from smallestai import SmallestAI
+
+    kwargs: dict[str, Any] = {"api_key": api_key, "max_retries": 0, "timeout": timeout}
+    if environment is not None:
+        kwargs["environment"] = environment
+    return SmallestAI(**kwargs)

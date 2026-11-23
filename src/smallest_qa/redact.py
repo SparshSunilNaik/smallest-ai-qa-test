@@ -45,12 +45,14 @@ def strip_audio_payloads(text: str) -> str:
     return _AUDIO_B64.sub(lambda m: f"{m.group(1)}<{len(m.group(2))} base64 chars omitted>{m.group(3)}", text)
 
 
-def safe_excerpt(body: bytes | str, secrets: tuple[str, ...] = (), limit: int = 600) -> str:
-    """Return a bounded, redacted, printable excerpt of a (probably textual) body."""
-    if isinstance(body, bytes):
-        text = body[: limit * 4].decode("utf-8", errors="replace")
+def safe_excerpt(body: bytes | bytearray | memoryview | str, secrets: tuple[str, ...] = (), limit: int = 600) -> str:
+    """Return a bounded, redacted, printable excerpt of a (probably textual) body.
+
+    Any bytes-like body is accepted (websockets exposes handshake bodies as ``bytes | bytearray``)."""
+    if isinstance(body, (bytes, bytearray, memoryview)):
+        text = bytes(body[: limit * 4]).decode("utf-8", errors="replace")
     else:
-        text = body
+        text = str(body)
     text = strip_audio_payloads(redact_text(text, secrets))
     if len(text) > limit:
         text = text[:limit] + "...[truncated]"

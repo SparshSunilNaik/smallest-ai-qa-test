@@ -1,0 +1,46 @@
+{
+  "source": "recorded live SSE bytes, P2-SDK-02 reproduction run 20261122T172115Z (private)",
+  "wire_sha256": "2ba68739ce30ffa0fe5aa16599e409d9e46be9e07e422d1e12b6efcacd6961b6",
+  "wire_bytes": 282769,
+  "chunks": 70,
+  "chunk_delay_s": 0.01,
+  "environment": {
+    "python": "3.13.13",
+    "smallestai": "5.14.0",
+    "httpx": "0.28.1",
+    "httpcore": "1.0.9",
+    "pydantic": "2.14.4",
+    "websockets": "17.4",
+    "platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O"
+  },
+  "runs": {
+    "default_streaming_transport": {
+      "server_requests": 1,
+      "sdk_items": 0,
+      "http_attempts": 1,
+      "status": 200,
+      "content_type": "text/event-stream",
+      "sdk_skip_warnings": 30,
+      "skipped_audio_events": 29,
+      "skipped_terminal_events": 1,
+      "first_skip_warning_ms": 49.1,
+      "last_skip_warning_ms": 883.2,
+      "server_last_chunk_ms": 882.5,
+      "parsing_started_before_body_complete": true
+    },
+    "buffering_ledger_transport": {
+      "server_requests": 1,
+      "sdk_items": 0,
+      "http_attempts": 1,
+      "status": 200,
+      "content_type": "text/event-stream",
+      "sdk_skip_warnings": 30,
+      "skipped_audio_events": 29,
+      "skipped_terminal_events": 1,
+      "first_skip_warning_ms": 877.5,
+      "last_skip_warning_ms": 881.8,
+      "server_last_chunk_ms": 862.2,
+      "parsing_started_before_body_complete": false
+    }
+  }
+}

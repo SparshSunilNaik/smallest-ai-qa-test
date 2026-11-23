@@ -36,6 +36,18 @@ def _estimate(specs) -> dict:
 
 
 def _p2_specs(args):
+    if args.phase == 3:
+        from .gate_b import GATE_B_BY_ID, gate_b_batch
+
+        if args.only:
+            ids = [i.strip().upper() for i in args.only.split(",")]
+            unknown = [i for i in ids if i not in GATE_B_BY_ID]
+            if unknown:
+                raise SystemExit(f"Unknown Gate B case id(s): {unknown}")
+            return [GATE_B_BY_ID[i] for i in ids]
+        if not args.batch:
+            raise SystemExit("Gate B requires --batch (e.g. B1) or --only IDS")
+        return gate_b_batch(args.batch)
     from .cases_p2 import P2_BY_ID, batch_cases
 
     if args.only:
@@ -131,20 +143,24 @@ def cmd_run(args) -> int:
     if not settings.key_configured:
         print("SMALLEST_API_KEY is not configured. Paste it into .env (see README).")
         return 2
-    if args.phase == 2:
+    if args.phase in (2, 3):
         from .runner import check_batch
 
         specs = _p2_specs(args)
-        problems = check_batch(settings, specs, 2)
+        problems = check_batch(settings, specs, args.phase)
         if problems:
             print("Refusing:", "; ".join(problems))
             return 2
         ledger = ledger_for(settings)
-        print(f"Phase 2 batch {args.batch or 'adhoc'}: {len(specs)} case(s); phase 2 ledger "
-              f"{ledger.phase_used(2)}/100 before run")
-        run_dir = execute(settings, specs, phase=2, batch=args.batch or "repro")
+        ph = args.phase
+        cap = 100 if ph == 2 else 20
+        batch = args.batch or ("repro" if ph == 2 else specs[0].batch)
+        print(f"Phase {ph} batch {batch}: {len(specs)} case(s); phase {ph} ledger {ledger.phase_used(ph)}/{cap}; "
+              f"cumulative {ledger.used}/{ledger.max_requests} before run")
+        run_dir = execute(settings, specs, phase=ph, batch=batch)
         print(f"\nEvidence: {run_dir.relative_to(REPO_ROOT)}/results.json and summary.md")
-        print(f"Phase 2 ledger after run: {ledger.phase_used(2)}/100; est. ${ledger.phase_est_usd(2):.3f}")
+        print(f"Phase {ph} ledger after run: {ledger.phase_used(ph)}/{cap}; cumulative {ledger.used}/"
+              f"{ledger.max_requests}; est. ${ledger.phase_est_usd(ph):.3f}")
         return 0
     specs = select_cases(args.only.split(",") if args.only else None, args.include_optional)
     ledger = ledger_for(settings)
@@ -287,6 +303,20 @@ def cmd_q6(args) -> int:
     return 0
 
 
+def cmd_gate_b_offline(_args) -> int:
+    import json
+
+    from .gate_b import offline_s1_replay
+
+    settings = load_settings()
+    res = offline_s1_replay(settings.evidence_dir)
+    out = settings.evidence_dir / "offline" / "gate-b-s1-offline-replay.json"
+    out.write_text(json.dumps(res, indent=2) + "\n", encoding="utf-8")
+    print(json.dumps(res, indent=1))
+    print(f"Wrote {out.relative_to(REPO_ROOT)}")
+    return 0
+
+
 def cmd_sse_replay(args) -> int:
     import json
 
@@ -372,7 +402,7 @@ def main(argv: list[str] | None = None) -> int:
         p = sub.add_parser(name)
         p.add_argument("--only", help="comma-separated case ids, e.g. TTS-01,STT-01")
         p.add_argument("--include-optional", action="store_true", help="include opt-in cases (TTS-08)")
-        p.add_argument("--phase", type=int, default=1, choices=(1, 2))
+        p.add_argument("--phase", type=int, default=1, choices=(1, 2, 3))
         p.add_argument("--batch", help="Phase 2 batch number (1-6); at most 20 requests each")
         if name == "run":
             p.add_argument("--approve-live", action="store_true", help="required: confirms live, billable requests")
@@ -398,6 +428,7 @@ def main(argv: list[str] | None = None) -> int:
     q6 = sub.add_parser("q6", help="offline: word timestamps vs waveform for P2-STT-15")
     q6.add_argument("--run", required=True)
     q6.add_argument("--multi", action="store_true", help="analyse the Q6 reproduction run (gap_multi_q6)")
+    sub.add_parser("gate-b-offline", help="offline: replay recorded live SSE through a local chunked server")
     rp = sub.add_parser("sse-replay", help="offline: replay recorded live SSE wire bytes into the SDK")
     rp.add_argument("--run", required=True)
     args = parser.parse_args(argv)
@@ -405,7 +436,8 @@ def main(argv: list[str] | None = None) -> int:
                 "report": cmd_report, "sdk-compat": cmd_sdk_compat, "fixtures-p2": cmd_fixtures_p2,
                 "docs-offline": cmd_docs_offline, "matrix-p2": cmd_matrix_p2,
                 "sse-replay": cmd_sse_replay, "record": cmd_record, "human": cmd_human,
-                "human-eval": cmd_human_eval, "q6": cmd_q6}
+                "human-eval": cmd_human_eval, "q6": cmd_q6,
+                "gate-b-offline": cmd_gate_b_offline}
     return handlers[args.cmd](args)
 
 

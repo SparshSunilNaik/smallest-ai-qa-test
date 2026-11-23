@@ -51,7 +51,8 @@ def recompute() -> dict:
                 if r["endpoint"] == "/waves/v1/tts" and r["status"] == 200 and r["request"].get("text_chars"):
                     sync += 1
     return {"ledger_total": len(led), "phase1": sum(1 for e in led if e.get("phase", 1) == 1),
-            "phase2": sum(1 for e in led if e.get("phase") == 2), "f1_array_error_responses": f1,
+            "phase2": sum(1 for e in led if e.get("phase") == 2), "phase3_gate_b": sum(1 for e in led if e.get("phase") == 3),
+            "f1_array_error_responses": f1,
             "sync_tts_200_samples": sync,
             "first_utc": led[0]["utc"], "last_utc": led[-1]["utc"]}
 

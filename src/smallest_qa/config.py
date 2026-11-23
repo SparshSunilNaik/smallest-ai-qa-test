@@ -9,10 +9,15 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_BASE_URL = "https://api.smallest.ai"
-DEFAULT_MAX_REQUESTS = 128  # Phase 1 (28, spent) + Phase 2 (100), cumulative
-PHASE_REQUEST_CAPS = {1: 28, 2: 100}  # Phase 1 is closed: its 28 requests are spent
-PHASE_USD_CAPS = {2: 2.00}  # estimated list-price spend; real balance is checked on the dashboard
+# Historical caps are unchanged. Phase 1 (28/28) and Phase 2 (96/100) are CLOSED: no further requests may be
+# reserved against them (the 4 unspent Phase 2 requests are not carried forward).
+# Gate B (phase 3) is an explicit extension: 20 requests, $3 estimated, cumulative cap 124 spent + 20 = 144.
+DEFAULT_MAX_REQUESTS = 144
+PHASE_REQUEST_CAPS = {1: 28, 2: 100, 3: 20}
+PHASE_USD_CAPS = {2: 2.00, 3: 3.00}  # estimated list-price spend; real balance is checked on the dashboard
+CLOSED_PHASES = frozenset({1, 2})
 MAX_BATCH_REQUESTS = 20
+BATCH_REQUEST_CAPS = {(3, "B1"): 10}  # Gate B batch 1: at most 10 live requests
 
 
 def _parse_dotenv(path: Path) -> dict[str, str]:
@@ -43,6 +48,7 @@ class Settings:
     max_response_bytes: int = 8 * 1024 * 1024  # hard cap on any single response body
     inter_request_delay_s: float = 1.5  # documented TTS concurrency is 1; stay sequential
     evidence_dir: Path = REPO_ROOT / "evidence"
+    enforce_closed_phases: bool = True  # offline tests of historical phases may disable this on temp ledgers
 
     @property
     def key_configured(self) -> bool:

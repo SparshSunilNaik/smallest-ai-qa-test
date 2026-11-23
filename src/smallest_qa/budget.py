@@ -39,11 +39,17 @@ class BudgetExceeded(RuntimeError):
 
 class RequestLedger:
     def __init__(self, path: Path, max_requests: int, phase_caps: dict[int, int] | None = None,
-                 phase_usd_caps: dict[int, float] | None = None):
+                 phase_usd_caps: dict[int, float] | None = None, closed_phases: frozenset[int] = frozenset(),
+                 batch_caps: dict[tuple[int, str], int] | None = None):
         self.path = path
         self.max_requests = max_requests
         self.phase_caps = phase_caps or {}
         self.phase_usd_caps = phase_usd_caps or {}
+        self.closed_phases = closed_phases
+        self.batch_caps = batch_caps or {}
+
+    def batch_used(self, phase: int, batch: str) -> int:
+        return sum(1 for e in self.entries() if self.phase_of(e) == phase and e.get("batch", "") == batch)
 
     def entries(self) -> list[dict]:
         if not self.path.is_file():
@@ -80,6 +86,14 @@ class RequestLedger:
         """Record an intended request; raise if it would exceed any cap."""
         entries = self.entries()
         used = len(entries)
+        if phase in self.closed_phases:
+            raise BudgetExceeded(f"Phase {phase} is closed; refusing {case_id}")
+        bcap = self.batch_caps.get((phase, batch.split("-")[0] if phase >= 3 else batch))
+        if bcap is not None:
+            root = batch.split("-")[0]
+            b_used = sum(1 for e in entries if self.phase_of(e) == phase and str(e.get("batch", "")).split("-")[0] == root)
+            if b_used >= bcap:
+                raise BudgetExceeded(f"Batch {root} cap reached ({b_used}/{bcap}); refusing {case_id}")
         if used >= self.max_requests:
             raise BudgetExceeded(
                 f"Cumulative request cap reached ({used}/{self.max_requests}); refusing {case_id} {method} {path}"

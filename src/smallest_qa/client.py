@@ -80,6 +80,8 @@ class Exchange:
         return ids
 
     def to_evidence(self, secrets: tuple[str, ...]) -> dict[str, Any]:
+        if not isinstance(self.body, bytes):  # normalise bytearray/memoryview bodies before hashing/excerpting
+            self.body = bytes(self.body or b"")
         is_textual = bool(self.content_type) and any(
             t in (self.content_type or "") for t in ("json", "text", "xml", "html")
         )

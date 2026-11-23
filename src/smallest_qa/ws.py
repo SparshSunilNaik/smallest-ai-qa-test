@@ -128,7 +128,7 @@ def run_ws_tts(client: QAClient, case_id: str, message: dict[str, Any], *, overa
     except InvalidStatus as exc:
         ex.status = exc.response.status_code
         ex.headers = {k: v for k, v in exc.response.headers.raw_items()}
-        ex.body = exc.response.body or b""
+        ex.body = bytes(exc.response.body or b"")  # may be a bytearray
     except Exception as exc:  # transport/client failure: recorded, never masked as a backend defect
         ex.error = f"ws: {type(exc).__name__}: {exc}"
     ex.duration_ms = (time.perf_counter() - t0) * 1000
@@ -225,7 +225,7 @@ def run_ws_stt(client: QAClient, case_id: str, pcm16: bytes, params: dict[str, s
                     break
     except InvalidStatus as exc:
         ex.status = exc.response.status_code
-        ex.body = exc.response.body or b""
+        ex.body = bytes(exc.response.body or b"")  # may be a bytearray
     except Exception as exc:  # recorded, never masked as a backend defect
         ex.error = f"ws: {type(exc).__name__}: {exc}"
     ex.duration_ms = (time.perf_counter() - t0) * 1000
@@ -235,6 +235,145 @@ def run_ws_stt(client: QAClient, case_id: str, pcm16: bytes, params: dict[str, s
     ex.headers.setdefault("content-type", "application/x-ws-frames+json")
     for k, v in (("handshake", obs.handshake_ms), ("close_stream_sent", obs.close_stream_sent_ms),
                  ("is_last", obs.is_last_ms)):
+        if v is not None:
+            ex.extra_timings[k] = v
+    client.finished(ex, expect_auth_ok=True)
+    return ex, obs
+
+
+# ----------------------------------------------------------------------------- Gate B: real-time STT lifecycle
+
+@dataclass
+class LifecycleObservation:
+    events: list[dict[str, Any]] = field(default_factory=list)  # structural fields only (+ transcript if allowed)
+    sent: list[dict[str, Any]] = field(default_factory=list)  # client actions with times
+    handshake_status: int | None = None
+    handshake_body: str | None = None
+    handshake_ms: float | None = None
+    is_last_ms: float | None = None
+    server_closed: bool = False
+    server_close_code: int | None = None
+    server_close_reason: str | None = None
+    server_closed_ms: float | None = None
+    client_closed: bool = False
+    observe_timed_out: bool = False
+    audio_seconds_sent: float = 0.0
+
+
+def run_ws_stt_lifecycle(client: QAClient, case_id: str, pcm16: bytes, params: dict[str, str], *,
+                         sample_rate: int = 16000, chunk_size: int = 4096, chunk_interval_s: float = 0.05,
+                         send_finalize: bool = False, close_mode: str = "close_stream",
+                         abrupt_after_s: float | None = None, post_last_window_s: float = 10.0,
+                         overall_timeout_s: float = 45.0, keep_transcripts: bool = True
+                         ) -> tuple[Exchange, LifecycleObservation]:
+    """Documented protocol (realtime quickstart / response-format / best-practices): binary PCM chunks
+    (4096 B, paced), optional {"type":"finalize"}, then {"type":"close_stream"} and wait for is_last=true.
+    close_mode="abrupt": stop after `abrupt_after_s` of audio and close the socket WITHOUT close_stream.
+    After is_last, keep listening up to `post_last_window_s` to observe whether the server closes.
+    One connection = one ledger entry."""
+    from urllib.parse import urlencode
+
+    from websockets.exceptions import ConnectionClosed, InvalidStatus
+    from websockets.sync.client import connect
+
+    seq = client.reserve(case_id, "WS", WS_STT_PATH, protocol="ws", est_stt_seconds=len(pcm16) / (2 * sample_rate))
+    client.pace()
+    base = client.settings.base_url.replace("https://", "wss://").replace("http://", "ws://")
+    url = f"{base}{WS_STT_PATH}?{urlencode(params)}"
+    ex = Exchange(case_id=case_id, seq=seq, method="WS", path=WS_STT_PATH, params=dict(params),
+                  request_summary={"audio_bytes": len(pcm16), "chunk_size": chunk_size,
+                                   "chunk_interval_s": chunk_interval_s, "send_finalize": send_finalize,
+                                   "close_mode": close_mode, "abrupt_after_s": abrupt_after_s,
+                                   "headers": {"Authorization": "[REDACTED]"}},
+                  auth_mode="valid", started=stamp_pair())
+    obs = LifecycleObservation()
+    t0 = time.perf_counter()
+    ms = lambda: round((time.perf_counter() - t0) * 1000, 1)  # noqa: E731
+
+    def record(raw) -> dict | None:
+        try:
+            m = json.loads(raw)
+        except (json.JSONDecodeError, TypeError):
+            obs.events.append({"t_ms": ms(), "invalid_json": True})
+            return None
+        e = {"t_ms": ms(), **{k: m.get(k) for k in ("type", "status", "is_final", "is_last", "start", "duration",
+                                                     "language", "error_code", "message") if k in m}}
+        tr = m.get("transcript")
+        e["transcript_len"] = len(tr) if isinstance(tr, str) else None
+        if keep_transcripts and isinstance(tr, str):
+            e["transcript"] = tr
+        if m.get("session_id") and not ex.extra_timings.get("_sid"):
+            ex.headers["x-session-id"] = str(m["session_id"])
+        obs.events.append(e)
+        return m
+
+    try:
+        with connect(url, additional_headers={"Authorization": f"Bearer {client.settings.api_key}"},
+                     open_timeout=client.settings.connect_timeout_s, close_timeout=5,
+                     max_size=client.settings.max_response_bytes) as ws:
+            obs.handshake_ms = ms()
+            ex.status = 101
+            limit = len(pcm16) if abrupt_after_s is None else int(abrupt_after_s * sample_rate) * 2
+            for i in range(0, min(len(pcm16), limit), chunk_size):
+                ws.send(pcm16[i: i + chunk_size])
+                obs.audio_seconds_sent += len(pcm16[i: i + chunk_size]) / (2 * sample_rate)
+                # drain anything already received without blocking
+                while True:
+                    try:
+                        record(ws.recv(timeout=0))
+                    except TimeoutError:
+                        break
+                if chunk_interval_s:
+                    time.sleep(chunk_interval_s)
+            obs.sent.append({"t_ms": ms(), "action": f"audio_done ({round(obs.audio_seconds_sent, 3)} s)"})
+            if close_mode == "abrupt":
+                obs.sent.append({"t_ms": ms(), "action": "client_close_without_close_stream"})
+                ws.close(code=1000)
+                obs.client_closed = True
+            else:
+                if send_finalize:
+                    ws.send(json.dumps({"type": "finalize"}))
+                    obs.sent.append({"t_ms": ms(), "action": "finalize"})
+                ws.send(json.dumps({"type": "close_stream"}))
+                obs.sent.append({"t_ms": ms(), "action": "close_stream"})
+                deadline = t0 + overall_timeout_s
+                while True:
+                    remaining = deadline - time.perf_counter()
+                    if obs.is_last_ms is not None:
+                        remaining = min(remaining, obs.is_last_ms / 1000 + post_last_window_s - (time.perf_counter() - t0))
+                    if remaining <= 0:
+                        obs.observe_timed_out = True
+                        break
+                    try:
+                        m = record(ws.recv(timeout=remaining))
+                    except TimeoutError:
+                        obs.observe_timed_out = True
+                        break
+                    except ConnectionClosed as cc:
+                        obs.server_closed = True
+                        obs.server_closed_ms = ms()
+                        if cc.rcvd is not None:
+                            obs.server_close_code, obs.server_close_reason = cc.rcvd.code, cc.rcvd.reason[:120]
+                        break
+                    if m and m.get("is_last") and obs.is_last_ms is None:
+                        obs.is_last_ms = ms()
+                if not obs.server_closed:
+                    obs.sent.append({"t_ms": ms(), "action": "client_close_after_observation"})
+                    ws.close(code=1000)
+                    obs.client_closed = True
+    except InvalidStatus as exc:
+        obs.handshake_status = ex.status = exc.response.status_code
+        body = bytes(exc.response.body or b"")  # may be a bytearray
+        obs.handshake_body = body[:300].decode("utf-8", "replace")
+        ex.body = body[:300]
+        ex.headers = {k: v for k, v in exc.response.headers.raw_items()}
+    except Exception as exc:  # recorded, never masked as a backend defect
+        ex.error = f"ws: {type(exc).__name__}: {exc}"
+    ex.duration_ms = (time.perf_counter() - t0) * 1000
+    if not ex.body:
+        ex.body = json.dumps(obs.events[:60]).encode()
+    ex.headers.setdefault("content-type", "application/x-ws-frames+json")
+    for k, v in (("handshake", obs.handshake_ms), ("is_last", obs.is_last_ms), ("server_closed", obs.server_closed_ms)):
         if v is not None:
             ex.extra_timings[k] = v
     client.finished(ex, expect_auth_ok=True)

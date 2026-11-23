@@ -16,8 +16,10 @@ from smallest_qa.fixtures import STT_REFERENCE_TEXT, Fixture  # noqa: E402
 
 @pytest.fixture
 def settings(tmp_path: Path) -> Settings:
+    # Offline tests replay historical phases 1-2 against a TEMPORARY ledger, so the closed-phase guard (which
+    # protects the real ledger) is disabled here; test_gate_b covers the guard itself.
     return Settings(api_key=VALID_KEY, base_url="https://fake.invalid", evidence_dir=tmp_path / "evidence",
-                    inter_request_delay_s=0.0, max_requests=28)
+                    inter_request_delay_s=0.0, max_requests=28, enforce_closed_phases=False)
 
 
 @pytest.fixture
