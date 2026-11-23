@@ -1,0 +1,4 @@
+run 20261123T191951Z phase 3 batch B1-recovery: 1 case(s); ledger 131 before run
+  GB-S1-01 Candidate finding requiring reproduction   requests=1
+  checkpoint: checkpoints/01-GB-S1-01.json
+results.json and summary.md written; ledger 132 after run

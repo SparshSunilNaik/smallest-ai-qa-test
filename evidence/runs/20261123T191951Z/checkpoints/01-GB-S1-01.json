@@ -1,0 +1,128 @@
+{
+  "case_id": "GB-S1-01",
+  "title": "SDK synthesize_sse_tts with its unmodified default transport",
+  "area": "Gate B",
+  "expected_behavior": "SDK yields the streamed audio ('streams the same request over SSE')",
+  "doc_refs": [
+    "https://docs.smallest.ai/models/text-to-speech/quickstart",
+    "https://docs.smallest.ai/models/text-to-speech/streaming"
+  ],
+  "classification": "Candidate finding requiring reproduction",
+  "checks": [
+    {
+      "name": "exactly one HTTP attempt (max_retries=0)",
+      "passed": true,
+      "expected": 1,
+      "actual": "1",
+      "requirement": "quality",
+      "doc_ref": null
+    },
+    {
+      "name": "HTTP 200 observed on the wire (httpcore trace)",
+      "passed": true,
+      "expected": 200,
+      "actual": "200",
+      "requirement": "documented",
+      "doc_ref": "https://docs.smallest.ai/models/text-to-speech/streaming"
+    },
+    {
+      "name": "content-type text/event-stream",
+      "passed": true,
+      "expected": "text/event-stream",
+      "actual": "text/event-stream",
+      "requirement": "documented",
+      "doc_ref": "https://docs.smallest.ai/models/text-to-speech/streaming"
+    },
+    {
+      "name": "SDK synthesize_sse_tts yields the streamed audio",
+      "passed": false,
+      "expected": "> 0 items",
+      "actual": "0 items; 28 events skipped (27 audio, 1 terminal); raised=None",
+      "requirement": "documented",
+      "doc_ref": "https://docs.smallest.ai/models/text-to-speech/quickstart"
+    }
+  ],
+  "metrics": {
+    "http_attempts": 1,
+    "sdk_skip_warnings": 28,
+    "skipped_audio_events": 27,
+    "skipped_terminal_events": 1,
+    "sdk_items": 0,
+    "sdk_raised": null,
+    "item_types": [],
+    "timing_ms": {
+      "first_item_ms": null,
+      "done_ms": 1079.5,
+      "headers_ms": 432.8,
+      "body_started_ms": 434.2,
+      "first_skip_warning_ms": 434.8,
+      "last_skip_warning_ms": 1078.8,
+      "body_complete_ms": 1079.1
+    },
+    "versions": {
+      "smallestai": "5.14.0",
+      "httpx": "0.28.1",
+      "httpcore": "1.0.9",
+      "pydantic": "2.14.4",
+      "websockets": "17.4"
+    },
+    "completed_normally": true,
+    "genuinely_streamed": {
+      "parsing_started_before_body_complete": true,
+      "first_event_handled_ms": 434.8,
+      "body_complete_ms": 1079.1,
+      "basis": "httpcore receive_response_body trace vs SDK per-event warning/item times (same clock)"
+    }
+  },
+  "notes": [],
+  "requests": [
+    {
+      "case_id": "GB-S1-01",
+      "ledger_seq": 132,
+      "timestamp_utc": "2026-11-23T19:19:51.424+00:00",
+      "timestamp_ist": "2026-11-24T00:49:51.424+05:30",
+      "method": "POST",
+      "endpoint": "/waves/v1/tts/live",
+      "query_params": {},
+      "request": {
+        "via": "smallestai SDK, default transport (no httpx_client), max_retries=0",
+        "params": {
+          "voice_id": "meher",
+          "model": "lightning_v3.1_pro",
+          "sample_rate": 24000,
+          "language": "en",
+          "output_format": "pcm"
+        },
+        "text_chars": 70
+      },
+      "auth_mode": "valid",
+      "status": 200,
+      "content_type": "text/event-stream",
+      "response_bytes": 36,
+      "response_truncated_at_cap": false,
+      "response_sha256": "7aa2ae320ec7cc57f58191576041caea872efc714e9e3e8c1da640c756e6d1b0",
+      "time_to_headers_ms": null,
+      "ttfb_ms": null,
+      "duration_ms": 1079.5,
+      "extra_timings_ms": {
+        "headers_ms": 432.8,
+        "body_started_ms": 434.2,
+        "first_skip_warning_ms": 434.8,
+        "last_skip_warning_ms": 1078.8,
+        "body_complete_ms": 1079.1
+      },
+      "request_ids": {
+        "x-request-id": "4adccbfb-0c97-463e-ba79-098fe49c6ae4"
+      },
+      "response_headers": {
+        "content-type": "text/event-stream",
+        "x-request-id": "4adccbfb-0c97-463e-ba79-098fe49c6ae4"
+      },
+      "body_excerpt": "{\"sdk_items\": 0, \"sdk_raised\": null}",
+      "transport_error": null,
+      "cancelled_by_client": false,
+      "fresh_connection": false,
+      "body_chunks": 0
+    }
+  ]
+}

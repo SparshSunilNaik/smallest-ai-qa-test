@@ -272,7 +272,8 @@ def gate_b_batch(batch: str) -> list[CaseSpec]:
     return [c for c in GATE_B_CASES if c.batch == batch]
 
 
-def offline_s1_replay(evidence_dir) -> dict:
+def offline_s1_replay(evidence_dir, run_id: str = "20261122T172115Z", wire_name: str = "P2-SDK-02-wire.sse",
+                      label: str = "P2-SDK-02 reproduction run") -> dict:
     """B1-A: replay the recorded live SSE bytes (private Phase 2 capture) through a local chunked HTTP server,
     once with the SDK's default streaming transport and once with the harness's buffering transport.
     Returns counts/timings only (no audio, no transcript)."""
@@ -293,10 +294,10 @@ def offline_s1_replay(evidence_dir) -> dict:
     from .runner import ledger_for
     from .sdk_tools import LedgerTransport, default_sdk_client, observe_default_transport, sdk_client
 
-    wire_path = evidence_dir / "private" / "20261122T172115Z" / "P2-SDK-02-wire.sse"
+    wire_path = evidence_dir / "private" / run_id / wire_name
     wire = wire_path.read_bytes()
     chunks = [wire[i: i + 4096] for i in range(0, len(wire), 4096)]
-    out = {"source": "recorded live SSE bytes, P2-SDK-02 reproduction run 20261122T172115Z (private)",
+    out = {"source": f"recorded live SSE bytes, {label} {run_id} (private)",
            "wire_sha256": hashlib.sha256(wire).hexdigest(), "wire_bytes": len(wire), "chunks": len(chunks),
            "chunk_delay_s": 0.01,
            "environment": {"python": sys.version.split()[0], "smallestai": smallestai.__version__,

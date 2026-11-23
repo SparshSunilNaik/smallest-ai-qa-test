@@ -306,14 +306,19 @@ def cmd_q6(args) -> int:
     return 0
 
 
-def cmd_gate_b_offline(_args) -> int:
+def cmd_gate_b_offline(args) -> int:
     import json
 
     from .gate_b import offline_s1_replay
 
     settings = load_settings()
-    res = offline_s1_replay(settings.evidence_dir)
-    out = settings.evidence_dir / "offline" / "gate-b-s1-offline-replay.json"
+    if args.recovery:  # live raw-control wire from the B1 recovery run (GB-S1-02)
+        res = offline_s1_replay(settings.evidence_dir, "20261123T192007Z", "GB-S1-02-wire.sse",
+                                "GB-S1-02 raw-control wire, B1 recovery run")
+        out = settings.evidence_dir / "offline" / "gate-b-s1-recovery-wire-replay.json"
+    else:
+        res = offline_s1_replay(settings.evidence_dir)
+        out = settings.evidence_dir / "offline" / "gate-b-s1-offline-replay.json"
     out.write_text(json.dumps(res, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(res, indent=1))
     print(f"Wrote {out.relative_to(REPO_ROOT)}")
@@ -433,7 +438,8 @@ def main(argv: list[str] | None = None) -> int:
     q6 = sub.add_parser("q6", help="offline: word timestamps vs waveform for P2-STT-15")
     q6.add_argument("--run", required=True)
     q6.add_argument("--multi", action="store_true", help="analyse the Q6 reproduction run (gap_multi_q6)")
-    sub.add_parser("gate-b-offline", help="offline: replay recorded live SSE through a local chunked server")
+    gbo = sub.add_parser("gate-b-offline", help="offline: replay recorded live SSE through a local chunked server")
+    gbo.add_argument("--recovery", action="store_true", help="replay the GB-S1-02 live wire (B1 recovery run)")
     rp = sub.add_parser("sse-replay", help="offline: replay recorded live SSE wire bytes into the SDK")
     rp.add_argument("--run", required=True)
     args = parser.parse_args(argv)

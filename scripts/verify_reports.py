@@ -62,6 +62,8 @@ def main() -> int:
     problems = []
     for name in ("final-submission.md", "final-engineering-report.md"):
         problems += check_report(ROOT / "reports" / name, idx)
+    for path in sorted((ROOT / "reports" / "gate-b").glob("*.md")):
+        problems += check_report(path, idx)
     sub = (ROOT / "reports" / "final-submission.md").read_text(encoding="utf-8")
     words = len(re.findall(r"\S+", sub))
     facts = recompute()

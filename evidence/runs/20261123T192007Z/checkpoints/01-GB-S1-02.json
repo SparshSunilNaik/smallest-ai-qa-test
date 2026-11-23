@@ -1,0 +1,196 @@
+{
+  "case_id": "GB-S1-02",
+  "title": "Raw HTTP SSE control (same model, voice, text, rate, format)",
+  "area": "Gate B",
+  "expected_behavior": "documented SSE framing with valid base64 PCM audio",
+  "doc_refs": [
+    "https://docs.smallest.ai/models/text-to-speech/streaming"
+  ],
+  "classification": "Passed",
+  "checks": [
+    {
+      "name": "HTTP 200",
+      "passed": true,
+      "expected": "200",
+      "actual": "200",
+      "requirement": "documented",
+      "doc_ref": "https://docs.smallest.ai/models/text-to-speech/streaming"
+    },
+    {
+      "name": "Content-Type is text/event-stream",
+      "passed": true,
+      "expected": "text/event-stream",
+      "actual": "text/event-stream",
+      "requirement": "quality",
+      "doc_ref": null
+    },
+    {
+      "name": "all frames carry JSON data",
+      "passed": true,
+      "expected": "0 invalid frames",
+      "actual": "0 invalid / 29 total",
+      "requirement": "documented",
+      "doc_ref": "https://docs.smallest.ai/models/text-to-speech/streaming"
+    },
+    {
+      "name": ">= 1 audio chunk before completion",
+      "passed": true,
+      "expected": ">= 1",
+      "actual": "28",
+      "requirement": "documented",
+      "doc_ref": "https://docs.smallest.ai/models/text-to-speech/streaming"
+    },
+    {
+      "name": "all audio chunks are valid base64",
+      "passed": true,
+      "expected": 0,
+      "actual": "0",
+      "requirement": "documented",
+      "doc_ref": "https://docs.smallest.ai/models/text-to-speech/streaming"
+    },
+    {
+      "name": "every frame has a `done` field",
+      "passed": true,
+      "expected": true,
+      "actual": "True",
+      "requirement": "documented",
+      "doc_ref": "https://docs.smallest.ai/models/text-to-speech/streaming"
+    },
+    {
+      "name": "exactly one done:true frame and it is last",
+      "passed": true,
+      "expected": "1 terminal frame, last",
+      "actual": "terminal indices [28] of 29",
+      "requirement": "documented",
+      "doc_ref": "https://docs.smallest.ai/models/text-to-speech/streaming"
+    },
+    {
+      "name": "terminal frame status == '200'",
+      "passed": true,
+      "expected": "200",
+      "actual": "200",
+      "requirement": "documented",
+      "doc_ref": "https://docs.smallest.ai/models/text-to-speech/streaming"
+    },
+    {
+      "name": "no frames after terminal / no unterminated trailing data",
+      "passed": true,
+      "expected": "0 / 0",
+      "actual": "0 / 0",
+      "requirement": "quality",
+      "doc_ref": null
+    },
+    {
+      "name": "decoded PCM is valid, 16-bit aligned and non-silent",
+      "passed": true,
+      "expected": "valid PCM",
+      "actual": "{'bytes': 205440, 'duration_s': 4.28, 'rms_dbfs': -16.3}",
+      "requirement": "quality",
+      "doc_ref": null
+    }
+  ],
+  "metrics": {
+    "frames": 29,
+    "audio_chunks": 28,
+    "audio_bytes": 205440,
+    "ttfb_ms": 315.4,
+    "first_audio_event_ms": 315.4,
+    "done_event_ms": 944.7,
+    "stream_closed_ms": 945.3,
+    "close_after_done_ms": 0.6,
+    "raw_events": 29,
+    "audio_events": 28,
+    "terminal_events": 1,
+    "pcm": {
+      "bytes": 205440,
+      "duration_s": 4.28,
+      "rms_dbfs": -16.3
+    }
+  },
+  "notes": [],
+  "requests": [
+    {
+      "case_id": "GB-S1-02",
+      "ledger_seq": 133,
+      "timestamp_utc": "2026-11-23T19:20:07.377+00:00",
+      "timestamp_ist": "2026-11-24T00:50:07.377+05:30",
+      "method": "POST",
+      "endpoint": "/waves/v1/tts/live",
+      "query_params": {},
+      "request": {
+        "json": {
+          "text": "Hello from the Smallest AI QA harness. This is a short synthesis test.",
+          "voice_id": "meher",
+          "model": "lightning_v3.1_pro",
+          "language": "en",
+          "sample_rate": 24000,
+          "output_format": "pcm"
+        },
+        "text_chars": 70,
+        "headers": {
+          "Content-Type": "application/json",
+          "Accept": "text/event-stream",
+          "Authorization": "[REDACTED]"
+        }
+      },
+      "auth_mode": "valid",
+      "status": 200,
+      "content_type": "text/event-stream",
+      "response_bytes": 275668,
+      "response_truncated_at_cap": false,
+      "response_sha256": "41fcdeb4fdd06c2081bf12718dbd4e33019c005b89574b883ce40c880b0d72ec",
+      "time_to_headers_ms": 315.2,
+      "ttfb_ms": 315.4,
+      "duration_ms": 945.3,
+      "extra_timings_ms": {
+        "connection_reused": 0.0,
+        "tcp_connect_incl_dns": 54.1,
+        "tls_handshake": 67.5,
+        "send_request": 0.2,
+        "server_wait_incl_rtt": 192.2,
+        "first_audio_event": 315.4,
+        "done_event": 944.7
+      },
+      "request_ids": {
+        "x-request-id": "7c27abe4-2bde-4f39-8498-6d73e499326d",
+        "x-session-id": "7c27abe4-2bde-4f39-8498-6d73e499326d",
+        "x-external-session-id": "",
+        "x-external-request-id": ""
+      },
+      "response_headers": {
+        "date": "Mon, 23 Nov 2026 19:20:07 GMT",
+        "content-type": "text/event-stream",
+        "transfer-encoding": "chunked",
+        "connection": "keep-alive",
+        "set-cookie": "[REDACTED]",
+        "x-request-id": "7c27abe4-2bde-4f39-8498-6d73e499326d",
+        "cache-control": "no-cache",
+        "pragma": "no-cache",
+        "expires": "0",
+        "strict-transport-security": "max-age=31536000; includeSubDomains",
+        "content-security-policy": "default-src 'self';script-src 'self';style-src 'self' 'unsafe-inline';img-src 'self' data: https://d1o0umtiv0iuvd.cloudfront.net https://d4a5s42qh2351.cloudfront.net https://waves-history.s3.ap-south-1.amazonaws.com https://waves-history-dev.s3.ap-south-1.amazonaws.com https://db2izkvf1oocn.cloudfront.net https://media.plivo.com https://dlw9ti8dmuxc7.cloudfront.net;connect-src 'self';frame-ancestors 'none';upgrade-insecure-requests;base-uri 'self';font-src 'self' https: data:;form-action 'self';object-src 'none';script-src-attr 'none'",
+        "cross-origin-opener-policy": "same-origin",
+        "cross-origin-resource-policy": "same-origin",
+        "origin-agent-cluster": "?1",
+        "referrer-policy": "no-referrer",
+        "x-content-type-options": "nosniff",
+        "x-dns-prefetch-control": "off",
+        "x-download-options": "noopen",
+        "x-frame-options": "SAMEORIGIN",
+        "x-permitted-cross-domain-policies": "none",
+        "x-xss-protection": "0",
+        "vary": "Origin",
+        "access-control-allow-credentials": "true",
+        "access-control-expose-headers": "Set-Cookie,X-Smallest-Prompt-Guard,X-Request-Id,Content-Disposition",
+        "x-session-id": "7c27abe4-2bde-4f39-8498-6d73e499326d",
+        "x-external-session-id": "",
+        "x-external-request-id": ""
+      },
+      "body_excerpt": "event: audio\ndata: {\"audio\":\"<2371 base64 chars omitted>",
+      "transport_error": null,
+      "cancelled_by_client": false,
+      "fresh_connection": false,
+      "body_chunks": 29
+    }
+  ]
+}

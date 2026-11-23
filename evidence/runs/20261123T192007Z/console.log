@@ -1,0 +1,4 @@
+run 20261123T192007Z phase 3 batch B1-recovery: 1 case(s); ledger 132 before run
+  GB-S1-02 Passed                                     requests=1
+  checkpoint: checkpoints/01-GB-S1-02.json
+results.json and summary.md written; ledger 133 after run
