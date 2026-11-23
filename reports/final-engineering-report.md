@@ -287,8 +287,8 @@ All times are in ms.
 | 10 | Base64 audio in SSE excerpts, and audio fragments in SDK warning samples | Audio traces in committed evidence | Stripped; `post_processing` notes in the affected files |
 | 11 | Local paths in doc-example tracebacks | Exposure of the OS username | `scrub_paths` |
 | 12 | Transcript hash for human clips | A hash of a known prompt could confirm a guessed transcript | Removed |
-| 13 | **Privacy lapse:** commit `e08a017` added a test string derived from the STT transcript of human clip H4 | Text derived from a private transcript reached Git (public prompt content) | Replaced in `7a1670e`, plus a blocking `scripts/private_text_scan.py`. **The text remains in Git history; a rewrite needs the owner's approval.** |
-| 14 | A commit message said "64 Phase 2 cases"; there were 70 | Message only | Disclosed here; history not rewritten |
+| 13 | **Privacy lapse:** a commit (originally `e08a017`) added a test string derived from the STT transcript of human clip H4 | Text derived from a private transcript reached Git (public prompt content) | Replaced with synthetic text. **Gate A:** a narrowly scoped history rewrite removes the derived text from all history (that commit now carries the synthetic sentences directly; see `reports/gate-a-audit.md`). The blocking scanner is now enforced by a pre-commit hook (`scripts/install-hooks.sh`). |
+| 14 | A commit message said "64 Phase 2 cases"; there were 70 | Message only | Disclosed here; that message is left unchanged |
 
 ## 11. Privacy protections
 
