@@ -13,8 +13,10 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 from smallest_qa.human import PROMPTS_BY_ID, load_clip  # noqa: E402
 
+# Windows made only of number words (including the connector "and", e.g. "hundred and forty") are generic spoken
+# numbers, not identifying text. Gate A: added "and" after a pre-recording key-token list matched one such window.
 NUMBER_WORDS = {"zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "hundred",
-                "thousand", "fifty", "forty", "twenty", "thirty", "sixty", "seventy", "eighty", "ninety"}
+                "thousand", "fifty", "forty", "twenty", "thirty", "sixty", "seventy", "eighty", "ninety", "and"}
 
 
 def private_texts() -> dict[str, str]:

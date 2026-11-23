@@ -6,7 +6,7 @@
 Lightning TTS (`lightning_v3.1_pro`) over sync, SSE and WebSocket; Pulse STT (`pulse`, `pulse-pro`), pre-recorded and real-time; authentication and error contracts; the official Python SDK (`smallestai` 5.14.0); and the runnable documentation examples.
 
 ## Scope and rationale
-Developers meet the API, SDK and docs before anything else. Contract, streaming and SDK defects cost every integration time, and they can be verified objectively against the published docs.
+Developers meet the API, SDK and docs first. Contract, streaming and SDK defects cost every integration time, and are objectively verifiable against the published docs.
 
 - **In scope:** validation and error shapes on every endpoint, SSE/WebSocket framing and completion, client cancellation, text normalisation, STT accuracy on synthetic audio and five consented human clips, and latency.
 - **Out of scope:** load, concurrency and security testing, webhooks, voice cloning, long-audio workloads, 413 limits and billing verification.
@@ -26,13 +26,14 @@ Developers meet the API, SDK and docs before anything else. Contract, streaming 
 - **Expected:** the TTS quickstart says this method "streams the same request over SSE".
 - **Observed:** the API returned HTTP 200 with 31 and then 29 documented JSON audio frames. The SDK yielded **0 items**, raised nothing, and logged "Skipping SSE event…" per frame.
 - **Cause (SDK source):** events are parsed with `parse_sse_obj(sse, type_=str)`, so every JSON object fails validation and is dropped. Replaying the recorded live bytes offline gave 30 frames in, 0 items out.
-- **Impact:** a documented SDK streaming method produces empty or silent output with no error raised. Workarounds exist: sync `synthesize_tts`, or raw SSE.
+- **Limitation:** the live SDK calls used the harness's buffering transport. Zero output was observed with that transport and in the offline replay; behaviour under a genuinely streaming transport is not yet directly established.
+- **Impact:** a documented SDK streaming method produces empty output with no error. Workarounds: sync `synthesize_tts`, or raw SSE.
 - **Evidence:** `0e45c57b-6dfd-46f0-9c3e-636afddec684` (17:20:01 UTC); reproduction `4d8bf0a5-31eb-454e-a2b5-e37ce4ffc776` (17:21:15 UTC).
 
 **F1: API contract, Low. TTS error bodies contradict the documented schema.**
 - **Expected:** for 400/401/500, `error` (string) and `message` (string).
-- **Observed:** all 17 TTS validation 400s across 4 runs (sync and SSE) returned `{"error":[{code, path, message, …}]}` with no `message` field. The status codes and messages are correct, but the SDK's own `BadRequestErrorBody` type fails validation on these bodies.
-- **Impact:** typed clients see `error` as a list instead of a string, and TTS and STT use different error shapes.
+- **Observed:** 15 synchronous TTS validation 400s across 3 runs returned `{"error":[{code, path, message, …}]}` with no `message` field, contradicting that schema. Two SSE validation 400s used the same shape, but no separate SSE error schema is documented. Status codes and messages are correct; the SDK's `BadRequestErrorBody` type rejects these bodies.
+- **Impact:** typed clients see `error` as a list, not a string; TTS and STT use different error shapes.
 - **Evidence:** `57c0a6aa-ef12-4fbf-8d81-298dd5d53e2c` (16:39:37); reproduction `98cb5b29-dc88-4aa7-9cdf-d57d17290c61` (16:41:24); `dbc4aeba-b081-455d-96c2-28bf35e7d62a` (17:19:48).
 
 **F6: documentation/behaviour mismatch, Low. WebSocket TTS is not closed after `complete`.**
@@ -40,7 +41,7 @@ Developers meet the API, SDK and docs before anything else. Contract, streaming 
 - **Observed (client-side):**
   - Run 1: no close arrived within 23 s of `complete`.
   - Run 2: no close for 54.7 s after `complete`, then `{"status":"error","message":"Connection timed out after 60 seconds of inactivity"}` and a close at 60.5 s.
-  - No server-side leak is claimed. The documented idle timeout is what released the connection.
+  - No server-side leak is claimed; the documented idle timeout released it.
 - **Impact:** clients that wait for the server to close hold one of 5 allowed connections for about 60 s and log a spurious error. The documented examples close the socket themselves, so they are unaffected.
 - **Evidence (WebSocket frame request IDs):** `385e0c43-3b26-4664-8d29-c45053d780a0` (17:28:40); `6e992483-35c3-4169-a8bf-e894fc20c4f0` (17:31:29).
 
@@ -60,13 +61,13 @@ Developers meet the API, SDK and docs before anything else. Contract, streaming 
 - **F2, voice/model mismatch:**
   - The Pro model card says mismatched pairings are not rejected. The API rejects them in both directions, which matches the API reference.
   - The test was isolated using both voice catalogues. `magnus` synthesised on `lightning_v3.1` (`ccda9726-b8f5-4c36-bab4-76ea0914e864`) and was rejected on Pro (`c0c4f5a8-383b-4a9d-a1fd-2bdae833eae1`).
-- **F3:** TTS concurrency is given as 1 per account on one page and 10 on the Pro model card. The STT quickstart's API-reference link opens the access-token page. The transcribe example raises `NameError: API_KEY`. `lightning_v3.1_pro_07_26` is accepted but undocumented. The TTS quickstart sets no timeout, and when replayed offline against a recorded 401 it exits 0 with JSON written into `output.wav`.
+- **F3:** TTS concurrency is 1 per account on one page, 10 on the Pro model card. The STT quickstart's API-reference link opens the access-token page. The transcribe example raises `NameError: API_KEY`. `lightning_v3.1_pro_07_26` is accepted but undocumented. The TTS quickstart sets no timeout; replayed offline against a recorded 401, it exits 0 and writes JSON into `output.wav`.
 - **STT `language` omitted:** this returns 400 `LANGUAGE_NOT_ENABLED_IN_REGION` for the undocumented value `multi` (`60f87a73-029a-4fc6-8654-a189192ba919`).
-- **Q1, Hinglish script:** the "English words stay in Roman script" guidance is real-time guidance. On the same human audio, real-time STT kept all 7 recognised English words in Roman script, while pre-recorded STT returned all 8 in Devanagari. That is an undocumented mode difference, not an API defect.
+- **Q1, Hinglish script:** the "English words stay in Roman script" guidance is real-time guidance. For the one human clip tested in both modes, real-time STT kept all 7 recognised English words in Roman script, while pre-recorded STT returned all 8 in Devanagari. A TTS-generated Hinglish clip on pre-recorded STT kept its English words in Roman script, so pre-recorded script choice varies by input. Not an API defect.
 
 **Quality observations (no documented requirement)**
 
-- **Q6, `pulse` word end timestamps:** the end time absorbs 91–94% of a following pause (all 4 pauses tested, 2 runs), while the next word's start stays within 0.1 s. `pulse-pro` was mostly accurate on the same audio. **Impact:** captions would hold the word before a pause about 1–1.7 s too long. **Evidence:** `0eae2c70-03b7-473f-ad91-716f062ced3b`, `65d2c559-81a1-44c5-8464-c7b83464679f`.
+- **Q6, `pulse` word end timestamps:** the end time absorbs 91–94% of a following pause (all 4 pauses tested, 2 runs), while the next word's start stays within 0.1 s. On the same audio, `pulse-pro` was accurate at 1 of 3 pauses and extended the other two by about +0.28 s and +1.56 s. **Impact:** captions would hold the word before a pause about 1–1.7 s too long (`pulse`). **Evidence:** `0eae2c70-03b7-473f-ad91-716f062ced3b`, `65d2c559-81a1-44c5-8464-c7b83464679f`.
 - **Number formatting in transcripts:** it varies, with words in one clip and digits in another. One technical term ("PostgreSQL") was misrecognised.
 - **Sync TTS latency:** the whole file is generated before the first byte. Time to first byte equals total time and grows with text length: 7.1 s for 880 characters.
 
@@ -76,7 +77,7 @@ Developers meet the API, SDK and docs before anything else. Contract, streaming 
 - **SSE latency:** median time to first byte was **254 ms** on a reused connection (110 characters, n=5). New connections added 210–245 ms, matching the measured TCP and TLS time.
 - **Cancellation:** after a client cancelled mid-stream, the next request was served 0.3 s later.
 - **STT accuracy:** WER 0.0 on synthetic speech, including 0 dB noise, 8 kHz audio, Hindi and diarization, and no words hallucinated on silence. On scripted human speech, the only recognition error was one technical term.
-- **Also:** `date_format` US/EU and `math_notation` behaved as documented (by round-trip proxy), WebSocket word timestamps worked for `meher`, and every HTTP response carried an `x-request-id`.
+- **Also:** `date_format` and `math_notation` behaved as documented (round-trip proxy), WebSocket word timestamps worked, and every HTTP response carried an `x-request-id`.
 
 ## Top three fixes
 1. **Fix the SDK SSE parser (S1).** Type each event as `{audio?, done, status}` instead of `str`, and add a test that replays recorded live frames. The method is silently broken today.

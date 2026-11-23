@@ -29,7 +29,7 @@
 | Instrumented client | `src/smallest_qa/client.py` | Reserves a ledger entry before every request and paces requests (concurrency 1, at least 1.5 s apart). Measures headers, time to first byte (TTFB), total time and httpcore trace phases (TCP incl. DNS, TLS, server wait) on a monotonic clock. Caps responses at 8 MB, supports client cancellation, and halts on 2×429, a 401/403 with a valid key, or 2 consecutive 5xx/transport errors. |
 | Ledger | `src/smallest_qa/budget.py`, `evidence/request-ledger.jsonl` | Append-only. v1 lines (Phase 1) are never rewritten. v2 adds phase, batch, protocol and cost-estimate fields. Caps: 128 cumulative, Phase 1 closed at 28, Phase 2 100, 20 per batch, $2 estimated Phase 2 spend. |
 | WebSocket clients | `src/smallest_qa/ws.py` | TTS (`/waves/v1/tts/live`) and real-time STT (`/waves/v1/stt/live`), following the documented protocols. One connection is one ledger entry. |
-| SDK tooling | `src/smallest_qa/sdk_tools.py` | `LedgerTransport` counts every SDK HTTP attempt; live SDK calls pin `max_retries=0` and SDK telemetry is forced off. Offline replay feeds recorded live bodies into the SDK. |
+| SDK tooling | `src/smallest_qa/sdk_tools.py` | `LedgerTransport` counts every SDK HTTP attempt and buffers each response before passing it to the SDK; live SDK calls pin `max_retries=0` and SDK telemetry is forced off. Offline replay feeds recorded live bodies into the SDK. |
 | Docs examples | `src/smallest_qa/doc_examples.py`, `docs/examples/` | The examples are stored verbatim, with source URL and SHA-256. They run in a subprocess under a shim that reserves ledger entries for `api.smallest.ai` and blocks every host except GitHub. |
 | Error contracts | `src/smallest_qa/contract.py` | Compares bodies with the documented TTS and STT error schemas. |
 | Fixtures | `src/smallest_qa/fixtures_p2.py` | 16 recipes, generated locally with macOS `say` plus seeded noise, resampling and inserted silence. The audio is git-ignored and each fixture's SHA-256 is recorded per run. |
@@ -76,7 +76,7 @@ Reproducing the investigation:
 | ID | Class | Severity | Status | Primary evidence (request ID, UTC) |
 |---|---|---|---|---|
 | S1 | **SDK defect** | Medium | Confirmed: 2 live runs plus an offline replay of the live bytes | `0e45c57b-6dfd-46f0-9c3e-636afddec684` 17:20:01; `4d8bf0a5-31eb-454e-a2b5-e37ce4ffc776` 17:21:15 |
-| F1 | API contract | Low | Confirmed: 17 responses across 4 runs | `57c0a6aa-ef12-4fbf-8d81-298dd5d53e2c` 16:39:37; `98cb5b29-dc88-4aa7-9cdf-d57d17290c61` 16:41:24 |
+| F1 | API contract | Low | Confirmed: 15 sync responses across 3 runs (plus 2 SSE responses of the same shape) | `57c0a6aa-ef12-4fbf-8d81-298dd5d53e2c` 16:39:37; `98cb5b29-dc88-4aa7-9cdf-d57d17290c61` 16:41:24 |
 | F4 | API contract | Low | Confirmed (2 runs) | `5daca694-daa2-472d-8c51-9c4d5eb04a29` 17:19:50; `b57ee029-6a7b-4de0-a724-c95a69d724d2` 17:21:18 |
 | F5 | Auth contract | Low | Confirmed (2 runs) | `ae436ac6-d785-470c-b21a-9836d12f3038` 17:28:14; `b188f0dd-4c7e-4cd5-83a6-63f83bc7c81f` 17:32:31 |
 | F6 | Documentation/behaviour mismatch | Low | Confirmed (2 runs) | WebSocket frame `request_id` `385e0c43-3b26-4664-8d29-c45053d780a0` 17:28:40; `6e992483-35c3-4169-a8bf-e894fc20c4f0` 17:31:29 |
@@ -101,6 +101,8 @@ Reproducing the investigation:
 - **SDK side:** 0 items yielded, no exception, and one `Skipping SSE event due to model construction error … Input should be a valid string` warning per frame (32 and 30 warnings).
 - **Cause, read from the source:** `smallestai/waves/raw_client.py`, sync `synthesize_sse_tts`, calls `parse_sse_obj(sse=_sse, type_=str)`. The error is caught by `except (TypeError, ValueError, …)`, logged, and the event is skipped. The SDK's own docstring describes the frames as JSON objects.
 - **Offline confirmation:** `evidence/offline/sdk-sse-live-replay-20261122T172115Z.json` replays the recorded live bytes: 30 frames in, all `dict` payloads, and 0 SDK items out.
+- **Transport limitation:** the live SDK calls went through the harness's `LedgerTransport`, which buffers the whole HTTP response before handing it to the SDK. Zero output was observed with that buffering transport and in the offline replay. Behaviour under a genuinely streaming transport is **not yet directly established**; it is expected to be the same because the failure is a type check on each event's payload, but that is an inference.
+- **Raw data retained:** the main run kept metrics only; the reproduction run's raw wire bytes are kept privately (they contain synthetic audio).
 - **Regression test:** `test_sdk_5_14_0_drops_every_documented_sse_frame`. It will fail once the SDK is fixed.
 - **Other SDK observations, from offline replay of recorded bodies:**
   - The SDK raises `BadRequestError` carrying the raw dict for F1 bodies. Those bodies fail the SDK's own `BadRequestErrorBody` (`error: Optional[str]`) type.
@@ -114,7 +116,8 @@ Reproducing the investigation:
 - **Documented** (synthesize-speech page): the 400, 401 and 500 bodies are `{error?: string, message?: string}`.
 - **Observed:**
   - Every TTS validation 400 returned `{"error":[{code, path, message, …}]}`, an array of validation-issue objects, with no `message` field.
-  - That is 17 responses across 4 runs: Phase 1 TTS-03/04/05/06/07 plus the 3-request reproduction, Phase 2 F2-04, F2-06, ERR-01, ERR-03/04/05/06, and SSE ERR-10 and ERR-12.
+  - **15 synchronous responses across 3 runs contradict the documented schema:** Phase 1 TTS-03/04/05/06/07, its 3-request reproduction, and Phase 2 F2-04, F2-06, ERR-01 and ERR-03/04/05/06.
+  - **2 SSE validation responses** (Phase 2 ERR-10, ERR-12) used the same shape. No separate SSE error schema is documented, so these show consistency with the sync endpoint rather than a contradiction of a documented SSE contract.
 - **Not affected:**
   - 401 bodies use string fields (`{"message": …}` or `{"error": "unauthorized"}`).
   - STT errors conform to their own documented schema, which is a different one.
@@ -184,7 +187,7 @@ Reproducing the investigation:
 
   One prompt word went unrecognised in real time.
 - **Other inputs:** a TTS-generated Hinglish clip on pre-recorded STT kept its English words in Roman script (P2-TTS-N08).
-- **Conclusion:** documented real-time behaviour was observed, and pre-recorded behaviour differs on the same audio, which the docs don't state. This is a scope gap, not an API defect. The conditional fourth request was skipped. Source: `evidence/offline/q1-mode-comparison.json`.
+- **Conclusion:** for the **one human clip tested in both modes**, the documented real-time behaviour was observed, and pre-recorded output differed on the same audio. Because the TTS-generated clip (P2-TTS-N08) kept Roman script on pre-recorded STT, pre-recorded script choice varies by input; one comparison does not establish a general mode difference. This is a documentation scope gap, not an API defect. The conditional fourth request was skipped. Source: `evidence/offline/q1-mode-comparison.json`.
 
 ### Q6: `pulse` word end timestamps absorb following silence
 
@@ -192,7 +195,8 @@ Reproducing the investigation:
 - **Batch 3h clip** (one pause): the word end ran +1.45 to +1.58 s past speech end; the next word started −0.10 s early.
 - **Reproduction clip** (pauses of 0.8, 1.2 and 1.6 s after "back", "Monday" and "glass"):
   - `pulse` absorbed 94%, 94% and 91% of each pause, with next-word starts −0.06 to −0.09 s. 9 of 10 word pairs share a boundary.
-  - `pulse-pro`, same audio, on a 10 ms grid: absorbed 0%, 20% and 87%, with 0 of 10 pairs sharing a boundary.
+  - `pulse-pro`, same audio, on a 10 ms grid: accurate at 1 of 3 pauses, and extended the other two by about **+0.28 s** and **+1.56 s** (0%, 20% and 87% of each pause absorbed), with 0 of 10 pairs sharing a boundary.
+  - An independent re-measurement in Gate A (10 ms envelope, thresholds −30/−50 dB relative to peak) gave `pulse` extensions of 0.95–1.66 s at all 4 pauses, consistent with the above.
 - **HYPOTHESIS:** `pulse` tiles the timeline, assigning silence to the preceding word.
 - **Classification:** timestamp accuracy is not documented, so this is a reproduced quality observation, not a defect. Source: `evidence/offline/q6-reproduction-20261122T182706Z.json`.
 
@@ -287,7 +291,7 @@ All times are in ms.
 | 10 | Base64 audio in SSE excerpts, and audio fragments in SDK warning samples | Audio traces in committed evidence | Stripped; `post_processing` notes in the affected files |
 | 11 | Local paths in doc-example tracebacks | Exposure of the OS username | `scrub_paths` |
 | 12 | Transcript hash for human clips | A hash of a known prompt could confirm a guessed transcript | Removed |
-| 13 | **Privacy lapse:** a commit (originally `e08a017`) added a test string derived from the STT transcript of human clip H4 | Text derived from a private transcript reached Git (public prompt content) | Replaced with synthetic text. **Gate A:** a narrowly scoped history rewrite removes the derived text from all history (that commit now carries the synthetic sentences directly; see `reports/gate-a-audit.md`). The blocking scanner is now enforced by a pre-commit hook (`scripts/install-hooks.sh`). |
+| 13 | **Privacy lapses:** a commit (originally `e08a017`) added a test string derived from the STT transcript of human clip H4; and examples in `src/smallest_qa/wer.py` and `tests/unit/test_wer_eval.py` (from the Batch 3h commit onward) reused phrasing from the STT transcript of human clip H3 | Text derived from private transcripts reached Git (public prompt content) | **Gate A:** a narrowly scoped history rewrite replaced both with synthetic, independently authored text in every commit (see `reports/gate-a-audit.md`). The blocking scanner is now enforced by a pre-commit hook (`scripts/install-hooks.sh`). |
 | 14 | A commit message said "64 Phase 2 cases"; there were 70 | Message only | Disclosed here; that message is left unchanged |
 
 ## 11. Privacy protections
@@ -300,7 +304,7 @@ All times are in ms.
   - Upload needs an approval bound to the clip's SHA-256.
   - Without `--share-transcript`, committed evidence holds only rates and counts.
   - The committed summary writer fails closed if any human text would be written.
-  - A blocking private-text scan runs before commits.
+  - A blocking private-text scan runs before commits, enforced by a local pre-commit hook (`scripts/install-hooks.sh`). It needs the git-ignored private files, so it is meaningful only in the working copy that holds them.
 - **Commit-time scans:** for secrets, staged audio and private files, and local paths.
 
 ## 12. Limitations and untested areas
