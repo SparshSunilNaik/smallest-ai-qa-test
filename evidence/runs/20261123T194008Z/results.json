@@ -1,0 +1,196 @@
+{
+  "run_id": "20261123T194008Z",
+  "phase": 3,
+  "batch": "B2-S1",
+  "started": {
+    "utc": "2026-11-23T19:40:08.531+00:00",
+    "ist": "2026-11-24T01:10:08.531+05:30"
+  },
+  "finished": {
+    "utc": "2026-11-23T19:40:09.710+00:00",
+    "ist": "2026-11-24T01:10:09.710+05:30"
+  },
+  "harness_version": "0.1.0",
+  "environment": {
+    "python": "3.13.13",
+    "httpx": "0.28.1",
+    "platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
+    "base_url": "https://api.smallest.ai"
+  },
+  "api_key_configured": true,
+  "halted": null,
+  "requests_this_run": 1,
+  "ledger_used_after_run": 137,
+  "ledger_cap": 144,
+  "fixture": {
+    "path": "fixtures/audio/stt_en_16k.wav",
+    "generator": "macOS say -v Samantha --file-format=WAVE --data-format=LEI16@16000",
+    "reference_text": "The quick brown fox jumps over the lazy dog. Speech recognition quality is measured by comparing the words.",
+    "sha256": "cc3d3e75a72ca66f64fba9607342328861d6c3171eba0d8fe2dea5a7aa357f01",
+    "bytes": 205846,
+    "duration_s": 6.305,
+    "sample_rate": 16000
+  },
+  "p2_fixtures": {},
+  "phase_est_usd_after_run": 0.0429,
+  "listening_queue": [],
+  "cases": [
+    {
+      "case_id": "GB2-RT-04",
+      "title": "Real-time STT: client closes (1000) after ~2 s of audio, before finalize/close_stream",
+      "area": "Gate B",
+      "expected_behavior": "no documented server behaviour; record events and close frames",
+      "doc_refs": [
+        "https://docs.smallest.ai/models/speech-to-text/realtime-web-socket/best-practices"
+      ],
+      "classification": "Passed",
+      "checks": [
+        {
+          "name": "WebSocket handshake succeeded (101)",
+          "passed": true,
+          "expected": 101,
+          "actual": "101",
+          "requirement": "documented",
+          "doc_ref": "https://docs.smallest.ai/models/speech-to-text/realtime-web-socket/quickstart"
+        },
+        {
+          "name": "client closed with code 1000 before any close_stream/finalize, without a client error",
+          "passed": true,
+          "expected": "1000, no error",
+          "actual": "sent=1000 error=None",
+          "requirement": "quality",
+          "doc_ref": null
+        }
+      ],
+      "metrics": {
+        "scenario": "cancel",
+        "params": {
+          "model": "pulse",
+          "language": "en",
+          "encoding": "linear16",
+          "sample_rate": "16000"
+        },
+        "fixture": {
+          "id": "stt_en_16k (Phase 1)",
+          "sha256": "cc3d3e75a72ca66f64fba9607342328861d6c3171eba0d8fe2dea5a7aa357f01"
+        },
+        "audio_seconds_sent": 2.048,
+        "event_order": [
+          "P"
+        ],
+        "events": [
+          {
+            "t_ms": 648.9,
+            "type": "transcription",
+            "status": "success",
+            "is_final": false,
+            "is_last": false,
+            "start": 0,
+            "duration": 0.82,
+            "language": null,
+            "languages": null,
+            "session_id": "c0722d92-a75f-4ca7-86e3-b8c5968be43b",
+            "transcript_len": 9,
+            "transcript": "The quick"
+          }
+        ],
+        "client_actions": [
+          {
+            "t_ms": 1104.4,
+            "action": "audio_done (2.048 s)"
+          },
+          {
+            "t_ms": 1104.5,
+            "action": "client_close_without_close_stream"
+          }
+        ],
+        "handshake": {
+          "status": 101,
+          "ms": 194.8,
+          "body": null
+        },
+        "session_ids": [
+          "c0722d92-a75f-4ca7-86e3-b8c5968be43b"
+        ],
+        "is_last_ms": null,
+        "close_stream_to_is_last_ms": null,
+        "finalize_to_final_ms": null,
+        "open_after_finalize_hold": null,
+        "server_closed": false,
+        "server_close_code": null,
+        "server_close_reason": null,
+        "server_closed_ms": null,
+        "server_closed_after_is_last_ms": null,
+        "client_closed": true,
+        "client_close_complete_ms": 1152.8,
+        "close_frames": {
+          "sent": 1000,
+          "received": 1000,
+          "received_reason": ""
+        },
+        "observation_window_elapsed": false,
+        "harness_error": null,
+        "is_last_received": false
+      },
+      "notes": [
+        "No documented server behaviour for a client close without close_stream; events and close frames are observations only. Server-side cleanup cannot be observed."
+      ],
+      "requests": [
+        {
+          "case_id": "GB2-RT-04",
+          "ledger_seq": 137,
+          "timestamp_utc": "2026-11-23T19:40:08.553+00:00",
+          "timestamp_ist": "2026-11-24T01:10:08.553+05:30",
+          "method": "WS",
+          "endpoint": "/waves/v1/stt/live",
+          "query_params": {
+            "model": "pulse",
+            "language": "en",
+            "encoding": "linear16",
+            "sample_rate": "16000"
+          },
+          "request": {
+            "audio_bytes": 201750,
+            "chunk_size": 4096,
+            "chunk_interval_s": 0.05,
+            "send_finalize": false,
+            "close_mode": "abrupt",
+            "abrupt_after_s": 2.0,
+            "headers": {
+              "Authorization": "[REDACTED]"
+            }
+          },
+          "auth_mode": "valid",
+          "status": 101,
+          "content_type": "application/x-ws-frames+json",
+          "response_bytes": 269,
+          "response_truncated_at_cap": false,
+          "response_sha256": "91a0f6d357186b597770da613e078e3f4d2746ea92cbd2169a5c1d8911771165",
+          "time_to_headers_ms": null,
+          "ttfb_ms": null,
+          "duration_ms": 1153.0,
+          "extra_timings_ms": {
+            "handshake": 194.8
+          },
+          "request_ids": {
+            "x-ws-message-session-id": "c0722d92-a75f-4ca7-86e3-b8c5968be43b"
+          },
+          "response_headers": {
+            "Date": "Mon, 23 Nov 2026 19:40:08 GMT",
+            "Connection": "upgrade",
+            "Set-Cookie": "[REDACTED]",
+            "Upgrade": "websocket",
+            "Sec-WebSocket-Accept": "g0H2nYtrS0dgqPf+i9su8HNdEKM=",
+            "x-ws-message-session-id": "c0722d92-a75f-4ca7-86e3-b8c5968be43b",
+            "content-type": "application/x-ws-frames+json"
+          },
+          "body_excerpt": "[{\"t_ms\": 648.9, \"type\": \"transcription\", \"status\": \"success\", \"is_final\": false, \"is_last\": false, \"start\": 0, \"duration\": 0.82, \"language\": null, \"languages\": null, \"session_id\": \"c0722d92-a75f-4ca7-86e3-b8c5968be43b\", \"transcript_len\": 9, \"transcript\": \"The quick\"}]",
+          "transport_error": null,
+          "cancelled_by_client": false,
+          "fresh_connection": false,
+          "body_chunks": 0
+        }
+      ]
+    }
+  ]
+}

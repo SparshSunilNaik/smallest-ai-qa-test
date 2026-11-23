@@ -1,0 +1,240 @@
+{
+  "case_id": "GB2-RT-03",
+  "title": "Real-time STT: 3 s digital silence -> close_stream",
+  "area": "Gate B",
+  "expected_behavior": "one is_last; durations sum to 3 s; empty transcript is a quality observation only",
+  "doc_refs": [
+    "https://docs.smallest.ai/models/speech-to-text/realtime-web-socket/response-format"
+  ],
+  "classification": "Candidate finding requiring reproduction",
+  "checks": [
+    {
+      "name": "WebSocket handshake succeeded (101)",
+      "passed": true,
+      "expected": 101,
+      "actual": "101",
+      "requirement": "documented",
+      "doc_ref": "https://docs.smallest.ai/models/speech-to-text/realtime-web-socket/quickstart"
+    },
+    {
+      "name": "exactly one is_last=true message, and it is the last message received",
+      "passed": true,
+      "expected": "1, last",
+      "actual": "1 is_last; last event is_last=True",
+      "requirement": "documented",
+      "doc_ref": "https://docs.smallest.ai/models/speech-to-text/realtime-web-socket/response-format"
+    },
+    {
+      "name": "the is_last message is also is_final=true",
+      "passed": true,
+      "expected": true,
+      "actual": "True",
+      "requirement": "documented",
+      "doc_ref": "https://docs.smallest.ai/models/speech-to-text/realtime-web-socket/response-format"
+    },
+    {
+      "name": "every message is type=transcription",
+      "passed": true,
+      "expected": "transcription",
+      "actual": "['transcription']",
+      "requirement": "documented",
+      "doc_ref": "https://docs.smallest.ai/models/speech-to-text/realtime-web-socket/response-format"
+    },
+    {
+      "name": "status is 'success' on every message",
+      "passed": true,
+      "expected": "success",
+      "actual": "['success']",
+      "requirement": "quality",
+      "doc_ref": "https://docs.smallest.ai/models/speech-to-text/realtime-web-socket/response-format"
+    },
+    {
+      "name": "session_id present and constant on every message",
+      "passed": true,
+      "expected": "1 id",
+      "actual": "1 distinct (None present: False)",
+      "requirement": "documented",
+      "doc_ref": "https://docs.smallest.ai/models/speech-to-text/realtime-web-socket/response-format"
+    },
+    {
+      "name": "start + duration never decreases",
+      "passed": true,
+      "expected": true,
+      "actual": "True",
+      "requirement": "documented",
+      "doc_ref": "https://docs.smallest.ai/models/speech-to-text/realtime-web-socket/response-format"
+    },
+    {
+      "name": "message after a final starts at that final's start + duration",
+      "passed": true,
+      "expected": "0 gaps",
+      "actual": "0 of 0 []",
+      "requirement": "documented",
+      "doc_ref": "https://docs.smallest.ai/models/speech-to-text/realtime-web-socket/response-format"
+    },
+    {
+      "name": "finals' durations add up to the audio sent (+/-10 ms)",
+      "passed": true,
+      "expected": 3.0,
+      "actual": "3",
+      "requirement": "documented",
+      "doc_ref": "https://docs.smallest.ai/models/speech-to-text/realtime-web-socket/response-format"
+    },
+    {
+      "name": "is_last start + duration covers every sample sent (+/-10 ms)",
+      "passed": true,
+      "expected": 3.0,
+      "actual": "3",
+      "requirement": "documented",
+      "doc_ref": "https://docs.smallest.ai/models/speech-to-text/realtime-web-socket/response-format"
+    },
+    {
+      "name": "finals carry language='en'; interim messages carry no language field",
+      "passed": false,
+      "expected": true,
+      "actual": "{'finals': ['None'], 'interims_with_language': 0}",
+      "requirement": "documented",
+      "doc_ref": "https://docs.smallest.ai/models/speech-to-text/realtime-web-socket/response-format"
+    },
+    {
+      "name": "no words on digital silence (not promised by docs)",
+      "passed": true,
+      "expected": "empty",
+      "actual": "''",
+      "requirement": "quality",
+      "doc_ref": null
+    }
+  ],
+  "metrics": {
+    "scenario": "silence",
+    "params": {
+      "model": "pulse",
+      "language": "en",
+      "encoding": "linear16",
+      "sample_rate": "16000"
+    },
+    "fixture": {
+      "id": "silence_digital",
+      "sha256": "d303811b8c84619667cd0501342f84ec6cbe69f7aa3856dcf52fabda374c92b8"
+    },
+    "audio_seconds_sent": 3.0,
+    "event_order": [
+      "L"
+    ],
+    "events": [
+      {
+        "t_ms": 1684.9,
+        "type": "transcription",
+        "status": "success",
+        "is_final": true,
+        "is_last": true,
+        "start": 0,
+        "duration": 3,
+        "language": null,
+        "languages": null,
+        "session_id": "486f0644-d0b5-4769-b012-7fd4bb2d05c8",
+        "transcript_len": 0,
+        "transcript": ""
+      }
+    ],
+    "client_actions": [
+      {
+        "t_ms": 1598.5,
+        "action": "audio_done (3.0 s)"
+      },
+      {
+        "t_ms": 1598.9,
+        "action": "close_stream"
+      }
+    ],
+    "handshake": {
+      "status": 101,
+      "ms": 194.5,
+      "body": null
+    },
+    "session_ids": [
+      "486f0644-d0b5-4769-b012-7fd4bb2d05c8"
+    ],
+    "is_last_ms": 1684.9,
+    "close_stream_to_is_last_ms": 86.0,
+    "finalize_to_final_ms": null,
+    "open_after_finalize_hold": null,
+    "server_closed": true,
+    "server_close_code": 1005,
+    "server_close_reason": "",
+    "server_closed_ms": 1748.8,
+    "server_closed_after_is_last_ms": 63.9,
+    "client_closed": false,
+    "client_close_complete_ms": null,
+    "close_frames": {
+      "sent": 1005,
+      "received": 1005,
+      "received_reason": ""
+    },
+    "observation_window_elapsed": false,
+    "harness_error": null,
+    "finals_duration_sum_s": 3,
+    "final_transcript": ""
+  },
+  "notes": [
+    "Server close after is_last is not documented (clients are told to wait for is_last and then close); recorded as an observation only."
+  ],
+  "requests": [
+    {
+      "case_id": "GB2-RT-03",
+      "ledger_seq": 136,
+      "timestamp_utc": "2026-11-23T19:39:48.474+00:00",
+      "timestamp_ist": "2026-11-24T01:09:48.474+05:30",
+      "method": "WS",
+      "endpoint": "/waves/v1/stt/live",
+      "query_params": {
+        "model": "pulse",
+        "language": "en",
+        "encoding": "linear16",
+        "sample_rate": "16000"
+      },
+      "request": {
+        "audio_bytes": 96000,
+        "chunk_size": 4096,
+        "chunk_interval_s": 0.05,
+        "send_finalize": false,
+        "close_mode": "close_stream",
+        "abrupt_after_s": null,
+        "headers": {
+          "Authorization": "[REDACTED]"
+        }
+      },
+      "auth_mode": "valid",
+      "status": 101,
+      "content_type": "application/x-ws-frames+json",
+      "response_bytes": 256,
+      "response_truncated_at_cap": false,
+      "response_sha256": "942d6a102653d06645048ae0a549b8e3d40a0244bc8c6b1ef5bdf2d71bcec979",
+      "time_to_headers_ms": null,
+      "ttfb_ms": null,
+      "duration_ms": 1748.8,
+      "extra_timings_ms": {
+        "handshake": 194.5,
+        "is_last": 1684.9,
+        "server_closed": 1748.8
+      },
+      "request_ids": {
+        "x-ws-message-session-id": "486f0644-d0b5-4769-b012-7fd4bb2d05c8"
+      },
+      "response_headers": {
+        "Date": "Mon, 23 Nov 2026 19:39:48 GMT",
+        "Connection": "upgrade",
+        "Set-Cookie": "[REDACTED]",
+        "Upgrade": "websocket",
+        "Sec-WebSocket-Accept": "Mc73/P4cGXyrhBx+fnBBDZp5RQU=",
+        "x-ws-message-session-id": "486f0644-d0b5-4769-b012-7fd4bb2d05c8",
+        "content-type": "application/x-ws-frames+json"
+      },
+      "body_excerpt": "[{\"t_ms\": 1684.9, \"type\": \"transcription\", \"status\": \"success\", \"is_final\": true, \"is_last\": true, \"start\": 0, \"duration\": 3, \"language\": null, \"languages\": null, \"session_id\": \"486f0644-d0b5-4769-b012-7fd4bb2d05c8\", \"transcript_len\": 0, \"transcript\": \"\"}]",
+      "transport_error": null,
+      "cancelled_by_client": false,
+      "fresh_connection": false,
+      "body_chunks": 0
+    }
+  ]
+}

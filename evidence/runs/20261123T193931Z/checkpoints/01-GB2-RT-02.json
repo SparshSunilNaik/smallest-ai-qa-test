@@ -1,0 +1,361 @@
+{
+  "case_id": "GB2-RT-02",
+  "title": "Real-time STT: explicit finalize (hold 2 s) -> close_stream",
+  "area": "Gate B",
+  "expected_behavior": "one from_finalize final covering all audio; session stays open; is_last duration 0",
+  "doc_refs": [
+    "https://docs.smallest.ai/models/speech-to-text/realtime-web-socket/response-format",
+    "https://docs.smallest.ai/models/speech-to-text/realtime-web-socket/best-practices"
+  ],
+  "classification": "Candidate finding requiring reproduction",
+  "checks": [
+    {
+      "name": "WebSocket handshake succeeded (101)",
+      "passed": true,
+      "expected": 101,
+      "actual": "101",
+      "requirement": "documented",
+      "doc_ref": "https://docs.smallest.ai/models/speech-to-text/realtime-web-socket/quickstart"
+    },
+    {
+      "name": "exactly one is_last=true message, and it is the last message received",
+      "passed": true,
+      "expected": "1, last",
+      "actual": "1 is_last; last event is_last=True",
+      "requirement": "documented",
+      "doc_ref": "https://docs.smallest.ai/models/speech-to-text/realtime-web-socket/response-format"
+    },
+    {
+      "name": "the is_last message is also is_final=true",
+      "passed": true,
+      "expected": true,
+      "actual": "True",
+      "requirement": "documented",
+      "doc_ref": "https://docs.smallest.ai/models/speech-to-text/realtime-web-socket/response-format"
+    },
+    {
+      "name": "every message is type=transcription",
+      "passed": true,
+      "expected": "transcription",
+      "actual": "['transcription']",
+      "requirement": "documented",
+      "doc_ref": "https://docs.smallest.ai/models/speech-to-text/realtime-web-socket/response-format"
+    },
+    {
+      "name": "status is 'success' on every message",
+      "passed": true,
+      "expected": "success",
+      "actual": "['success']",
+      "requirement": "quality",
+      "doc_ref": "https://docs.smallest.ai/models/speech-to-text/realtime-web-socket/response-format"
+    },
+    {
+      "name": "session_id present and constant on every message",
+      "passed": true,
+      "expected": "1 id",
+      "actual": "1 distinct (None present: False)",
+      "requirement": "documented",
+      "doc_ref": "https://docs.smallest.ai/models/speech-to-text/realtime-web-socket/response-format"
+    },
+    {
+      "name": "start + duration never decreases",
+      "passed": true,
+      "expected": true,
+      "actual": "True",
+      "requirement": "documented",
+      "doc_ref": "https://docs.smallest.ai/models/speech-to-text/realtime-web-socket/response-format"
+    },
+    {
+      "name": "message after a final starts at that final's start + duration",
+      "passed": true,
+      "expected": "0 gaps",
+      "actual": "0 of 1 []",
+      "requirement": "documented",
+      "doc_ref": "https://docs.smallest.ai/models/speech-to-text/realtime-web-socket/response-format"
+    },
+    {
+      "name": "finals' durations add up to the audio sent (+/-10 ms)",
+      "passed": true,
+      "expected": 4.807,
+      "actual": "4.807",
+      "requirement": "documented",
+      "doc_ref": "https://docs.smallest.ai/models/speech-to-text/realtime-web-socket/response-format"
+    },
+    {
+      "name": "is_last start + duration covers every sample sent (+/-10 ms)",
+      "passed": true,
+      "expected": 4.807,
+      "actual": "4.807",
+      "requirement": "documented",
+      "doc_ref": "https://docs.smallest.ai/models/speech-to-text/realtime-web-socket/response-format"
+    },
+    {
+      "name": "finals carry language='en'; interim messages carry no language field",
+      "passed": false,
+      "expected": true,
+      "actual": "{'finals': ['None', 'en'], 'interims_with_language': 4}",
+      "requirement": "documented",
+      "doc_ref": "https://docs.smallest.ai/models/speech-to-text/realtime-web-socket/response-format"
+    },
+    {
+      "name": "finalize produced exactly one from_finalize=true final",
+      "passed": true,
+      "expected": 1,
+      "actual": "1",
+      "requirement": "documented",
+      "doc_ref": "https://docs.smallest.ai/models/speech-to-text/realtime-web-socket/response-format"
+    },
+    {
+      "name": "from_finalize final covers every sample sent before finalize (+/-10 ms)",
+      "passed": true,
+      "expected": 4.807,
+      "actual": "4.807",
+      "requirement": "documented",
+      "doc_ref": "https://docs.smallest.ai/models/speech-to-text/realtime-web-socket/response-format"
+    },
+    {
+      "name": "finalize did not trigger is_last; session stayed open through the 2 s hold",
+      "passed": true,
+      "expected": "no is_last, open",
+      "actual": "is_last before close_stream=0, open=True",
+      "requirement": "documented",
+      "doc_ref": "https://docs.smallest.ai/models/speech-to-text/realtime-web-socket/response-format"
+    },
+    {
+      "name": "is_last after finalize -> close_stream with no audio in between has duration 0",
+      "passed": true,
+      "expected": 0,
+      "actual": "0",
+      "requirement": "documented",
+      "doc_ref": "https://docs.smallest.ai/models/speech-to-text/realtime-web-socket/response-format"
+    },
+    {
+      "name": "WER <= 0.25 against the known reference (synthetic clip)",
+      "passed": true,
+      "expected": "<= 0.25",
+      "actual": "0.0",
+      "requirement": "quality",
+      "doc_ref": null
+    }
+  ],
+  "metrics": {
+    "scenario": "finalize",
+    "params": {
+      "model": "pulse",
+      "language": "en",
+      "encoding": "linear16",
+      "sample_rate": "16000"
+    },
+    "fixture": {
+      "id": "acc_en_gb_daniel",
+      "sha256": "5e21591b311755e5e812492efae97ec5276028ac1580738d8b8629fcf4711b45"
+    },
+    "audio_seconds_sent": 4.807,
+    "event_order": [
+      "P",
+      "P",
+      "P",
+      "P",
+      "F",
+      "L"
+    ],
+    "events": [
+      {
+        "t_ms": 653.0,
+        "type": "transcription",
+        "status": "success",
+        "is_final": false,
+        "is_last": false,
+        "start": 0,
+        "duration": 0.82,
+        "language": null,
+        "languages": null,
+        "session_id": "231ea148-182a-4886-8dce-6c2b584252df",
+        "transcript_len": 11,
+        "transcript": "Please send"
+      },
+      {
+        "t_ms": 1168.5,
+        "type": "transcription",
+        "status": "success",
+        "is_final": false,
+        "is_last": false,
+        "start": 0,
+        "duration": 1.94,
+        "language": null,
+        "languages": null,
+        "session_id": "231ea148-182a-4886-8dce-6c2b584252df",
+        "transcript_len": 31,
+        "transcript": "Please send the updated invoice"
+      },
+      {
+        "t_ms": 1640.0,
+        "type": "transcription",
+        "status": "success",
+        "is_final": false,
+        "is_last": false,
+        "start": 0,
+        "duration": 3.06,
+        "language": null,
+        "languages": null,
+        "session_id": "231ea148-182a-4886-8dce-6c2b584252df",
+        "transcript_len": 51,
+        "transcript": "Please send the updated invoice to the finance team"
+      },
+      {
+        "t_ms": 2159.2,
+        "type": "transcription",
+        "status": "success",
+        "is_final": false,
+        "is_last": false,
+        "start": 0,
+        "duration": 4.18,
+        "language": null,
+        "languages": null,
+        "session_id": "231ea148-182a-4886-8dce-6c2b584252df",
+        "transcript_len": 73,
+        "transcript": "Please send the updated invoice to the finance team before the meeting on"
+      },
+      {
+        "t_ms": 2481.3,
+        "type": "transcription",
+        "status": "success",
+        "is_final": true,
+        "is_last": false,
+        "start": 0,
+        "duration": 4.807,
+        "language": "en",
+        "languages": [
+          "en"
+        ],
+        "from_finalize": true,
+        "session_id": "231ea148-182a-4886-8dce-6c2b584252df",
+        "transcript_len": 90,
+        "transcript": " Please send the updated invoice to the finance team before the meeting on friday evening."
+      },
+      {
+        "t_ms": 4579.6,
+        "type": "transcription",
+        "status": "success",
+        "is_final": true,
+        "is_last": true,
+        "start": 4.807,
+        "duration": 0,
+        "language": null,
+        "languages": null,
+        "session_id": "231ea148-182a-4886-8dce-6c2b584252df",
+        "transcript_len": 0,
+        "transcript": ""
+      }
+    ],
+    "client_actions": [
+      {
+        "t_ms": 2393.2,
+        "action": "audio_done (4.807 s)"
+      },
+      {
+        "t_ms": 2393.6,
+        "action": "finalize"
+      },
+      {
+        "t_ms": 4490.4,
+        "action": "finalize_hold_done (2.0 s)"
+      },
+      {
+        "t_ms": 4490.7,
+        "action": "close_stream"
+      }
+    ],
+    "handshake": {
+      "status": 101,
+      "ms": 200.6,
+      "body": null
+    },
+    "session_ids": [
+      "231ea148-182a-4886-8dce-6c2b584252df"
+    ],
+    "is_last_ms": 4579.6,
+    "close_stream_to_is_last_ms": 88.9,
+    "finalize_to_final_ms": 87.8,
+    "open_after_finalize_hold": true,
+    "server_closed": true,
+    "server_close_code": 1005,
+    "server_close_reason": "",
+    "server_closed_ms": 4645.6,
+    "server_closed_after_is_last_ms": 66.0,
+    "client_closed": false,
+    "client_close_complete_ms": null,
+    "close_frames": {
+      "sent": 1005,
+      "received": 1005,
+      "received_reason": ""
+    },
+    "observation_window_elapsed": false,
+    "harness_error": null,
+    "finals_duration_sum_s": 4.807,
+    "from_finalize_finals": 1,
+    "final_transcript": "Please send the updated invoice to the finance team before the meeting on friday evening.",
+    "wer": 0.0
+  },
+  "notes": [
+    "Server close after is_last is not documented (clients are told to wait for is_last and then close); recorded as an observation only."
+  ],
+  "requests": [
+    {
+      "case_id": "GB2-RT-02",
+      "ledger_seq": 135,
+      "timestamp_utc": "2026-11-23T19:39:32.047+00:00",
+      "timestamp_ist": "2026-11-24T01:09:32.047+05:30",
+      "method": "WS",
+      "endpoint": "/waves/v1/stt/live",
+      "query_params": {
+        "model": "pulse",
+        "language": "en",
+        "encoding": "linear16",
+        "sample_rate": "16000"
+      },
+      "request": {
+        "audio_bytes": 153810,
+        "chunk_size": 4096,
+        "chunk_interval_s": 0.05,
+        "send_finalize": true,
+        "close_mode": "close_stream",
+        "abrupt_after_s": null,
+        "headers": {
+          "Authorization": "[REDACTED]"
+        }
+      },
+      "auth_mode": "valid",
+      "status": 101,
+      "content_type": "application/x-ws-frames+json",
+      "response_bytes": 1850,
+      "response_truncated_at_cap": false,
+      "response_sha256": "57590c957d636d14440774ffe879c644d9e1c8bdde55a6b4adbc868df2a10f0a",
+      "time_to_headers_ms": null,
+      "ttfb_ms": null,
+      "duration_ms": 4645.7,
+      "extra_timings_ms": {
+        "handshake": 200.6,
+        "is_last": 4579.6,
+        "server_closed": 4645.6
+      },
+      "request_ids": {
+        "x-ws-message-session-id": "231ea148-182a-4886-8dce-6c2b584252df"
+      },
+      "response_headers": {
+        "Date": "Mon, 23 Nov 2026 19:39:32 GMT",
+        "Connection": "upgrade",
+        "Set-Cookie": "[REDACTED]",
+        "Upgrade": "websocket",
+        "Sec-WebSocket-Accept": "FQrM5BB780itUzNIkAuryvkGmmk=",
+        "x-ws-message-session-id": "231ea148-182a-4886-8dce-6c2b584252df",
+        "content-type": "application/x-ws-frames+json"
+      },
+      "body_excerpt": "[{\"t_ms\": 653.0, \"type\": \"transcription\", \"status\": \"success\", \"is_final\": false, \"is_last\": false, \"start\": 0, \"duration\": 0.82, \"language\": null, \"languages\": null, \"session_id\": \"231ea148-182a-4886-8dce-6c2b584252df\", \"transcript_len\": 11, \"transcript\": \"Please send\"}, {\"t_ms\": 1168.5, \"type\": \"transcription\", \"status\": \"success\", \"is_final\": false, \"is_last\": false, \"start\": 0, \"duration\": 1.94, \"language\": null, \"languages\": null, \"session_id\": \"231ea148-182a-4886-8dce-6c2b584252df\", \"transcript_len\": 31, \"transcript\": \"Please send the updated invoice\"}, {\"t_ms\": 1640.0, \"type\": \"transcri...[truncated]",
+      "transport_error": null,
+      "cancelled_by_client": false,
+      "fresh_connection": false,
+      "body_chunks": 0
+    }
+  ]
+}
