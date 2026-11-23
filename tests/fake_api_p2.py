@@ -238,11 +238,12 @@ def start_ws_stt_server(transcript: str):
     return server, f"http://127.0.0.1:{server.socket.getsockname()[1]}"
 
 
-def start_ws_stt_lifecycle_server():
-    """Local real-time STT double following the documented lifecycle: binary audio accumulates; finalize ->
-    is_final=true (segment closed); close_stream -> final is_last=true covering the remaining audio (duration 0
-    when nothing was sent since the last final); invalid model -> HTTP 400 at handshake. Server closes after
-    is_last (documented behaviour is silent on this; the double picks one)."""
+def start_ws_stt_lifecycle_server(*, close_after_finalize: bool = False, close_after_is_last: bool = True):
+    """Local real-time STT double following the documented lifecycle (response-format page): binary audio
+    accumulates; an interim every 8 chunks; finalize -> exactly one from_finalize final (segment closed);
+    close_stream -> final is_last=true covering the remaining audio (duration 0 when nothing was sent since the last
+    final); finals carry language; every message carries type/status/session_id; invalid model -> HTTP 400 at the
+    handshake (bytearray body on the client side). Server close after is_last is undocumented: configurable."""
     from urllib.parse import parse_qs, urlparse
 
     from websockets.sync.server import serve
@@ -253,30 +254,42 @@ def start_ws_stt_lifecycle_server():
             return connection.respond(400, "Invalid model\n")
         return None
 
+    def process_response(connection, request, response):
+        response.headers["x-request-id"] = "fake-rt-request-id"
+        return None
+
     def handler(ws):
         rate = int(parse_qs(urlparse(ws.request.path).query).get("sample_rate", ["16000"])[0])
-        pending = 0  # bytes since last final
-        start = 0.0
+        pending, start, chunks, sid = 0, 0.0, 0, "fake-session"
+        base = {"type": "transcription", "status": "success", "session_id": sid}
         try:
             for msg in ws:
                 if isinstance(msg, bytes):
                     pending += len(msg)
+                    chunks += 1
+                    if chunks % 8 == 0:
+                        ws.send(json.dumps({**base, "transcript": "partial", "is_final": False, "is_last": False,
+                                            "start": start, "duration": round(pending / 2 / rate, 3)}))
                     continue
                 kind = json.loads(msg).get("type")
                 dur = round(pending / 2 / rate, 3)
                 if kind == "finalize":
-                    ws.send(json.dumps({"type": "transcription", "transcript": "hello" if pending and not
-                                        all(b == 0 for b in b"") else "", "is_final": True, "is_last": False,
-                                        "start": start, "duration": dur}))
+                    ws.send(json.dumps({**base, "transcript": "hello" if pending else "", "is_final": True,
+                                        "is_last": False, "from_finalize": True, "start": start, "duration": dur,
+                                        "language": "en", "languages": ["en"]}))
                     start, pending = round(start + dur, 3), 0
+                    if close_after_finalize:
+                        ws.close(1011, "simulated close after finalize")
+                        return
                 elif kind == "close_stream":
-                    ws.send(json.dumps({"type": "transcription", "transcript": "", "is_final": True, "is_last": True,
-                                        "start": start, "duration": dur}))
-                    ws.close()
-                    return
+                    ws.send(json.dumps({**base, "transcript": "", "is_final": True, "is_last": True, "start": start,
+                                        "duration": dur, "language": "en", "languages": ["en"]}))
+                    if close_after_is_last:
+                        ws.close()
+                        return
         except Exception:
             return
 
-    server = serve(handler, "127.0.0.1", 0, process_request=process_request)
+    server = serve(handler, "127.0.0.1", 0, process_request=process_request, process_response=process_response)
     threading.Thread(target=server.serve_forever, daemon=True).start()
     return server, f"http://127.0.0.1:{server.socket.getsockname()[1]}"

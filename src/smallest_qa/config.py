@@ -17,7 +17,7 @@ PHASE_REQUEST_CAPS = {1: 28, 2: 100, 3: 20}
 PHASE_USD_CAPS = {2: 2.00, 3: 3.00}  # estimated list-price spend; real balance is checked on the dashboard
 CLOSED_PHASES = frozenset({1, 2})
 MAX_BATCH_REQUESTS = 20
-BATCH_REQUEST_CAPS = {(3, "B1"): 10}  # Gate B batch 1: at most 10 live requests
+BATCH_REQUEST_CAPS = {(3, "B1"): 10, (3, "B2"): 4}  # B1 <= 10; B2 = Stage 1 only (4, approved 2026-11-24)
 
 
 def _parse_dotenv(path: Path) -> dict[str, str]:

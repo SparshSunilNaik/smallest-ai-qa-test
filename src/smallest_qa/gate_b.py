@@ -333,3 +333,167 @@ def offline_s1_replay(evidence_dir, run_id: str = "20261122T172115Z", wire_name:
                              "server_last_chunk_ms": last_ms,
                              "parsing_started_before_body_complete": (obs["first_skip_warning_ms"] or 1e9) < last_ms}
     return out
+
+
+# ============================================================================ Gate B Batch 2, Stage 1
+# Real-time Pulse STT lifecycle. Expectations (docs re-fetched 2026-11-24, byte-identical to the 2026-11-22/24
+# snapshots): response-format ("Response Fields", "Audio position", "is_last = true", optional `from_finalize`),
+# quickstart (endpoint, close_stream), best-practices ("Session Lifecycle": stream -> optional finalize ->
+# close_stream -> wait for is_last=true -> client closes). Whether the server closes after is_last, and what
+# happens on a client close without close_stream, are NOT documented: observed only.
+
+POS_TOL_S = 0.01  # docs: positions have millisecond precision; 10 ms allows for one rounding step either side
+
+
+def _pos_end(e: dict) -> float:
+    return round((e.get("start") or 0) + (e.get("duration") or 0), 3)
+
+
+def _rt2(scenario: str) -> Callable[[Context, CaseResult], None]:
+    def run(ctx: Context, res: CaseResult) -> None:
+        from .textsim import word_error_rate
+        from .ws import run_ws_stt_lifecycle
+
+        params = {"model": "pulse", "language": "en", "encoding": "linear16", "sample_rate": "16000"}
+        if scenario in ("normal", "cancel"):
+            fx = ctx.fixture
+            pcm, rate = wav_pcm16(fx.path.read_bytes())
+            reference, fdesc = fx.reference_text, {"id": "stt_en_16k (Phase 1)", "sha256": fx.sha256}
+        else:
+            fid = "acc_en_gb_daniel" if scenario == "finalize" else "silence_digital"
+            fx = ctx.p2_fixtures.get(fid)
+            if fx is None or isinstance(fx, str):
+                res.classification = NOT_TESTED
+                res.notes.append(f"fixture {fid} unavailable: {fx}; no request sent")
+                return
+            pcm, rate = wav_pcm16(fx.data)
+            reference, fdesc = fx.recipe.reference, {"id": fid, "sha256": fx.sha256}
+        kw: dict = {"sample_rate": rate, "chunk_interval_s": 0.05, "post_last_window_s": 10.0}
+        if scenario == "finalize":
+            kw.update(send_finalize=True, finalize_wait_s=8.0, finalize_hold_s=2.0)
+        elif scenario == "cancel":
+            kw.update(close_mode="abrupt", abrupt_after_s=2.0)
+        ex, obs = run_ws_stt_lifecycle(ctx.client, res.case_id, pcm, params, **kw)
+        res.exchanges.append(ex)
+        ev = obs.events
+        tr = [e for e in ev if "is_final" in e]  # transcription messages
+        finals = [e for e in tr if e.get("is_final")]
+        last = [e for e in ev if e.get("is_last")]
+        fin_t = next((a["t_ms"] for a in obs.sent if a["action"] == "finalize"), None)
+        cs_t = next((a["t_ms"] for a in obs.sent if a["action"] == "close_stream"), None)
+        res.metrics.update({
+            "scenario": scenario, "params": params, "fixture": fdesc, "audio_seconds_sent": round(obs.audio_seconds_sent, 3),
+            "event_order": [("L" if e.get("is_last") else "F" if e.get("is_final") else "P" if "is_final" in e
+                             else e.get("type") or e.get("status") or "?") for e in ev],
+            "events": ev[:80], "client_actions": obs.sent,
+            "handshake": {"status": obs.handshake_status or ex.status, "ms": obs.handshake_ms,
+                          "body": obs.handshake_body},
+            "session_ids": sorted({str(e.get("session_id")) for e in ev if e.get("session_id")}),
+            "is_last_ms": obs.is_last_ms, "close_stream_to_is_last_ms":
+                round(obs.is_last_ms - cs_t, 1) if (obs.is_last_ms is not None and cs_t is not None) else None,
+            "finalize_to_final_ms": round(obs.finalize_final_ms - fin_t, 1) if (obs.finalize_final_ms and fin_t) else None,
+            "open_after_finalize_hold": obs.open_after_finalize_hold,
+            "server_closed": obs.server_closed, "server_close_code": obs.server_close_code,
+            "server_close_reason": obs.server_close_reason, "server_closed_ms": obs.server_closed_ms,
+            "server_closed_after_is_last_ms": round(obs.server_closed_ms - obs.is_last_ms, 1)
+                if (obs.server_closed_ms is not None and obs.is_last_ms is not None) else None,
+            "client_closed": obs.client_closed, "client_close_complete_ms": obs.client_close_complete_ms,
+            "close_frames": {"sent": obs.close_sent_code, "received": obs.close_rcvd_code,
+                             "received_reason": obs.close_rcvd_reason},
+            "observation_window_elapsed": obs.observe_timed_out, "harness_error": ex.error})
+        res.check("WebSocket handshake succeeded (101)", ex.status == 101, 101,
+                  ex.status if ex.status else ex.error, DOCUMENTED, D_RT_QS)
+        if ex.status != 101:
+            return
+        if scenario == "cancel":
+            res.check("client closed with code 1000 before any close_stream/finalize, without a client error",
+                      obs.client_closed and obs.close_sent_code == 1000 and ex.error is None, "1000, no error",
+                      f"sent={obs.close_sent_code} error={ex.error}", QUALITY)
+            res.metrics["is_last_received"] = bool(last)
+            res.notes.append("No documented server behaviour for a client close without close_stream; events and "
+                             "close frames are observations only. Server-side cleanup cannot be observed.")
+            return
+        res.check("exactly one is_last=true message, and it is the last message received",
+                  len(last) == 1 and bool(ev) and ev[-1].get("is_last") is True, "1, last",
+                  f"{len(last)} is_last; last event is_last={ev[-1].get('is_last') if ev else None}", DOCUMENTED, D_RT_FMT)
+        if last:
+            res.check("the is_last message is also is_final=true", last[0].get("is_final") is True, True,
+                      last[0].get("is_final"), DOCUMENTED, D_RT_FMT)
+        res.check("every message is type=transcription", all(e.get("type") == "transcription" for e in ev),
+                  "transcription", sorted({str(e.get("type")) for e in ev}), DOCUMENTED, D_RT_FMT)
+        res.check("status is 'success' on every message", all(e.get("status") == "success" for e in ev), "success",
+                  sorted({str(e.get("status")) for e in ev}), QUALITY, D_RT_FMT)
+        sids = {e.get("session_id") for e in ev}
+        res.check("session_id present and constant on every message", len(sids) == 1 and None not in sids, "1 id",
+                  f"{len(sids)} distinct (None present: {None in sids})", DOCUMENTED, D_RT_FMT)
+        ends = [_pos_end(e) for e in tr]
+        mono = all(b >= a - 1e-9 for a, b in zip(ends, ends[1:]))
+        res.check("start + duration never decreases", mono, True, mono, DOCUMENTED, D_RT_FMT)
+        contig = [(round(a.get("start") or 0, 3), _pos_end(a), b.get("start")) for a, b in zip(tr, tr[1:])
+                  if a.get("is_final")]
+        bad = [c for c in contig if abs(c[1] - (c[2] or 0)) > POS_TOL_S]
+        res.check("message after a final starts at that final's start + duration", not bad, "0 gaps",
+                  f"{len(bad)} of {len(contig)} {bad[:3]}", DOCUMENTED, D_RT_FMT)
+        fsum = round(sum(e.get("duration") or 0 for e in finals), 3)
+        res.metrics["finals_duration_sum_s"] = fsum
+        res.check("finals' durations add up to the audio sent (+/-10 ms)", abs(fsum - obs.audio_seconds_sent) <= POS_TOL_S,
+                  round(obs.audio_seconds_sent, 3), fsum, DOCUMENTED, D_RT_FMT)
+        if last:
+            res.check("is_last start + duration covers every sample sent (+/-10 ms)",
+                      abs(_pos_end(last[0]) - obs.audio_seconds_sent) <= POS_TOL_S, round(obs.audio_seconds_sent, 3),
+                      _pos_end(last[0]), DOCUMENTED, D_RT_FMT)
+        lang_ok = all(e.get("language") == "en" for e in finals) and not any("language" in e for e in tr
+                                                                            if not e.get("is_final"))
+        res.check("finals carry language='en'; interim messages carry no language field", lang_ok, True,
+                  {"finals": sorted({str(e.get('language')) for e in finals}),
+                   "interims_with_language": sum(1 for e in tr if not e.get('is_final') and 'language' in e)},
+                  DOCUMENTED, D_RT_FMT)
+        if scenario == "finalize":
+            ff = [e for e in ev if e.get("from_finalize") is True]
+            res.metrics["from_finalize_finals"] = len(ff)
+            res.check("finalize produced exactly one from_finalize=true final", len(ff) == 1, 1, len(ff),
+                      DOCUMENTED, D_RT_FMT)
+            if ff:
+                res.check("from_finalize final covers every sample sent before finalize (+/-10 ms)",
+                          abs(_pos_end(ff[0]) - obs.audio_seconds_sent) <= POS_TOL_S, round(obs.audio_seconds_sent, 3),
+                          _pos_end(ff[0]), DOCUMENTED, D_RT_FMT)
+            pre_cs_last = [e for e in last if cs_t is None or e["t_ms"] < cs_t]
+            res.check("finalize did not trigger is_last; session stayed open through the 2 s hold",
+                      not pre_cs_last and obs.open_after_finalize_hold is True, "no is_last, open",
+                      f"is_last before close_stream={len(pre_cs_last)}, open={obs.open_after_finalize_hold}",
+                      DOCUMENTED, D_RT_FMT)
+            if last:
+                res.check("is_last after finalize -> close_stream with no audio in between has duration 0",
+                          last[0].get("duration") == 0, 0, last[0].get("duration"), DOCUMENTED, D_RT_FMT)
+        text = " ".join(str(e.get("transcript") or "") for e in finals).strip()
+        res.metrics["final_transcript"] = text
+        if reference:
+            wer = word_error_rate(reference, text)
+            res.metrics["wer"] = round(wer, 3)
+            res.check("WER <= 0.25 against the known reference (synthetic clip)", wer <= 0.25, "<= 0.25",
+                      round(wer, 3), QUALITY)
+        else:
+            res.check("no words on digital silence (not promised by docs)", text == "", "empty", repr(text)[:60],
+                      QUALITY)
+        res.notes.append("Server close after is_last is not documented (clients are told to wait for is_last and "
+                         "then close); recorded as an observation only.")
+    return run
+
+
+GATE_B2_S1_CASES: list[CaseSpec] = [
+    _g("GB2-RT-01", "Real-time STT: normal transcription (audio -> close_stream -> is_last)", DOCUMENTED,
+       "interims/finals, one final is_last last; positions contiguous; durations sum to audio sent",
+       (D_RT_QS, D_RT_FMT, D_RT_BP), 1, _rt2("normal"), batch="B2-S1", stt_audio_seconds=6.3),
+    _g("GB2-RT-02", "Real-time STT: explicit finalize (hold 2 s) -> close_stream", DOCUMENTED,
+       "one from_finalize final covering all audio; session stays open; is_last duration 0",
+       (D_RT_FMT, D_RT_BP), 1, _rt2("finalize"), batch="B2-S1", stt_audio_seconds=4.81,
+       p2_fixtures=("acc_en_gb_daniel",)),
+    _g("GB2-RT-03", "Real-time STT: 3 s digital silence -> close_stream", DOCUMENTED,
+       "one is_last; durations sum to 3 s; empty transcript is a quality observation only",
+       (D_RT_FMT,), 1, _rt2("silence"), batch="B2-S1", stt_audio_seconds=3.0, p2_fixtures=("silence_digital",)),
+    _g("GB2-RT-04", "Real-time STT: client closes (1000) after ~2 s of audio, before finalize/close_stream",
+       EXPLORATORY, "no documented server behaviour; record events and close frames", (D_RT_BP,), 1,
+       _rt2("cancel"), batch="B2-S1", stt_audio_seconds=2.0),
+]
+GATE_B_CASES.extend(GATE_B2_S1_CASES)
+GATE_B_BY_ID.update({c.case_id: c for c in GATE_B2_S1_CASES})

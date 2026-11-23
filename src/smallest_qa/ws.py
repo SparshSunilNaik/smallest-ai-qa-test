@@ -258,19 +258,42 @@ class LifecycleObservation:
     client_closed: bool = False
     observe_timed_out: bool = False
     audio_seconds_sent: float = 0.0
+    # Batch 2 additions: explicit-finalize observation and close frames on both sides
+    finalize_final_ms: float | None = None
+    open_after_finalize_hold: bool | None = None
+    close_sent_code: int | None = None
+    close_rcvd_code: int | None = None
+    close_rcvd_reason: str | None = None
+    client_close_complete_ms: float | None = None
+
+
+class _SessionEnded(Exception):
+    """Internal: the server ended the session before close_stream; observation already recorded."""
+
+
+def _close_frames(ws, obs: LifecycleObservation) -> None:
+    """Close frames actually exchanged (websockets protocol state); None when not observable."""
+    proto = getattr(ws, "protocol", None)
+    sent, rcvd = getattr(proto, "close_sent", None), getattr(proto, "close_rcvd", None)
+    obs.close_sent_code = sent.code if sent is not None else None
+    if rcvd is not None:
+        obs.close_rcvd_code, obs.close_rcvd_reason = rcvd.code, (rcvd.reason or "")[:120]
 
 
 def run_ws_stt_lifecycle(client: QAClient, case_id: str, pcm16: bytes, params: dict[str, str], *,
                          sample_rate: int = 16000, chunk_size: int = 4096, chunk_interval_s: float = 0.05,
                          send_finalize: bool = False, close_mode: str = "close_stream",
                          abrupt_after_s: float | None = None, post_last_window_s: float = 10.0,
-                         overall_timeout_s: float = 45.0, keep_transcripts: bool = True
+                         overall_timeout_s: float = 45.0, keep_transcripts: bool = True,
+                         finalize_wait_s: float = 0.0, finalize_hold_s: float = 0.0
                          ) -> tuple[Exchange, LifecycleObservation]:
     """Documented protocol (realtime quickstart / response-format / best-practices): binary PCM chunks
     (4096 B, paced), optional {"type":"finalize"}, then {"type":"close_stream"} and wait for is_last=true.
     close_mode="abrupt": stop after `abrupt_after_s` of audio and close the socket WITHOUT close_stream.
     After is_last, keep listening up to `post_last_window_s` to observe whether the server closes.
-    One connection = one ledger entry."""
+    finalize_wait_s > 0: after {"type":"finalize"}, wait up to that long for the from_finalize/is_final reply,
+    then keep the session idle for finalize_hold_s to observe whether it stays open, before close_stream.
+    One connection attempt (including a rejected handshake) = one ledger entry, reserved before connecting."""
     from urllib.parse import urlencode
 
     from websockets.exceptions import ConnectionClosed, InvalidStatus
@@ -297,7 +320,8 @@ def run_ws_stt_lifecycle(client: QAClient, case_id: str, pcm16: bytes, params: d
             obs.events.append({"t_ms": ms(), "invalid_json": True})
             return None
         e = {"t_ms": ms(), **{k: m.get(k) for k in ("type", "status", "is_final", "is_last", "start", "duration",
-                                                     "language", "error_code", "message") if k in m}}
+                                                     "language", "languages", "from_finalize", "session_id",
+                                                     "error_code", "message", "error") if k in m}}
         tr = m.get("transcript")
         e["transcript_len"] = len(tr) if isinstance(tr, str) else None
         if keep_transcripts and isinstance(tr, str):
@@ -313,6 +337,10 @@ def run_ws_stt_lifecycle(client: QAClient, case_id: str, pcm16: bytes, params: d
                      max_size=client.settings.max_response_bytes) as ws:
             obs.handshake_ms = ms()
             ex.status = 101
+            try:  # handshake response headers (request/session IDs if the server sends any); redacted on output
+                ex.headers = {k: v for k, v in ws.response.headers.raw_items()}
+            except AttributeError:
+                pass
             limit = len(pcm16) if abrupt_after_s is None else int(abrupt_after_s * sample_rate) * 2
             for i in range(0, min(len(pcm16), limit), chunk_size):
                 ws.send(pcm16[i: i + chunk_size])
@@ -330,10 +358,37 @@ def run_ws_stt_lifecycle(client: QAClient, case_id: str, pcm16: bytes, params: d
                 obs.sent.append({"t_ms": ms(), "action": "client_close_without_close_stream"})
                 ws.close(code=1000)
                 obs.client_closed = True
+                obs.client_close_complete_ms = ms()
             else:
                 if send_finalize:
                     ws.send(json.dumps({"type": "finalize"}))
                     obs.sent.append({"t_ms": ms(), "action": "finalize"})
+                    if finalize_wait_s > 0:
+                        try:
+                            fin_deadline = time.perf_counter() + finalize_wait_s
+                            while obs.finalize_final_ms is None and time.perf_counter() < fin_deadline:
+                                try:
+                                    m = record(ws.recv(timeout=max(0.01, fin_deadline - time.perf_counter())))
+                                except TimeoutError:
+                                    break
+                                if m and (m.get("from_finalize") is True or m.get("is_final") is True):
+                                    obs.finalize_final_ms = ms()
+                            hold_end = time.perf_counter() + finalize_hold_s
+                            while time.perf_counter() < hold_end:
+                                try:
+                                    record(ws.recv(timeout=max(0.01, hold_end - time.perf_counter())))
+                                except TimeoutError:
+                                    break
+                            obs.open_after_finalize_hold = True
+                            obs.sent.append({"t_ms": ms(), "action": f"finalize_hold_done ({finalize_hold_s} s)"})
+                        except ConnectionClosed as cc:  # server closed after finalize: an observation
+                            obs.open_after_finalize_hold = False
+                            obs.server_closed, obs.server_closed_ms = True, ms()
+                            if cc.rcvd is not None:
+                                obs.server_close_code, obs.server_close_reason = cc.rcvd.code, cc.rcvd.reason[:120]
+                if obs.server_closed:
+                    _close_frames(ws, obs)
+                    raise _SessionEnded
                 ws.send(json.dumps({"type": "close_stream"}))
                 obs.sent.append({"t_ms": ms(), "action": "close_stream"})
                 deadline = t0 + overall_timeout_s
@@ -361,6 +416,10 @@ def run_ws_stt_lifecycle(client: QAClient, case_id: str, pcm16: bytes, params: d
                     obs.sent.append({"t_ms": ms(), "action": "client_close_after_observation"})
                     ws.close(code=1000)
                     obs.client_closed = True
+                    obs.client_close_complete_ms = ms()
+            _close_frames(ws, obs)
+    except _SessionEnded:
+        pass
     except InvalidStatus as exc:
         obs.handshake_status = ex.status = exc.response.status_code
         body = bytes(exc.response.body or b"")  # may be a bytearray

@@ -96,6 +96,7 @@ def test_real_ledger_config_closes_historical_phases_and_caps_gate_b():
 
     assert CLOSED_PHASES == {1, 2} and PHASE_REQUEST_CAPS[3] == 20 and PHASE_USD_CAPS[3] == 3.0
     assert DEFAULT_MAX_REQUESTS == 124 + 20 and BATCH_REQUEST_CAPS[(3, "B1")] == 10
+    assert BATCH_REQUEST_CAPS[(3, "B2")] == 4  # Batch 2 Stage 1 only
     assert PHASE_REQUEST_CAPS[1] == 28 and PHASE_REQUEST_CAPS[2] == 100  # historical caps unchanged
 
 
@@ -154,13 +155,14 @@ def test_safe_excerpt_accepts_any_bytes_like_body(wrap):
     assert "bad model" in out and "sk_live_abcdefgh123" not in out
 
 
-def test_exchange_to_evidence_normalises_bytearray_body():
+@pytest.mark.parametrize("wrap", [bytes, bytearray, memoryview])
+def test_exchange_to_evidence_normalises_bytes_like_handshake_body(wrap):
     from smallest_qa.client import Exchange
 
     ex = Exchange(case_id="X", seq=1, method="WS", path="/p", params={}, request_summary={}, auth_mode="valid",
-                  started={"utc": "u", "ist": "i"})
+                  started={"utc": "u", "ist": "i"}, status=401)
     ex.headers = {"content-type": "application/json"}
-    ex.body = bytearray(b'{"error":"x"}')
+    ex.body = wrap(b'{"error":"x"}')  # a rejected WebSocket handshake body, as websockets may hand it back
     ev = ex.to_evidence(())
     assert ev["body_excerpt"] == '{"error":"x"}' and ev["response_sha256"]
 
@@ -308,3 +310,76 @@ def test_preflight_dry_run_of_the_two_recovery_cases_against_local_server(settin
     assert (priv / "GB-S1-02-wire.sse").stat().st_size > 0 and (priv / "GB-S1-02.pcm").stat().st_size == 8 * len(pcm)
     assert [e["batch"] for e in RequestLedger(s.evidence_dir / "request-ledger.jsonl", 144).entries()] == \
         ["B1-recovery", "B1-recovery"]
+
+
+
+def _b2_p2_provider(ids):
+    from types import SimpleNamespace
+
+    from fake_api import make_wav
+
+    out = {}
+    for fid in ids:
+        data = make_wav(16000, 1.5) if fid != "silence_digital" else b"RIFF" + b"\x00" * 0  # replaced below
+        if fid == "silence_digital":
+            import io
+            import wave
+
+            buf = io.BytesIO()
+            with wave.open(buf, "wb") as w:
+                w.setnchannels(1), w.setsampwidth(2), w.setframerate(16000), w.writeframes(b"\x00\x00" * 48000)
+            data = buf.getvalue()
+        out[fid] = SimpleNamespace(data=data, sha256="test", recipe=SimpleNamespace(reference="hello there"),
+                                   describe=lambda: {"fixture_id": "test"})
+    return out
+
+
+def test_b2_stage1_dry_run_all_four_cases_against_fake_realtime_server(settings, fixture_wav):
+    import smallest_qa.runner as runner
+    from smallest_qa.gate_b import GATE_B2_S1_CASES
+
+    server, url = start_ws_stt_lifecycle_server()
+    try:
+        s = Settings(**{**settings.__dict__, "base_url": url})
+        runner.execute(s, GATE_B2_S1_CASES, phase=3, batch="B2-S1", log=lambda m: None,
+                       fixture_provider=lambda: fixture_wav, p2_fixture_provider=_b2_p2_provider)
+    finally:
+        server.shutdown()
+    rd = _run_dir(s)
+    files = sorted((rd / runner.CHECKPOINT_DIR).iterdir())
+    assert [f.name for f in files] == ["01-GB2-RT-01.json", "02-GB2-RT-02.json", "03-GB2-RT-03.json",
+                                       "04-GB2-RT-04.json"]
+    cps = {json.loads(f.read_text())["case_id"]: json.loads(f.read_text()) for f in files}
+    for cid in ("GB2-RT-01", "GB2-RT-02", "GB2-RT-03"):
+        failed = [c["name"] for c in cps[cid]["checks"] if c["requirement"] == "documented" and c["passed"] is not True]
+        assert failed == [], (cid, failed)
+        ids = cps[cid]["requests"][0]["request_ids"]
+        assert ids.get("x-request-id") == "fake-rt-request-id" and ids.get("x-session-id") == "fake-session"
+    m2 = cps["GB2-RT-02"]["metrics"]
+    assert m2["from_finalize_finals"] == 1 and m2["open_after_finalize_hold"] is True
+    assert m2["finalize_to_final_ms"] is not None and m2["server_closed"] is True
+    m4 = cps["GB2-RT-04"]["metrics"]
+    assert m4["close_frames"]["sent"] == 1000 and m4["client_closed"] and m4["harness_error"] is None
+    led = RequestLedger(s.evidence_dir / "request-ledger.jsonl", 144, batch_caps={(3, "B2"): 4})
+    assert [(e["case_id"], e["batch"], e["protocol"]) for e in led.entries()] == \
+        [(c.case_id, "B2-S1", "ws") for c in GATE_B2_S1_CASES]
+    with pytest.raises(BudgetExceeded):
+        led.reserve(run_id="X", case_id="FIFTH", method="WS", path="/p", phase=3, batch="B2-S1", protocol="ws")
+    console = (rd / "console.log").read_text()
+    assert all(f"checkpoints/{f.name}" in console for f in files)
+
+
+def test_b2_server_close_after_finalize_is_recorded_as_observation_not_error(settings):
+    from smallest_qa.ws import run_ws_stt_lifecycle
+
+    server, url = start_ws_stt_lifecycle_server(close_after_finalize=True)
+    try:
+        with _rt_client(settings, url) as c:
+            ex, obs = run_ws_stt_lifecycle(c, "F", b"\x01\x00" * 16000, {"model": "pulse", "sample_rate": "16000"},
+                                           chunk_interval_s=0, send_finalize=True, finalize_wait_s=2, finalize_hold_s=1)
+    finally:
+        server.shutdown()
+    assert ex.status == 101 and ex.error is None and obs.open_after_finalize_hold is False
+    assert obs.server_closed and obs.server_close_code == 1011 and not any(a["action"] == "close_stream"
+                                                                            for a in obs.sent)
+    ex.to_evidence(())  # serializes
