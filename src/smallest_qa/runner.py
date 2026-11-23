@@ -115,6 +115,19 @@ def execute(settings: Settings, specs: list[CaseSpec], *, transport: httpx.BaseT
 
         p2_fixtures = (p2_fixture_provider or default_p2)(p2_ids)
 
+    console_lines: list[str] = []
+    user_log = log
+
+    def log(msg: str = "") -> None:  # noqa: F811 - tee every console line into a redacted per-run console.log
+        user_log(msg)
+        console_lines.append(str(msg))
+        try:
+            _append_console(run_dir, str(msg), settings)
+        except Exception as exc:  # noqa: BLE001 - logging must never abort a run
+            user_log(f"  warning: console.log write failed: {type(exc).__name__}")
+
+    log(f"run {rid} phase {phase} batch {batch or '-'}: {len(specs)} case(s); ledger {ledger_for(settings).used} "
+        f"before run")
     kwargs = {"transport": transport, "phase": phase, "batch": batch}
     if sleep is not None:
         kwargs["sleep"] = sleep
@@ -155,7 +168,8 @@ def execute(settings: Settings, specs: list[CaseSpec], *, transport: httpx.BaseT
                 halted = client.guard.halt_reason
                 res.notes.append(f"Safety stop triggered after this case: {halted}")
             log(f"  {spec.case_id:<8} {res.classification:<42} requests={len(res.exchanges)}")
-            _checkpoint(run_dir, res, client.secrets, settings)
+            cp = _checkpoint(run_dir, len(results), res, client.secrets, settings)
+            log(f"  checkpoint: {cp.relative_to(run_dir) if cp else 'FAILED'}")
 
     secrets = client.secrets
     payload = {
@@ -178,14 +192,15 @@ def execute(settings: Settings, specs: list[CaseSpec], *, transport: httpx.BaseT
         "listening_queue": ctx.listening,
         "cases": [_case_dict(r, secrets) for r in results],
     }
-    serialized = scrub_paths(json.dumps(payload, indent=2, ensure_ascii=False, default=str))
+    serialized = scrub_paths(redact_text(json.dumps(payload, indent=2, ensure_ascii=False, default=str), secrets))
     assert_no_secret(serialized, settings)
     run_dir.mkdir(parents=True, exist_ok=True)
-    (run_dir / "results.json").write_text(serialized + "\n", encoding="utf-8")
+    _atomic_write(run_dir / "results.json", serialized + "\n")
     summary = render_run_summary(payload)
     assert_no_secret(summary, settings)
-    (run_dir / "summary.md").write_text(summary, encoding="utf-8")
-    (run_dir / _CHECKPOINT).unlink(missing_ok=True)  # superseded by results.json
+    _atomic_write(run_dir / "summary.md", summary)
+    log(f"results.json and summary.md written; ledger {ledger.used} after run")
+    # Per-case checkpoints are deliberately never deleted: they are the durable record if anything above fails.
     if ctx.listening:
         from .listening import write_listening_pack
 
@@ -193,7 +208,33 @@ def execute(settings: Settings, specs: list[CaseSpec], *, transport: httpx.BaseT
     return run_dir
 
 
-_CHECKPOINT = "cases.checkpoint.jsonl"
+CHECKPOINT_DIR = "checkpoints"
+
+
+def _atomic_write(path: Path, text: str) -> None:
+    """Write via a temp file in the same directory + fsync + os.replace: readers see old or new, never partial."""
+    import os
+    import tempfile
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fd, tmp = tempfile.mkstemp(dir=path.parent, prefix=f".{path.name}.", suffix=".tmp")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as fh:
+            fh.write(text)
+            fh.flush()
+            os.fsync(fh.fileno())
+        os.replace(tmp, path)
+    except BaseException:
+        Path(tmp).unlink(missing_ok=True)
+        raise
+
+
+def _append_console(run_dir: Path, msg: str, settings: Settings) -> None:
+    line = scrub_paths(redact_text(msg, (settings.api_key,) if settings.api_key else ()))
+    assert_no_secret(line, settings)
+    with (run_dir / "console.log").open("a", encoding="utf-8") as fh:
+        fh.write(line + "\n")
+        fh.flush()
 
 
 def _case_dict(res: CaseResult, secrets: tuple[str, ...]) -> dict:
@@ -209,15 +250,21 @@ def _case_dict(res: CaseResult, secrets: tuple[str, ...]) -> dict:
                               "response_bytes": len(ex.body or b"")} for ex in res.exchanges]}
 
 
-def _checkpoint(run_dir: Path, res: CaseResult, secrets: tuple[str, ...], settings: Settings) -> None:
-    """Append each finished case to a redacted checkpoint immediately, so a later crash loses nothing."""
+def _checkpoint(run_dir: Path, index: int, res: CaseResult, secrets: tuple[str, ...],
+                settings: Settings) -> Path | None:
+    """Write each finished case to its own redacted checkpoint file, atomically, as soon as the case ends.
+    Redaction (known secrets + token patterns) and path scrubbing happen before anything touches disk, and
+    assert_no_secret is a final backstop. A failure here is reported and never affects other checkpoints."""
     try:
-        line = scrub_paths(json.dumps(_case_dict(res, secrets), ensure_ascii=False, default=str))
-        assert_no_secret(line, settings)
-        with (run_dir / _CHECKPOINT).open("a", encoding="utf-8") as fh:
-            fh.write(line + "\n")
-    except Exception as exc:  # noqa: BLE001 - checkpointing is best-effort and must not abort the run
+        text = scrub_paths(redact_text(json.dumps(_case_dict(res, secrets), indent=2, ensure_ascii=False,
+                                                  default=str), secrets))
+        assert_no_secret(text, settings)
+        path = run_dir / CHECKPOINT_DIR / f"{index:02d}-{res.case_id}.json"
+        _atomic_write(path, text + "\n")
+        return path
+    except Exception as exc:  # noqa: BLE001 - checkpointing must not abort the run
         print(f"  warning: checkpoint failed for {res.case_id}: {type(exc).__name__}")
+        return None
 
 
 def render_run_summary(payload: dict) -> str:
@@ -234,11 +281,14 @@ def render_run_summary(payload: dict) -> str:
         "|---|---|---|---|---|---|",
     ]
     for c in payload["cases"]:
-        statuses = ", ".join(str(r["status"]) for r in c["requests"]) or "-"
-        durs = ", ".join(str(r["duration_ms"]) for r in c["requests"]) or "-"
-        ttfb = ", ".join(str(r["ttfb_ms"]) for r in c["requests"]) or "-"
+        # .get(): fallback records (serialization_error) carry only a minimal request summary
+        statuses = ", ".join(str(r.get("status")) for r in c["requests"]) or "-"
+        durs = ", ".join(str(r.get("duration_ms")) for r in c["requests"]) or "-"
+        ttfb = ", ".join(str(r.get("ttfb_ms")) for r in c["requests"]) or "-"
         failed = "; ".join(f"{k['name']} (expected {k['expected']}, got {k['actual']})"
-                           for k in c["checks"] if k["passed"] is False) or "-"
+                           for k in c.get("checks", []) if k["passed"] is False) or "-"
+        if c.get("serialization_error"):
+            failed = f"serialization error: {c['serialization_error']}"
         if len(c["requests"]) > 3:
             durs, ttfb = f"see results.json ({len(c['requests'])} samples)", "-"
         lines.append(f"| {c['case_id']} | {c['classification']} | {statuses} | {durs} | {ttfb} | "

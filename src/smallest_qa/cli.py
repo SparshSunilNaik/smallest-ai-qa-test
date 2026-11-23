@@ -152,6 +152,9 @@ def cmd_run(args) -> int:
             print("Refusing:", "; ".join(problems))
             return 2
         ledger = ledger_for(settings)
+        if args.expect_ledger is not None and ledger.used != args.expect_ledger:
+            print(f"Refusing: ledger has {ledger.used} entries, expected {args.expect_ledger}")
+            return 2
         ph = args.phase
         cap = 100 if ph == 2 else 20
         batch = args.batch or ("repro" if ph == 2 else specs[0].batch)
@@ -406,6 +409,8 @@ def main(argv: list[str] | None = None) -> int:
         p.add_argument("--batch", help="Phase 2 batch number (1-6); at most 20 requests each")
         if name == "run":
             p.add_argument("--approve-live", action="store_true", help="required: confirms live, billable requests")
+            p.add_argument("--expect-ledger", type=int, default=None,
+                           help="refuse unless the ledger currently has exactly this many entries")
     sub.add_parser("check-key")
     sub.add_parser("make-fixtures")
     sub.add_parser("report")

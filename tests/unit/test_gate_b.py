@@ -165,26 +165,146 @@ def test_exchange_to_evidence_normalises_bytearray_body():
     assert ev["body_excerpt"] == '{"error":"x"}' and ev["response_sha256"]
 
 
-def test_runner_case_serialization_failure_keeps_other_cases_and_checkpoints(settings, tmp_path):
-    from smallest_qa.results import CaseResult
-    from smallest_qa.runner import _CHECKPOINT, _case_dict, _checkpoint
+class _Boom:
+    """An exchange whose serialization raises, standing in for any future serializer bug."""
+    seq, status, duration_ms, body, error = 7, 400, 1.0, b"xy", None
 
-    good = CaseResult("OK", "t", "a", "e", [])
-    bad = CaseResult("BAD", "t", "a", "e", [])
-    bad.notes.append("note")
+    def to_evidence(self, secrets):
+        raise TypeError("simulated serializer bug")
 
-    class Boom:
-        seq, status, duration_ms, body = 7, 400, 1.0, b"xy"
 
-        def to_evidence(self, secrets):
-            raise TypeError("simulated serializer bug")
+def _preflight_specs():
+    from smallest_qa.cases import CaseSpec
+    from smallest_qa.client import Exchange
 
-    bad.exchanges.append(Boom())
-    d = _case_dict(bad, ())
-    assert d["serialization_error"].startswith("TypeError") and d["requests"][0]["ledger_seq"] == 7
-    run_dir = tmp_path / "run"
-    run_dir.mkdir()
-    for r in (good, bad):
-        _checkpoint(run_dir, r, (), settings)
-    lines = [json.loads(x) for x in (run_dir / _CHECKPOINT).read_text().splitlines()]
-    assert [x["case_id"] for x in lines] == ["OK", "BAD"]
+    def ok(ctx, res):
+        ex = Exchange(case_id=res.case_id, seq=1, method="WS", path="/p", params={}, request_summary={},
+                      auth_mode="valid", started={"utc": "u", "ist": "i"}, status=400,
+                      headers={"content-type": "application/json"})
+        ex.body = bytearray(b'{"error": "rejected", "echo": "Bearer abcdefghijkl"}')  # websockets-style body
+        res.exchanges.append(ex)
+        res.notes.append(f"note containing the key {VALID_KEY} and sk_live_zzzzzzzz9")
+        res.metrics["leak_probe"] = VALID_KEY
+
+    def bad(ctx, res):
+        res.exchanges.append(_Boom())
+
+    mk = lambda cid, fn: CaseSpec(cid, "T", cid, "documented", "e", (), 0, fn, phase=3, batch="T")  # noqa: E731
+    return [mk("OK1", ok), mk("BAD", bad), mk("OK3", ok)]
+
+
+def _run_dir(settings):
+    return next((settings.evidence_dir / "runs").iterdir())
+
+
+def _assert_clean(text):
+    assert VALID_KEY not in text and "sk_live_zzzzzzzz9" not in text and "abcdefghijkl" not in text
+
+
+def test_preflight_run_level_failure_keeps_every_case_checkpoint(settings, monkeypatch):
+    import smallest_qa.runner as runner
+
+    def explode(_payload):
+        raise RuntimeError("simulated run-level failure after results.json")
+
+    monkeypatch.setattr(runner, "render_run_summary", explode)
+    logged = []
+    with pytest.raises(RuntimeError):
+        runner.execute(settings, _preflight_specs(), phase=3, batch="T", log=logged.append,
+                       fixture_provider=lambda: None)
+    rd = _run_dir(settings)
+    files = sorted((rd / runner.CHECKPOINT_DIR).iterdir())
+    assert [f.name for f in files] == ["01-OK1.json", "02-BAD.json", "03-OK3.json"]
+    docs = [json.loads(f.read_text()) for f in files]
+    assert docs[1]["serialization_error"].startswith("TypeError") and docs[1]["requests"][0]["ledger_seq"] == 7
+    assert docs[0]["requests"][0]["status"] == 400 and "rejected" in docs[0]["requests"][0]["body_excerpt"]
+    assert not list((rd / runner.CHECKPOINT_DIR).glob(".*.tmp"))  # atomic writes leave no temp files
+    console = (rd / "console.log").read_text()
+    assert "checkpoint: checkpoints/03-OK3.json" in console and "BAD" in console
+    for f in [*files, rd / "console.log", rd / "results.json"]:
+        _assert_clean(f.read_text())
+
+
+def test_preflight_failure_saving_one_case_leaves_other_checkpoints_intact(settings, monkeypatch):
+    import smallest_qa.runner as runner
+
+    real = runner._atomic_write
+
+    def flaky(path, text):
+        if "BAD" in path.name:
+            raise OSError("simulated disk error for one case")
+        real(path, text)
+
+    monkeypatch.setattr(runner, "_atomic_write", flaky)
+    runner.execute(settings, _preflight_specs(), phase=3, batch="T", log=lambda m: None,
+                   fixture_provider=lambda: None)
+    rd = _run_dir(settings)
+    assert sorted(f.name for f in (rd / runner.CHECKPOINT_DIR).iterdir()) == ["01-OK1.json", "03-OK3.json"]
+    assert "checkpoint: FAILED" in (rd / "console.log").read_text()
+    results = json.loads((rd / "results.json").read_text())
+    assert [c["case_id"] for c in results["cases"]] == ["OK1", "BAD", "OK3"]
+    assert "serialization_error" in results["cases"][1]
+
+
+def test_atomic_write_never_leaves_a_partial_file(tmp_path, monkeypatch):
+    import os
+
+    import smallest_qa.runner as runner
+
+    target = tmp_path / "x.json"
+    runner._atomic_write(target, "old\n")
+
+    def boom(*a):
+        raise OSError("simulated crash before rename")
+
+    monkeypatch.setattr(os, "replace", boom)
+    with pytest.raises(OSError):
+        runner._atomic_write(target, "new\n")
+    assert target.read_text() == "old\n" and [p.name for p in tmp_path.iterdir()] == ["x.json"]
+
+
+def test_expect_ledger_guard_refuses_mismatch(monkeypatch, settings, capsys):
+    import smallest_qa.cli as cli
+
+    monkeypatch.setattr(cli, "load_settings", lambda: settings)
+    rc = cli.main(["run", "--phase", "3", "--only", "GB-S1-01", "--batch", "B1-recovery", "--approve-live",
+                   "--expect-ledger", "131"])
+    assert rc == 2 and "expected 131" in capsys.readouterr().out
+
+
+def test_preflight_dry_run_of_the_two_recovery_cases_against_local_server(settings, monkeypatch):
+    """Exactly the live code path for GB-S1-01 + GB-S1-02, pointed at 127.0.0.1 (harness-side redirect only;
+    the SDK itself is not patched)."""
+    import base64
+    import math
+    import struct
+
+    import smallest_qa.runner as runner
+    import smallest_qa.sdk_tools as sdk_tools
+    from smallest_qa.gate_b import GATE_B_BY_ID
+
+    pcm = b"".join(struct.pack("<h", int(8000 * math.sin(i / 8))) for i in range(4800))
+    frames = documented_sse_frames(8, base64.b64encode(pcm).decode())
+    real_client = sdk_tools.default_sdk_client
+    with LocalSSEServer(frames, delay_s=0.05) as srv:
+        monkeypatch.setattr(sdk_tools, "default_sdk_client",
+                            lambda key, environment=None, timeout=60.0: real_client(key, local_environment(srv.base_url)))
+        s = Settings(**{**settings.__dict__, "base_url": srv.base_url, "max_requests": 144})
+        runner.execute(s, [GATE_B_BY_ID["GB-S1-01"], GATE_B_BY_ID["GB-S1-02"]], phase=3, batch="B1-recovery",
+                       log=lambda m: None, fixture_provider=lambda: None)
+        assert len(srv.requests) == 2 and all(r["has_auth"] for r in srv.requests)
+    rd = _run_dir(s)
+    sdk, raw = (json.loads(f.read_text()) for f in sorted((rd / runner.CHECKPOINT_DIR).iterdir()))
+    m = sdk["metrics"]
+    assert m["sdk_items"] == 0 and m["sdk_skip_warnings"] == 9 and m["http_attempts"] == 1
+    assert m["genuinely_streamed"]["parsing_started_before_body_complete"] is True
+    assert m["versions"]["smallestai"] == "5.14.0" and m["completed_normally"] is True
+    assert sdk["requests"][0]["status"] == 200 and sdk["requests"][0]["request_ids"]
+    assert raw["metrics"]["audio_events"] == 8 and raw["metrics"]["terminal_events"] == 1
+    assert raw["metrics"]["pcm"]["bytes"] == 8 * len(pcm)
+    raw_text = (rd / runner.CHECKPOINT_DIR / "02-GB-S1-02.json").read_text()
+    assert base64.b64encode(pcm).decode()[:40] not in raw_text and "base64 chars omitted" in raw_text
+    priv = s.evidence_dir / "private" / rd.name
+    assert (priv / "GB-S1-02-wire.sse").stat().st_size > 0 and (priv / "GB-S1-02.pcm").stat().st_size == 8 * len(pcm)
+    assert [e["batch"] for e in RequestLedger(s.evidence_dir / "request-ledger.jsonl", 144).entries()] == \
+        ["B1-recovery", "B1-recovery"]

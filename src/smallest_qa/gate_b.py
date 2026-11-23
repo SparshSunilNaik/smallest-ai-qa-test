@@ -36,6 +36,18 @@ PARAMS = {"text": SHORT_EN, "voice_id": "meher", "model": "lightning_v3.1_pro", 
 
 # ----------------------------------------------------------------------------- S1 (SDK default transport)
 
+def _versions() -> dict[str, str]:
+    from importlib.metadata import PackageNotFoundError, version
+
+    out = {}
+    for pkg in ("smallestai", "httpx", "httpcore", "pydantic", "websockets"):
+        try:
+            out[pkg] = version(pkg)
+        except PackageNotFoundError:
+            out[pkg] = "not installed"
+    return out
+
+
 def _sdk_default(kind: str) -> Callable[[Context, CaseResult], None]:
     def run(ctx: Context, res: CaseResult) -> None:
         from .sdk_tools import default_sdk_client, observe_default_transport
@@ -85,7 +97,14 @@ def _sdk_default(kind: str) -> Callable[[Context, CaseResult], None]:
         res.metrics.update({k: obs[k] for k in ("http_attempts", "sdk_skip_warnings", "skipped_audio_events",
                                                 "skipped_terminal_events")})
         res.metrics.update({"sdk_items": len(items), "sdk_raised": raised, "item_types":
-                            sorted({type(i).__name__ for i in items}), "timing_ms": {**timing, **ex.extra_timings}})
+                            sorted({type(i).__name__ for i in items}), "timing_ms": {**timing, **ex.extra_timings},
+                            "versions": _versions(), "completed_normally": raised is None})
+        if kind == "sse":
+            first, complete = obs.get("first_skip_warning_ms") or timing["first_item_ms"], obs.get("body_complete_ms")
+            res.metrics["genuinely_streamed"] = {
+                "parsing_started_before_body_complete": (first < complete) if (first and complete) else None,
+                "first_event_handled_ms": first, "body_complete_ms": complete,
+                "basis": "httpcore receive_response_body trace vs SDK per-event warning/item times (same clock)"}
         res.check("exactly one HTTP attempt (max_retries=0)", obs["http_attempts"] == 1, 1, obs["http_attempts"],
                   QUALITY)
         res.check("HTTP 200 observed on the wire (httpcore trace)", obs["status"] == 200, 200, obs["status"],
@@ -123,6 +142,8 @@ def raw_sse_control(ctx: Context, res: CaseResult) -> None:
     _sse_checks(res, ex, obs)
     pcm = obs.audio
     a = analyze_pcm16(pcm, 24000) if pcm else {}
+    ctx.save_private(f"{res.case_id}-wire.sse", bytes(ex.body))  # raw SSE bytes incl. base64 audio: private only
+    ctx.save_private(f"{res.case_id}.pcm", pcm)
     res.metrics.update({"raw_events": len(obs.frames), "audio_events": len(obs.audio_chunks),
                         "terminal_events": sum(1 for f in obs.frames if f.get("done") is True),
                         "pcm": {"bytes": len(pcm), "duration_s": a.get("duration_s"), "rms_dbfs": a.get("rms_dbfs")}})
