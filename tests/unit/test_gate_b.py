@@ -354,7 +354,8 @@ def test_b2_stage1_dry_run_all_four_cases_against_fake_realtime_server(settings,
         failed = [c["name"] for c in cps[cid]["checks"] if c["requirement"] == "documented" and c["passed"] is not True]
         assert failed == [], (cid, failed)
         ids = cps[cid]["requests"][0]["request_ids"]
-        assert ids.get("x-request-id") == "fake-rt-request-id" and ids.get("x-session-id") == "fake-session"
+        assert ids.get("x-request-id") == "fake-rt-request-id" and ids.get("x-ws-message-session-id") == "fake-session"
+        assert "x-session-id" not in ids  # the fake handshake sends none; message IDs must not masquerade as one
     m2 = cps["GB2-RT-02"]["metrics"]
     assert m2["from_finalize_finals"] == 1 and m2["open_after_finalize_hold"] is True
     assert m2["finalize_to_final_ms"] is not None and m2["server_closed"] is True

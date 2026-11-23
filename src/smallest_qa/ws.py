@@ -326,8 +326,8 @@ def run_ws_stt_lifecycle(client: QAClient, case_id: str, pcm16: bytes, params: d
         e["transcript_len"] = len(tr) if isinstance(tr, str) else None
         if keep_transcripts and isinstance(tr, str):
             e["transcript"] = tr
-        if m.get("session_id") and not ex.extra_timings.get("_sid"):
-            ex.headers["x-session-id"] = str(m["session_id"])
+        if m.get("session_id"):  # kept apart from any handshake x-session-id header (Batch 2 fix)
+            ex.headers["x-ws-message-session-id"] = str(m["session_id"])
         obs.events.append(e)
         return m
 

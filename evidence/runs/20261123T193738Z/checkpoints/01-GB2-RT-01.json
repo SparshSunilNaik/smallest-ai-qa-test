@@ -1,0 +1,322 @@
+{
+  "case_id": "GB2-RT-01",
+  "title": "Real-time STT: normal transcription (audio -> close_stream -> is_last)",
+  "area": "Gate B",
+  "expected_behavior": "interims/finals, one final is_last last; positions contiguous; durations sum to audio sent",
+  "doc_refs": [
+    "https://docs.smallest.ai/models/speech-to-text/realtime-web-socket/quickstart",
+    "https://docs.smallest.ai/models/speech-to-text/realtime-web-socket/response-format",
+    "https://docs.smallest.ai/models/speech-to-text/realtime-web-socket/best-practices"
+  ],
+  "classification": "Candidate finding requiring reproduction",
+  "checks": [
+    {
+      "name": "WebSocket handshake succeeded (101)",
+      "passed": true,
+      "expected": 101,
+      "actual": "101",
+      "requirement": "documented",
+      "doc_ref": "https://docs.smallest.ai/models/speech-to-text/realtime-web-socket/quickstart"
+    },
+    {
+      "name": "exactly one is_last=true message, and it is the last message received",
+      "passed": true,
+      "expected": "1, last",
+      "actual": "1 is_last; last event is_last=True",
+      "requirement": "documented",
+      "doc_ref": "https://docs.smallest.ai/models/speech-to-text/realtime-web-socket/response-format"
+    },
+    {
+      "name": "the is_last message is also is_final=true",
+      "passed": true,
+      "expected": true,
+      "actual": "True",
+      "requirement": "documented",
+      "doc_ref": "https://docs.smallest.ai/models/speech-to-text/realtime-web-socket/response-format"
+    },
+    {
+      "name": "every message is type=transcription",
+      "passed": true,
+      "expected": "transcription",
+      "actual": "['transcription']",
+      "requirement": "documented",
+      "doc_ref": "https://docs.smallest.ai/models/speech-to-text/realtime-web-socket/response-format"
+    },
+    {
+      "name": "status is 'success' on every message",
+      "passed": true,
+      "expected": "success",
+      "actual": "['success']",
+      "requirement": "quality",
+      "doc_ref": "https://docs.smallest.ai/models/speech-to-text/realtime-web-socket/response-format"
+    },
+    {
+      "name": "session_id present and constant on every message",
+      "passed": true,
+      "expected": "1 id",
+      "actual": "1 distinct (None present: False)",
+      "requirement": "documented",
+      "doc_ref": "https://docs.smallest.ai/models/speech-to-text/realtime-web-socket/response-format"
+    },
+    {
+      "name": "start + duration never decreases",
+      "passed": true,
+      "expected": true,
+      "actual": "True",
+      "requirement": "documented",
+      "doc_ref": "https://docs.smallest.ai/models/speech-to-text/realtime-web-socket/response-format"
+    },
+    {
+      "name": "message after a final starts at that final's start + duration",
+      "passed": true,
+      "expected": "0 gaps",
+      "actual": "0 of 1 []",
+      "requirement": "documented",
+      "doc_ref": "https://docs.smallest.ai/models/speech-to-text/realtime-web-socket/response-format"
+    },
+    {
+      "name": "finals' durations add up to the audio sent (+/-10 ms)",
+      "passed": true,
+      "expected": 6.305,
+      "actual": "6.305",
+      "requirement": "documented",
+      "doc_ref": "https://docs.smallest.ai/models/speech-to-text/realtime-web-socket/response-format"
+    },
+    {
+      "name": "is_last start + duration covers every sample sent (+/-10 ms)",
+      "passed": true,
+      "expected": 6.305,
+      "actual": "6.305",
+      "requirement": "documented",
+      "doc_ref": "https://docs.smallest.ai/models/speech-to-text/realtime-web-socket/response-format"
+    },
+    {
+      "name": "finals carry language='en'; interim messages carry no language field",
+      "passed": false,
+      "expected": true,
+      "actual": "{'finals': ['en'], 'interims_with_language': 4}",
+      "requirement": "documented",
+      "doc_ref": "https://docs.smallest.ai/models/speech-to-text/realtime-web-socket/response-format"
+    },
+    {
+      "name": "WER <= 0.25 against the known reference (synthetic clip)",
+      "passed": true,
+      "expected": "<= 0.25",
+      "actual": "0.0",
+      "requirement": "quality",
+      "doc_ref": null
+    }
+  ],
+  "metrics": {
+    "scenario": "normal",
+    "params": {
+      "model": "pulse",
+      "language": "en",
+      "encoding": "linear16",
+      "sample_rate": "16000"
+    },
+    "fixture": {
+      "id": "stt_en_16k (Phase 1)",
+      "sha256": "cc3d3e75a72ca66f64fba9607342328861d6c3171eba0d8fe2dea5a7aa357f01"
+    },
+    "audio_seconds_sent": 6.305,
+    "event_order": [
+      "P",
+      "P",
+      "P",
+      "P",
+      "F",
+      "L"
+    ],
+    "events": [
+      {
+        "t_ms": 722.5,
+        "type": "transcription",
+        "status": "success",
+        "is_final": false,
+        "is_last": false,
+        "start": 0,
+        "duration": 0.82,
+        "language": null,
+        "languages": null,
+        "session_id": "341b68f9-0fa5-4d96-a79c-60fd1ce13c7a",
+        "transcript_len": 9,
+        "transcript": "The quick"
+      },
+      {
+        "t_ms": 1206.5,
+        "type": "transcription",
+        "status": "success",
+        "is_final": false,
+        "is_last": false,
+        "start": 0,
+        "duration": 1.94,
+        "language": null,
+        "languages": null,
+        "session_id": "341b68f9-0fa5-4d96-a79c-60fd1ce13c7a",
+        "transcript_len": 27,
+        "transcript": "The quick brown fox jumps o"
+      },
+      {
+        "t_ms": 1642.2,
+        "type": "transcription",
+        "status": "success",
+        "is_final": false,
+        "is_last": false,
+        "start": 0,
+        "duration": 3.06,
+        "language": null,
+        "languages": null,
+        "session_id": "341b68f9-0fa5-4d96-a79c-60fd1ce13c7a",
+        "transcript_len": 43,
+        "transcript": "The quick brown fox jumps over the lazy dog"
+      },
+      {
+        "t_ms": 2132.1,
+        "type": "transcription",
+        "status": "success",
+        "is_final": false,
+        "is_last": false,
+        "start": 0,
+        "duration": 4.18,
+        "language": null,
+        "languages": null,
+        "session_id": "341b68f9-0fa5-4d96-a79c-60fd1ce13c7a",
+        "transcript_len": 63,
+        "transcript": "The quick brown fox jumps over the lazy dog, speech recognition"
+      },
+      {
+        "t_ms": 2626.7,
+        "type": "transcription",
+        "status": "success",
+        "is_final": true,
+        "is_last": false,
+        "start": 0,
+        "duration": 5.3,
+        "language": "en",
+        "languages": [
+          "en"
+        ],
+        "session_id": "341b68f9-0fa5-4d96-a79c-60fd1ce13c7a",
+        "transcript_len": 52,
+        "transcript": " The quick brown fox jumps over the lazy dog, speech"
+      },
+      {
+        "t_ms": 3098.5,
+        "type": "transcription",
+        "status": "success",
+        "is_final": true,
+        "is_last": true,
+        "start": 5.3,
+        "duration": 1.005,
+        "language": "en",
+        "languages": [
+          "en"
+        ],
+        "session_id": "341b68f9-0fa5-4d96-a79c-60fd1ce13c7a",
+        "transcript_len": 56,
+        "transcript": " recognition quality is measured by comparing the words."
+      }
+    ],
+    "client_actions": [
+      {
+        "t_ms": 3010.4,
+        "action": "audio_done (6.305 s)"
+      },
+      {
+        "t_ms": 3010.7,
+        "action": "close_stream"
+      }
+    ],
+    "handshake": {
+      "status": 101,
+      "ms": 289.6,
+      "body": null
+    },
+    "session_ids": [
+      "341b68f9-0fa5-4d96-a79c-60fd1ce13c7a"
+    ],
+    "is_last_ms": 3098.6,
+    "close_stream_to_is_last_ms": 87.9,
+    "finalize_to_final_ms": null,
+    "open_after_finalize_hold": null,
+    "server_closed": true,
+    "server_close_code": 1005,
+    "server_close_reason": "",
+    "server_closed_ms": 3164.1,
+    "server_closed_after_is_last_ms": 65.5,
+    "client_closed": false,
+    "client_close_complete_ms": null,
+    "close_frames": {
+      "sent": 1005,
+      "received": 1005,
+      "received_reason": ""
+    },
+    "observation_window_elapsed": false,
+    "harness_error": null,
+    "finals_duration_sum_s": 6.305,
+    "final_transcript": "The quick brown fox jumps over the lazy dog, speech  recognition quality is measured by comparing the words.",
+    "wer": 0.0
+  },
+  "notes": [
+    "Server close after is_last is not documented (clients are told to wait for is_last and then close); recorded as an observation only."
+  ],
+  "requests": [
+    {
+      "case_id": "GB2-RT-01",
+      "ledger_seq": 134,
+      "timestamp_utc": "2026-11-23T19:37:38.063+00:00",
+      "timestamp_ist": "2026-11-24T01:07:38.063+05:30",
+      "method": "WS",
+      "endpoint": "/waves/v1/stt/live",
+      "query_params": {
+        "model": "pulse",
+        "language": "en",
+        "encoding": "linear16",
+        "sample_rate": "16000"
+      },
+      "request": {
+        "audio_bytes": 201750,
+        "chunk_size": 4096,
+        "chunk_interval_s": 0.05,
+        "send_finalize": false,
+        "close_mode": "close_stream",
+        "abrupt_after_s": null,
+        "headers": {
+          "Authorization": "[REDACTED]"
+        }
+      },
+      "auth_mode": "valid",
+      "status": 101,
+      "content_type": "application/x-ws-frames+json",
+      "response_bytes": 1823,
+      "response_truncated_at_cap": false,
+      "response_sha256": "83d3d2fd1b0f6fd546abd946a7ff21dc781451849e3ea5a987654dd43cfedad9",
+      "time_to_headers_ms": null,
+      "ttfb_ms": null,
+      "duration_ms": 3164.2,
+      "extra_timings_ms": {
+        "handshake": 289.6,
+        "is_last": 3098.6,
+        "server_closed": 3164.1
+      },
+      "request_ids": {
+        "x-session-id": "341b68f9-0fa5-4d96-a79c-60fd1ce13c7a"
+      },
+      "response_headers": {
+        "Date": "Mon, 23 Nov 2026 19:37:38 GMT",
+        "Connection": "upgrade",
+        "Set-Cookie": "[REDACTED]",
+        "Upgrade": "websocket",
+        "Sec-WebSocket-Accept": "s6Bkuzc7ABBIPNfoUnIWD3nYDYo=",
+        "x-session-id": "341b68f9-0fa5-4d96-a79c-60fd1ce13c7a",
+        "content-type": "application/x-ws-frames+json"
+      },
+      "body_excerpt": "[{\"t_ms\": 722.5, \"type\": \"transcription\", \"status\": \"success\", \"is_final\": false, \"is_last\": false, \"start\": 0, \"duration\": 0.82, \"language\": null, \"languages\": null, \"session_id\": \"341b68f9-0fa5-4d96-a79c-60fd1ce13c7a\", \"transcript_len\": 9, \"transcript\": \"The quick\"}, {\"t_ms\": 1206.5, \"type\": \"transcription\", \"status\": \"success\", \"is_final\": false, \"is_last\": false, \"start\": 0, \"duration\": 1.94, \"language\": null, \"languages\": null, \"session_id\": \"341b68f9-0fa5-4d96-a79c-60fd1ce13c7a\", \"transcript_len\": 27, \"transcript\": \"The quick brown fox jumps o\"}, {\"t_ms\": 1642.2, \"type\": \"transcription\",...[truncated]",
+      "transport_error": null,
+      "cancelled_by_client": false,
+      "fresh_connection": false,
+      "body_chunks": 0
+    }
+  ]
+}
