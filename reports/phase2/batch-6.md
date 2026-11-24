@@ -1,5 +1,7 @@
 # Phase 2 – Batch 6 results: streaming latency
 
+> **Historical document (superseded).** This is a point-in-time Phase 2 batch review. Its status and running totals are historical. The original content and counts below are preserved unchanged. For the final results (137 attempted live requests, 130 with complete recorded results, 7 with lost detailed results, 101 offline tests, and Gate A and Gate B complete), see the [final submission](../final-submission.md) and the [engineering report](../final-engineering-report.md).
+
 **Status:** awaiting Sparsh's review. No further API requests and no final-report submission without approval.
 
 ## Run

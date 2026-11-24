@@ -179,7 +179,10 @@ Inference only: at least one real-time case in that run received a non-101 hands
 
 ### F5: `get_voices` accepts an invalid key
 
-200 in both runs. The 89,175-byte body was byte-identical to the valid-key response (SHA-256 prefix `76dd8a5a751f8c20`). This means Phase 1 AUTH-01 did not by itself prove the key was valid; TTS-01 (200 with the real key) and AUTH-03 (401 with an invalid key) do. No further auth variants were probed.
+- **Documented** (authentication page): "Every request to the Smallest AI API requires an API key in the `Authorization` header". Its status table lists `401 Unauthorized` for a "Missing or invalid API key". Every other missing- or invalid-key request in the recorded results received 401: AUTH-02, AUTH-03, P2-ERR-11 and P2-ERR-15.
+- **Observed:** 200 in both runs. The 89,175-byte body was byte-identical to the valid-key response (SHA-256 prefix `76dd8a5a751f8c20`). This means Phase 1 AUTH-01 did not by itself prove the key was valid; TTS-01 (200 with the real key) and AUTH-03 (401 with an invalid key) do. No further auth variants were probed.
+- **Assessment:** the body looks like a public catalogue, and no account data was seen. This is an auth-contract inconsistency, not evidence of access to non-public data.
+- **Recommendation:** clarify the intended contract rather than assume 401 must be enforced everywhere. Either require a valid key on this route, or document the voice catalogue as public and say it cannot validate a key.
 
 ### F6: WebSocket not closed after `complete`
 
@@ -188,7 +191,8 @@ Inference only: at least one real-time case in that run received a non-101 hands
 - **Run 2 (75 s window):**
   - `complete` arrived at 5.874 s, followed by 54.7 s with no frames.
   - Then `{"status":"error","message":"Connection timed out after 60 seconds of inactivity"}` arrived, and the server closed the connection at 60.5 s.
-- **What is and isn't claimed:** these are client-observed timings. No server-side leak is claimed; the documented idle timeout released the connection.
+- **Impact (observed retention):** a client that waits for the server's close keeps each connection open for about a minute after a request, until the idle timeout. It then logs a spurious timeout error. The documented examples close the socket themselves, so they are unaffected.
+- **What is and isn't claimed:** these are client-observed timings. No server-side leak is claimed; the documented idle timeout released the connection. No connection-limit figure is asserted here.
 - **Harness correction:** the original check accepted any server close, so run 2 was auto-labelled "Passed". The check is now bounded to 5 s, with a regression test (`test_ws_idle_timeout_close_is_not_accepted_as_close_after_complete`).
 
 ### F2: voice/model mismatch (reassessed)
@@ -273,6 +277,11 @@ Inference only: at least one real-time case in that run received a non-101 hands
   | H3 | 0.556 | 0.000 | all numeric formatting |
   | H4 | 1.000 | 0.000 | transliteration-aware; script only |
   | H5 | 0.308 | 0.231 | the reference itself is uncertain |
+
+  - **Recognition-only WER:**
+    - 0 on H1, H3 and H4, where the differences were segmentation, number formatting and script respectively;
+    - H2's recognition error is one technical term;
+    - H5 is spontaneous speech whose reference is itself uncertain.
 
   Five clips cannot support any statistical claim. The per-clip counts are in `evidence/offline/human-eval-20261122T174926Z.json`, and the token-level detail is private.
 

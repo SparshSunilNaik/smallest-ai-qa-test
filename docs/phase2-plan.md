@@ -1,5 +1,7 @@
 # Phase 2 plan: broader, real-world API coverage
 
+> **Historical document (superseded).** This is the Phase 2 plan, written before any Phase 2 live request. Its status lines and budget figures (a cumulative cap of 128) are pre-Gate A/B. The original content and counts below are preserved unchanged. For the final results (137 attempted live requests, 130 with complete recorded results, 7 with lost detailed results, 101 offline tests, and Gate A and Gate B complete), see the [final submission](../reports/final-submission.md) and the [engineering report](../reports/final-engineering-report.md).
+
 Status: **offline work complete; no Phase 2 live requests made.** The ledger holds 28 requests, all from Phase 1. Each batch below needs explicit approval before it runs.
 
 The full per-test matrix is in [phase2-test-matrix.md](phase2-test-matrix.md). It is generated from the code, so it cannot drift.

@@ -1,5 +1,7 @@
 # Results summary (auto-generated from evidence/runs)
 
+> **Historical document (superseded).** This is an auto-generated aggregate from the end of Phase 2 (124/128). Regenerating it with `smallest-qa report` drops this notice. The original content and counts below are preserved unchanged. For the final results (137 attempted live requests, 130 with complete recorded results, 7 with lost detailed results, 101 offline tests, and Gate A and Gate B complete), see the [final submission](final-submission.md) and the [engineering report](final-engineering-report.md).
+
 - Runs: 13; cumulative API requests (ledger): 124/128
 - Counts are per test case. Several cases can share one root cause; consolidated findings, severity and interpretation are in `reports/qa-report-draft.md`.
 

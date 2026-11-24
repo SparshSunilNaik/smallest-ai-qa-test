@@ -1,5 +1,7 @@
 # Test plan and traceability matrix
 
+> **Historical document (superseded).** This is the Phase 1 test plan (2026-11-22). Its 28-request cap and case list describe Phase 1 only. The original content and counts below are preserved unchanged. For the final results (137 attempted live requests, 130 with complete recorded results, 7 with lost detailed results, 101 offline tests, and Gate A and Gate B complete), see the [final submission](../reports/final-submission.md) and the [engineering report](../reports/final-engineering-report.md).
+
 ## Objective
 
 Check that Smallest AI's public Lightning TTS and Pulse STT HTTP APIs behave as their current official documentation says. The run covers authentication, input validation, response formats, SSE streaming, and exploratory latency. It is bounded, sequential, and produces sanitized evidence.

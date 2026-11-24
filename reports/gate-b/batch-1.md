@@ -1,5 +1,7 @@
 # Gate B, Batch 1: SDK SSE (S1) under the default transport, and the real-time STT lifecycle
 
+> **Historical document (superseded).** This is the Gate B Batch 1 report as written after the evidence-loss incident. Its open decision was resolved by [`batch-1-recovery.md`](batch-1-recovery.md), and its recommended report changes have since been applied. The original content and counts below are preserved unchanged. For the final results (137 attempted live requests, 130 with complete recorded results, 7 with lost detailed results, 101 offline tests, and Gate A and Gate B complete), see the [final submission](../final-submission.md) and the [engineering report](../final-engineering-report.md).
+
 **Status: incomplete.** All 7 planned live requests were sent. A defect in the harness's evidence writer then
 discarded their structured results. Only the ledger entries and one private audio file survived. **No live
 result is claimed for GB-S1-01, GB-S1-02 or GB-RT-01 to GB-RT-04.** The offline work (B1-A) is complete and

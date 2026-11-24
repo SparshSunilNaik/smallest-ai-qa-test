@@ -1,5 +1,7 @@
 # Phase 2 – Batch 4 results: TTS normalisation, speed and sample rate
 
+> **Historical document (superseded).** This is a point-in-time Phase 2 batch review. Its status and running totals are historical. The original content and counts below are preserved unchanged. For the final results (137 attempted live requests, 130 with complete recorded results, 7 with lost detailed results, 101 offline tests, and Gate A and Gate B complete), see the [final submission](../final-submission.md) and the [engineering report](../final-engineering-report.md).
+
 **Status:** awaiting Sparsh's review. Batch 5 has not been run.
 
 ## Run

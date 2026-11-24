@@ -1,5 +1,7 @@
 # Phase 2 test matrix
 
+> **Historical document (superseded).** This is the generated Phase 2 matrix (`smallest-qa matrix-p2`; regenerating the file drops this notice). The original content and counts below are preserved unchanged. For the final results (137 attempted live requests, 130 with complete recorded results, 7 with lost detailed results, 101 offline tests, and Gate A and Gate B complete), see the [final submission](../reports/final-submission.md) and the [engineering report](../reports/final-engineering-report.md).
+
 Generated from `src/smallest_qa/cases_p2.py` by `uv run smallest-qa matrix-p2`; do not edit by hand.
 Doc links are relative to `https://docs.smallest.ai/` unless prefixed `gh:` (github.com/smallest-inc).
 Provenance: **documented** deviations can become defects after reproduction; **quality** and **exploratory** are observations only. 🎧 = audio queued for human listening.

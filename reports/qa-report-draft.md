@@ -1,4 +1,4 @@
-> **Superseded.** This is the Phase 1 draft, kept for history. The current documents are [`final-submission.md`](final-submission.md) and [`final-engineering-report.md`](final-engineering-report.md). F2 in particular was re-assessed in Phase 2.
+> **Historical document (superseded).** This is the Phase 1 draft (28 requests), kept for history; F2 in particular was re-assessed in Phase 2. The original content and counts below are preserved unchanged. For the final results (137 attempted live requests, 130 with complete recorded results, 7 with lost detailed results, 101 offline tests, and Gate A and Gate B complete), see the [final submission](final-submission.md) and the [engineering report](final-engineering-report.md).
 
 # QA report draft for the Smallest AI candidate submission
 

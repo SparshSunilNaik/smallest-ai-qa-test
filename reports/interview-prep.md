@@ -1,5 +1,7 @@
 # Interview prep: defending the Smallest AI API QA findings
 
+> **Historical document (superseded).** This is early interview notes from Phase 1 (28 requests); several findings were re-assessed later. The original content and counts below are preserved unchanged. For the final results (137 attempted live requests, 130 with complete recorded results, 7 with lost detailed results, 101 offline tests, and Gate A and Gate B complete), see the [final submission](final-submission.md) and the [engineering report](final-engineering-report.md).
+
 Each finding below follows the same structure:
 
 - what we know (evidence);

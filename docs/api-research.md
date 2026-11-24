@@ -1,5 +1,7 @@
 # Smallest AI API research notes
 
+> **Historical document (superseded).** This is the original documentation research (2026-11-22). Some statements were re-assessed later, for example F2. The original content and counts below are preserved unchanged. For the final results (137 attempted live requests, 130 with complete recorded results, 7 with lost detailed results, 101 offline tests, and Gate A and Gate B complete), see the [final submission](../reports/final-submission.md) and the [engineering report](../reports/final-engineering-report.md).
+
 Researched on 2026-11-22 from the official docs. Pages were fetched automatically and summarised. **Re-open each URL before quoting it in an interview.** Docs can change, and an automated summary can be wrong.
 
 Pages used:
